@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { InfoPageShell, Section, Bullets } from "@/components/legal/InfoPageShell";
 import { CONTACT_NUMBERS, telLink, smsLink, whatsappLink, formatNumber } from "@/config/contact";
 import FeedbackForm from "@/components/support/FeedbackForm";
+import SupportForm from "@/components/support/SupportForm";
 
 export const metadata: Metadata = {
   title: "Support & Feedback",
@@ -16,6 +17,17 @@ export default function SupportPage() {
       updated="1 July 2026"
       intro="Need a hand, or have something to tell us? We're just a message away. Share feedback below, or reach the English Connection team by call, text, or WhatsApp — we're happy to help with your account, your Pro plan, or anything about the app."
     >
+      <Section title="Something wrong? Tell us">
+        <p>
+          Pick what went wrong and describe it — your report reaches the team by email straight away and
+          we&apos;ll reply to you. You can also open this from the <strong>Help</strong> button at the top of
+          any screen in the app.
+        </p>
+        <div className="mt-4 max-w-xl">
+          <SupportForm />
+        </div>
+      </Section>
+
       <Section title="Share your feedback">
         <p>
           Tell us what&apos;s working and what isn&apos;t — it genuinely shapes what we build next.

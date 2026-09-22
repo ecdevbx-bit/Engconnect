@@ -57,6 +57,17 @@ export const env = {
     return { accountId, accessKeyId, secretAccessKey, bucket, publicBaseUrl: read("R2_PUBLIC_BASE_URL") };
   },
 
+  // Resend (support notifications). SUPPORT_EMAIL_TO = where tickets go.
+  resend: () => {
+    const apiKey = read("RESEND_API_KEY");
+    if (!apiKey) return null;
+    return {
+      apiKey,
+      from: read("SUPPORT_EMAIL_FROM") || "English Connection <onboarding@resend.dev>",
+      to: (read("SUPPORT_EMAIL_TO") || "ec.devbx@gmail.com").split(",").map((s) => s.trim()).filter(Boolean),
+    };
+  },
+
   razorpay: () => {
     const keyId = read("RAZORPAY_KEY_ID");
     const keySecret = read("RAZORPAY_KEY_SECRET");

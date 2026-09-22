@@ -2,7 +2,7 @@
 title: Product overview
 type: overview
 tags: [product]
-links: [features/jumble-words, features/pronunciation, features/ai-partner, features/word-bank, features/progress-and-rewards, features/premium, features/admin, architecture/system]
+links: [features/jumble-words, features/pronunciation, features/ai-partner, features/word-bank, features/progress-and-rewards, features/premium, features/admin, features/support, architecture/auth, architecture/system]
 updated: 2026-09-22
 ---
 
@@ -21,7 +21,8 @@ The friendly tutor persona is **K.AI** (said "kaa-ee").
 | [[features/ai-partner]] | Fluency, confidence | Real voice conversation with K.AI, who corrects mistakes gently and remembers you |
 | Leaderboard | Motivation | XP, weekly and streak boards — see [[features/progress-and-rewards]] |
 
-Plus [[features/word-bank]] (save and practise words, behind a feature flag).
+Plus [[features/word-bank]] (save and practise words, behind a feature flag) and a **Help** button
+on every screen for reporting problems ([[features/support]]).
 
 ## Learner journey
 1. Sign in with Google or email + password ([[architecture/auth]]).

@@ -7,6 +7,7 @@ import { registerChatRoutes } from "./chat";
 import { registerJumbleRoutes } from "./jumble";
 import { registerPremiumRoutes } from "./premium";
 import { registerPronunciationRoutes } from "./pronunciation";
+import { registerSupportRoutes } from "./support";
 import { registerUserRoutes } from "./users";
 
 // The whole backend API. Paths are relative to /api. The full contract
@@ -19,4 +20,5 @@ registerJumbleRoutes(api); //       /game/jumble/*
 registerPronunciationRoutes(api); // /pronunciation/*, /word-bank/*
 registerChatRoutes(api); //         /chat/*  (AI Partner on Gemini Live)
 registerPremiumRoutes(api); //      /trial/*, /feedback, /pro-link, /payments/*
+registerSupportRoutes(api); //      /support, /admin/support (tickets → email via Resend)
 registerAdminRoutes(api); //        /admin/*  (INTERNAL_API_KEY or admin user)

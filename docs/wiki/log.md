@@ -48,3 +48,15 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
   (D-022). Supabase Auth: site URL + redirect allow-list + password ≥ 8 configured.
 - Login card disables "Continue with Google" until the Google provider is enabled in Supabase.
 - Account menu (admins): Admin home + Gemini Keys links.
+
+## [2026-09-22] build | AI Partner setup, Google + Resend, support panel, admin updates
+- AI Partner start card: 14 languages × 3 levels × 6 practice modes × 18 verified voices (D-026)
+  → [[features/ai-partner]], [[architecture/gemini-live]].
+- Google sign-in enabled (D-024); Resend SMTP + branded auth emails, 30/h (D-025) →
+  [[architecture/auth]]. Admin = ec.devbx@gmail.com (D-023).
+- "Something wrong?" Help dropdown + /support form → tickets + Resend email; admin Support inbox;
+  "Don't approve" for Pro applications (D-029) → [[features/support]], [[features/admin]].
+- Owner confirmed Gemini keys are from different projects (D-027).
+
+## [2026-09-22] wiki | Graph memory
+- `docs/wiki/build-graph.mjs` → `graph.json` + [[meta/graph]] (D-028). Wiki updated for all of the above.

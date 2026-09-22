@@ -2,7 +2,7 @@
 title: API reference
 type: architecture
 tags: [api, contract]
-links: [architecture/system, architecture/auth, features/jumble-words, features/pronunciation, features/ai-partner, features/premium, features/admin]
+links: [architecture/system, architecture/auth, features/jumble-words, features/pronunciation, features/word-bank, features/ai-partner, architecture/gemini-live, features/premium, features/admin, features/support]
 updated: 2026-09-22
 ---
 
@@ -39,7 +39,7 @@ Served by `frontend/src/app/api/[...path]/route.ts` → `src/server/routes/index
 |---|---|
 | `GET /chat/access` | `{enabled}` |
 | `GET /chat/usage` | `{pro, usedSeconds, capSeconds, remainingSeconds, rewards}` |
-| `POST /chat/sessions` `{language, level?}` | `{sessionID, language, level, rewards, aiUsedSeconds, aiCapSeconds, live:{token, wsUrl, model, apiVersion, expiresAt, kickoff}}` |
+| `POST /chat/sessions` `{language, level, scenario, voice}` (validated vs `lib/aiPartnerOptions.ts`) | `{sessionID, language, level, rewards, aiUsedSeconds, aiCapSeconds, live:{token, wsUrl, model, apiVersion, expiresAt, kickoff}}` |
 | `POST /chat/sessions/:id/progress` `{speakingSeconds, turns[], usage}` | speech_progress payload + `{capReached, sessionActive, usedSeconds, capSeconds, remainingSeconds}` |
 | `POST /chat/sessions/:id/reconnect` `{keyFailed, detail, closeCode}` | `{live}` (new token, maybe another key) |
 | `POST /chat/sessions/:id/end` (also `DELETE /chat/sessions/:id`) | final progress; releases key; compiles memory |
@@ -53,5 +53,8 @@ Served by `frontend/src/app/api/[...path]/route.ts` → `src/server/routes/index
 `jumble/settings`, `quotas`, `feature-flags`, `pro-trials` (+approve/cancel/settings),
 `pro-invite` (+settings) → [[features/admin]]
 
-**Auth helpers** — `POST /session/start` (record the new login for the single-session rule),
-`/account/*` rate-limited email actions (sign-up, resend, reset) → [[architecture/auth]]
+**Auth helpers** — `GET /session`, `POST /session/start` (record the new login for the single-session rule),
+`POST /account/{signup,resend,reset}` rate-limited email actions → [[architecture/auth]]
+
+**Support** — `POST /support` `{category, message, email?, page}` (guests allowed; 5/hour) ·
+`GET /admin/support?status=` · `PATCH /admin/support/:id` `{status}` → [[features/support]]

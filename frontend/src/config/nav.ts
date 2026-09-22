@@ -2,7 +2,7 @@
 // Adding a destination is a one-line data change, not a layout edit.
 
 import type { LucideIcon } from "lucide-react";
-import { User, Puzzle, Sparkles, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, LayoutDashboard, LifeBuoy, Link2, ToggleRight, KeyRound, LayoutGrid } from "lucide-react";
+import { User, Puzzle, Sparkles, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, LayoutDashboard, LifeBuoy, Link2, ToggleRight, KeyRound, LayoutGrid, Inbox, BadgeCheck } from "lucide-react";
 
 export interface NavItem {
   id: string;
@@ -49,6 +49,20 @@ export const adminMenu: NavItem[] = [
     href: "/v3/admin",
     icon: LayoutGrid,
     description: "Every admin tool in one place",
+  },
+  {
+    id: "admin-pro-applications",
+    label: "Pro applications",
+    href: "/v3/admin/pro-trials",
+    icon: BadgeCheck,
+    description: "Approve or decline learners who applied for Pro",
+  },
+  {
+    id: "admin-support",
+    label: "Support inbox",
+    href: "/v3/admin/support",
+    icon: Inbox,
+    description: "Problems reported by learners",
   },
   {
     id: "admin-keys",
@@ -98,13 +112,6 @@ export const adminMenu: NavItem[] = [
     href: "/v3/admin/jumble",
     icon: Puzzle,
     description: "Tune the progressive set-completion bonus XP",
-  },
-  {
-    id: "admin-pro-trials",
-    label: "Pro Trials",
-    href: "/v3/admin/pro-trials",
-    icon: Sparkles,
-    description: "Approve free-trial testers and set the launch date",
   },
   {
     id: "admin-pro-invite",

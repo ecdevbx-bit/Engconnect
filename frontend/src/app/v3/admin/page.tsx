@@ -7,6 +7,8 @@ import { NotAdminError, requireAdmin } from "./problems/adminAuth";
 export const dynamic = "force-dynamic";
 
 const TOOLS = [
+  { href: "/v3/admin/pro-trials", title: "Pro applications", body: "Learners who applied for Pro — approve or don't approve; program end date and cap." },
+  { href: "/v3/admin/support", title: "Support inbox", body: "\"Something wrong?\" reports from learners (also emailed to you). Mark resolved." },
   { href: "/v3/admin/keys", title: "Gemini keys", body: "Live status of every API key: in rotation, cooling down, quota used, invalid. Add, test, disable." },
   { href: "/v3/admin/problems", title: "Content", body: "Jumble sentences and pronunciation phrases — add, reorder, activate, bulk upload." },
   { href: "/v3/admin/ai-partner", title: "AI Partner", body: "Talk-time XP rules, session length, Pro daily / free weekly time caps." },
@@ -15,7 +17,6 @@ const TOOLS = [
   { href: "/v3/admin/levels", title: "Levels", body: "XP thresholds, titles and icons of the level ladder." },
   { href: "/v3/admin/badges", title: "Badges", body: "XP, streak, combo and progressive-set badge thresholds." },
   { href: "/v3/admin/feature-flags", title: "Feature flags", body: "Turn Pronunciation, Word Bank, AI Partner, etc. on or off." },
-  { href: "/v3/admin/pro-trials", title: "Pro trials", body: "Approve or cancel trial applications; program end date." },
   { href: "/v3/admin/pro-invite", title: "Pro invite link", body: "The public /pro link: on/off, dates, redemption cap, sign-ups." },
 ];
 

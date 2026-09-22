@@ -1,0 +1,1366 @@
+{
+  "generatedAt": "2026-09-22T08:40:21.703Z",
+  "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
+  "nodes": [
+    {
+      "id": "architecture/api",
+      "title": "API reference",
+      "type": "architecture",
+      "tags": [
+        "api",
+        "contract"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/architecture/api.md"
+    },
+    {
+      "id": "architecture/auth",
+      "title": "Authentication",
+      "type": "architecture",
+      "tags": [
+        "auth",
+        "supabase",
+        "google",
+        "email",
+        "resend"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/architecture/auth.md"
+    },
+    {
+      "id": "architecture/database",
+      "title": "Database (Supabase Postgres)",
+      "type": "architecture",
+      "tags": [
+        "database",
+        "supabase",
+        "postgres",
+        "rls"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/architecture/database.md"
+    },
+    {
+      "id": "architecture/gemini-key-pool",
+      "title": "Gemini key pool",
+      "type": "architecture",
+      "tags": [
+        "gemini",
+        "keys",
+        "quota",
+        "rotation"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/architecture/gemini-key-pool.md"
+    },
+    {
+      "id": "architecture/gemini-live",
+      "title": "Gemini Live integration",
+      "type": "architecture",
+      "tags": [
+        "gemini",
+        "live",
+        "websocket",
+        "audio"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/architecture/gemini-live.md"
+    },
+    {
+      "id": "architecture/storage-r2",
+      "title": "Object storage (Cloudflare R2)",
+      "type": "architecture",
+      "tags": [
+        "storage",
+        "r2"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/architecture/storage-r2.md"
+    },
+    {
+      "id": "architecture/system",
+      "title": "System architecture",
+      "type": "architecture",
+      "tags": [
+        "architecture"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/architecture/system.md"
+    },
+    {
+      "id": "features/admin",
+      "title": "Admin panel",
+      "type": "feature",
+      "tags": [
+        "admin"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/admin.md"
+    },
+    {
+      "id": "features/ai-partner",
+      "title": "AI Partner (K.AI)",
+      "type": "feature",
+      "tags": [
+        "trainer",
+        "ai-partner",
+        "gemini-live",
+        "voice"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/ai-partner.md"
+    },
+    {
+      "id": "features/jumble-words",
+      "title": "Jumble Words",
+      "type": "feature",
+      "tags": [
+        "trainer",
+        "jumble",
+        "xp"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/jumble-words.md"
+    },
+    {
+      "id": "features/premium",
+      "title": "Premium (Pro)",
+      "type": "feature",
+      "tags": [
+        "premium",
+        "pro",
+        "trial",
+        "payments",
+        "quotas"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/premium.md"
+    },
+    {
+      "id": "features/progress-and-rewards",
+      "title": "Progress & rewards",
+      "type": "feature",
+      "tags": [
+        "xp",
+        "levels",
+        "badges",
+        "streaks",
+        "leaderboard"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/progress-and-rewards.md"
+    },
+    {
+      "id": "features/pronunciation",
+      "title": "Pronunciation Coach",
+      "type": "feature",
+      "tags": [
+        "trainer",
+        "pronunciation",
+        "gemini",
+        "r2"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/pronunciation.md"
+    },
+    {
+      "id": "features/support",
+      "title": "Customer support (\"Something wrong?\")",
+      "type": "feature",
+      "tags": [
+        "support",
+        "resend",
+        "email"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/support.md"
+    },
+    {
+      "id": "features/word-bank",
+      "title": "Word Bank",
+      "type": "feature",
+      "tags": [
+        "word-bank",
+        "feature-flag"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/word-bank.md"
+    },
+    {
+      "id": "index",
+      "title": "Wiki index",
+      "type": "index",
+      "tags": [],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/index.md"
+    },
+    {
+      "id": "log",
+      "title": "Log",
+      "type": "log",
+      "tags": [],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/log.md"
+    },
+    {
+      "id": "meta/how-this-wiki-works",
+      "title": "How this wiki works",
+      "type": "meta",
+      "tags": [
+        "wiki",
+        "memory",
+        "karpathy"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/meta/how-this-wiki-works.md"
+    },
+    {
+      "id": "operations/credentials",
+      "title": "Credentials & config",
+      "type": "operations",
+      "tags": [
+        "ops",
+        "secrets",
+        "config"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/operations/credentials.md"
+    },
+    {
+      "id": "operations/deployment",
+      "title": "Deployment",
+      "type": "operations",
+      "tags": [
+        "ops",
+        "vercel",
+        "github"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/operations/deployment.md"
+    },
+    {
+      "id": "operations/runbook",
+      "title": "Runbook",
+      "type": "operations",
+      "tags": [
+        "ops",
+        "local-dev",
+        "migrations"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/operations/runbook.md"
+    },
+    {
+      "id": "overview",
+      "title": "Product overview",
+      "type": "overview",
+      "tags": [
+        "product"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/overview.md"
+    },
+    {
+      "id": "meta/graph",
+      "title": "Knowledge graph",
+      "type": "meta",
+      "tags": [
+        "graph",
+        "memory"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/meta/graph.md"
+    },
+    {
+      "id": "D-001",
+      "title": "Repo layout: one git repo at `ENG/`",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-002",
+      "title": "Backend = Supabase (Postgres + Auth) + Next.js route handlers",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-003",
+      "title": "Auth: keep NextAuth Google sign-in, swap the token exchange to Supabase",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "superseded",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-004",
+      "title": "AI Partner = Gemini Live, browser ↔ Google directly via ephemeral tokens",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-005",
+      "title": "Gemini quotas are per **Google Cloud project**, not per key",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-006",
+      "title": "Key pool design (rotation, cooldown, admin page)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-007",
+      "title": "AI Partner keeps its UI; only the plumbing under it changes",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-008",
+      "title": "Auth = Supabase Auth ONLY (Google + email/password); NextAuth removed",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-009",
+      "title": "Single active session uses the Supabase JWT `session_id` claim",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-010",
+      "title": "/pro invite link grants Pro only to NEWLY created accounts",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "superseded",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-011",
+      "title": "Gemini key tiers: free first, paid only as last resort",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-012",
+      "title": "Gemini Live wire details (verified by live probes, 2026-09-22)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-013",
+      "title": "Never name columns after PostgREST reserved words",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-014",
+      "title": "Pronunciation scoring",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-015",
+      "title": "Default game economics & free-tier limits (admin-editable)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-016",
+      "title": "Tooling: no Doppler; env via .env.local / Vercel; pnpm 11 via npx",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-017",
+      "title": "Migrations are applied with `supabase/apply-migrations.mjs`",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-018",
+      "title": "No self-HTTP on the server; API base is same-origin",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-019",
+      "title": "Project knowledge = Karpathy \"LLM Wiki\" pattern",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-020",
+      "title": "Our own email-send limits on top of Supabase's",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-021",
+      "title": "/pro link grants Pro to new AND existing accounts (once each)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-022",
+      "title": "Vercel builds with explicit pnpm 11 commands; email links handled client-side",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-023",
+      "title": "Admin is ec.devbx@gmail.com",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-024",
+      "title": "Google sign-in enabled in Supabase",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-025",
+      "title": "Auth email via Resend SMTP (no verified domain yet)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-026",
+      "title": "AI Partner session setup: language × level × mode × voice (ENGAI-style)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-027",
+      "title": "The 7 free Gemini keys are from different Google Cloud projects",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-028",
+      "title": "Graph memory = generated from the wiki (`docs/wiki/graph.json`)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-029",
+      "title": "Customer support panel: navbar \"Help\" dropdown → ticket + Resend email",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "memory/status",
+      "title": "Status (working memory)",
+      "type": "memory",
+      "path": "docs/memory/STATUS.md"
+    }
+  ],
+  "edges": [
+    {
+      "source": "architecture/api",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "features/word-bank",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "architecture/gemini-live",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "architecture/auth",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "features/support",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "architecture/system",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "features/support",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-008",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-024",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-025",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-020",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-009",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-023",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/database",
+      "target": "operations/runbook",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/database",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/database",
+      "target": "architecture/system",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/database",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/database",
+      "target": "D-013",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/gemini-key-pool",
+      "target": "architecture/gemini-live",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-key-pool",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-key-pool",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-key-pool",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-key-pool",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-key-pool",
+      "target": "D-027",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/gemini-key-pool",
+      "target": "D-011",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/gemini-live",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-live",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-live",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/gemini-live",
+      "target": "D-026",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/storage-r2",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/storage-r2",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "architecture/gemini-live",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "operations/deployment",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "architecture/auth",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "architecture/storage-r2",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "architecture/system",
+      "target": "D-002",
+      "kind": "cites"
+    },
+    {
+      "source": "features/admin",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
+      "target": "features/support",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
+      "target": "D-023",
+      "kind": "cites"
+    },
+    {
+      "source": "features/admin",
+      "target": "D-018",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "architecture/gemini-live",
+      "kind": "links"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-026",
+      "kind": "cites"
+    },
+    {
+      "source": "features/jumble-words",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "features/jumble-words",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "features/jumble-words",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "features/jumble-words",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "features/jumble-words",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "features/premium",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "features/premium",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "features/premium",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "features/premium",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "features/premium",
+      "target": "D-010",
+      "kind": "cites"
+    },
+    {
+      "source": "features/progress-and-rewards",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "features/progress-and-rewards",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "features/progress-and-rewards",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "features/progress-and-rewards",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "features/progress-and-rewards",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "features/word-bank",
+      "kind": "links"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "architecture/storage-r2",
+      "kind": "links"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "features/support",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "features/support",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "features/support",
+      "target": "architecture/auth",
+      "kind": "links"
+    },
+    {
+      "source": "features/support",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "features/support",
+      "target": "D-029",
+      "kind": "cites"
+    },
+    {
+      "source": "features/word-bank",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "features/word-bank",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "meta/how-this-wiki-works",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "overview",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/word-bank",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/support",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "architecture/system",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "architecture/auth",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "architecture/gemini-live",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "architecture/storage-r2",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "operations/runbook",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "operations/deployment",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "log",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "meta/graph",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "architecture/auth",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "architecture/gemini-live",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "features/support",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "meta/graph",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "D-008",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-011",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-009",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-019",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-021",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-022",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-026",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-024",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-025",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-023",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-029",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-027",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-028",
+      "kind": "cites"
+    },
+    {
+      "source": "meta/how-this-wiki-works",
+      "target": "log",
+      "kind": "links"
+    },
+    {
+      "source": "meta/how-this-wiki-works",
+      "target": "index",
+      "kind": "links"
+    },
+    {
+      "source": "meta/how-this-wiki-works",
+      "target": "meta/graph",
+      "kind": "links"
+    },
+    {
+      "source": "meta/how-this-wiki-works",
+      "target": "D-028",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "operations/deployment",
+      "kind": "links"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "architecture/auth",
+      "kind": "links"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "architecture/storage-r2",
+      "kind": "links"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "D-027",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "D-024",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "D-025",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "D-023",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/deployment",
+      "target": "operations/runbook",
+      "kind": "links"
+    },
+    {
+      "source": "operations/deployment",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "operations/deployment",
+      "target": "architecture/system",
+      "kind": "links"
+    },
+    {
+      "source": "operations/deployment",
+      "target": "D-022",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "operations/deployment",
+      "kind": "links"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/word-bank",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/support",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "architecture/auth",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "architecture/system",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "meta/graph",
+      "target": "index",
+      "kind": "links"
+    },
+    {
+      "source": "meta/graph",
+      "target": "meta/how-this-wiki-works",
+      "kind": "links"
+    },
+    {
+      "source": "D-008",
+      "target": "D-003",
+      "kind": "supersedes"
+    },
+    {
+      "source": "D-021",
+      "target": "D-010",
+      "kind": "supersedes"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-022",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-001",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-029",
+      "kind": "cites"
+    }
+  ],
+  "lint": []
+}

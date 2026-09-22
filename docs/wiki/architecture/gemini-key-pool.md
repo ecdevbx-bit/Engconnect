@@ -13,9 +13,8 @@ We run on Gemini's **free tier** with several API keys and move between them aut
 ## Keys we hold (2026-09-22)
 - **7 free keys** (`GEMINI_API_KEYS`) and **1 paid key** (`GEMINI_PAID_API_KEYS`). All 8 were
   checked: valid, with access to `gemini-3.1-flash-live-preview` and `gemini-3.1-flash-lite`.
-- ⚠️ Google rate-limits **per Google Cloud project, not per key**. Keys only add capacity if they
-  come from **different projects** (ideally different Google accounts). If several keys share a
-  project, they share one quota.
+- Google rate-limits **per Google Cloud project, not per key**. ✅ The owner confirmed all 7 free
+  keys come from **different projects** (D-027), so each adds its own quota.
 
 ## Concepts
 - **Tier**: `free` keys are always preferred; the **paid** key is leased only when no free key can

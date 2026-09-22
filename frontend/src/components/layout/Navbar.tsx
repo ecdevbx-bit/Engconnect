@@ -10,6 +10,7 @@ import { useAppSelector } from "@/store/hooks";
 import { fromSessionUser } from "@/lib/displayUser";
 import { PlantArt, PlantArtDefs, plantStageForIndex } from "@/components/v3/plantArt";
 import AccountChip from "./AccountChip";
+import SupportMenu from "@/components/support/SupportMenu";
 import { ThemeToggle } from "./ThemeToggle";
 import NavTabs from "./NavTabs";
 import LeaderboardPopover from "./LeaderboardPopover";
@@ -114,6 +115,8 @@ export default function Navbar() {
           <span className="hidden md:inline-flex">
             <ThemeToggle />
           </span>
+          {/* "Something wrong?" support dropdown — phone + desktop. */}
+          <SupportMenu />
           <AccountChip />
         </div>
       </div>

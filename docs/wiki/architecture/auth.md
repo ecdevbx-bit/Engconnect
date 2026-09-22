@@ -1,45 +1,52 @@
 ---
 title: Authentication
 type: architecture
-tags: [auth, supabase, google, email]
-links: [architecture/api, operations/credentials, features/premium]
+tags: [auth, supabase, google, email, resend]
+links: [architecture/api, operations/credentials, features/premium, features/support]
 updated: 2026-09-22
 ---
 
 # Authentication — Supabase Auth only
 
-Decision D-008 (replaces the earlier NextAuth plan). Methods: **Google** and **email + password**.
+Decision D-008 (replaced NextAuth). Methods: **Google** (enabled — D-024) and **email + password**.
+All configuration is applied by `node supabase/configure-auth.mjs` (idempotent).
 
 ## Flows
 - **Google**: browser → `supabase.auth.signInWithOAuth({provider:"google", redirectTo: <site>/auth/callback})`
-  → Google → Supabase (`https://uycpxwajvhcigyhvepci.supabase.co/auth/v1/callback`) →
-  `/auth/callback?code=…` (our route: exchange code → session cookies → record login → /pro grant → redirect).
-- **Email sign-up**: our rate-limited endpoint → `supabase.auth.signUp` → Supabase emails a link →
-  `/auth/confirm` (a **client page**: handles the default template's `#access_token` fragment, our
-  branded `?token_hash` links once custom SMTP exists, and `?code`) → `POST /api/session/start`.
+  → Google → Supabase (`https://uycpxwajvhcigyhvepci.supabase.co/auth/v1/callback`, registered in the
+  Google OAuth client) → `/auth/callback?code=…` (route: exchange code → cookie session → record login
+  → /pro grant → redirect). The login card enables the Google button by reading Supabase's public
+  `/auth/v1/settings` (it greys out if Google is ever switched off).
+- **Email sign-up**: `POST /api/account/signup` (rate-limited) → `supabase.auth.signUp` → Supabase
+  emails a branded link → `/auth/confirm` (client page; handles `?token_hash`, the default template's
+  `#access_token` fragment, and `?code`) → `POST /api/session/start` → signed in.
 - **Email sign-in**: `supabase.auth.signInWithPassword` in the browser → `POST /api/session/start`.
-- **Forgot password**: rate-limited endpoint → reset email → `/auth/confirm` (type recovery) →
+- **Forgot password**: `POST /api/account/reset` → email → `/auth/confirm` (type recovery) →
   `/reset-password` → `updateUser({password})`.
-- **Config** (`node supabase/configure-auth.mjs`): site URL https://engconnect-beta.vercel.app,
-  redirect allow-list (prod, previews, localhost), password ≥ 8. Google, SMTP and branded
-  templates are added by the same script when their env vars are passed (D-022).
+
+## Email delivery (D-025)
+- Supabase sends auth emails through **Resend SMTP** (`smtp.resend.com:465`, user `resend`, API key
+  as password), sender `onboarding@resend.dev`, **30 emails/hour** Supabase-wide, plus our own limits:
+  3 per address and 10 per IP per hour (`auth_email_allow()`, D-020).
+- Branded templates (confirmation, recovery, email change) point to `/auth/confirm?token_hash=…`.
+- ⚠️ **No verified domain in Resend yet** → Resend only delivers to the Resend account owner's own
+  address. To email real learners: add a domain in Resend, add its DNS records, then re-run
+  `configure-auth.mjs` with `SMTP_FROM=noreply@<domain>` (and update `SUPPORT_EMAIL_FROM`).
+
+## Settings
+Site URL `https://engconnect-beta.vercel.app`; redirect allow-list = production, Vercel previews
+(`https://engconnect-*-engconnect.vercel.app/**`), `http://localhost:3000/**`; password ≥ 8
+(our API also requires a letter and a number); email confirmation required.
 
 ## Sessions
-- `@supabase/ssr` keeps the session in cookies; `src/proxy.ts` refreshes it on requests.
-- Client components use `useSession()` from `src/lib/session.tsx` — same shape as the old NextAuth
-  hook (`data.user.accessToken`, `status`, `update()`), so components didn't change.
-- Server components use `auth()` from `src/auth.ts`.
-- API calls send the Supabase access token as `Bearer`; `src/server/guards.ts` verifies it
-  (JWKS, local) — [[architecture/api]].
+- `@supabase/ssr` keeps the session in cookies; `src/proxy.ts` refreshes it on page requests.
+- Client components use `useSession()` from `src/lib/session.tsx` (same shape as the old NextAuth
+  hook: `data.user.accessToken`, `status`, `update()`); server components use `auth()` (`src/auth.ts`).
+- API calls send the Supabase access token as `Bearer`; `src/server/guards.ts` verifies it via JWKS.
 
 ## Single active session (D-009)
-Each login stores the JWT's `session_id` in `profiles.active_session_id`; any request from an
-older session gets `SESSION_SUPERSEDED` and that device signs out ("signed in elsewhere").
-
-## Email limits
-Built-in Supabase email is for testing only (a handful per hour). Production needs custom SMTP
-(Resend/Brevo) — then we set Supabase's `rate_limit_email_sent` and keep our own per-email /
-per-IP limits on sign-up, resend and reset. Credentials: [[operations/credentials]].
+Each login stores the JWT's `session_id` in `profiles.active_session_id`; any request from an older
+session gets `SESSION_SUPERSEDED` and that device signs out ("signed in elsewhere").
 
 ## Admins
-`ADMIN_EMAILS` allow-list (server env) → `isAdmin` on the session and access to `/v3/admin/*`.
+`ADMIN_EMAILS` (currently ec.devbx@gmail.com — D-023) → `isAdmin` on the session and `/v3/admin/*`.

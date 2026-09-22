@@ -16,8 +16,19 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
    `ai_partner_access`; otherwise an "upgrading" modal.
 2. If onboarding isn't done, the wizard asks first (K.AI uses it to personalise).
 3. **Start card**: how it works, XP rule (from admin config), time left ("12 min left this week"),
-   and **Session language**: "Hindi + English" (70/30 Roman-script mix) or "English only".
-4. **Start session** → K.AI greets by name.
+   and the **session setup** (ENGAI-style, D-026 — `SessionSetup.tsx`):
+   - **Language**: English only, or any of 13 languages mixed with English (70/30, Roman script):
+     Hindi, Bengali, Marathi, Gujarati, Punjabi, Tamil, Telugu, Kannada, Malayalam, Odia, Assamese,
+     Urdu, Nepali. The learner's own language (profile) is listed first and preselected.
+   - **Level**: Beginner / Intermediate / Advanced.
+   - **Practice mode**: ☕ Casual chat · 💼 Job interview · 🎓 IELTS/TOEFL · ✈️ Travel & shopping ·
+     🏢 Office talk · 🎯 Grammar workout (each a role-play rule in the prompt).
+   - **K.AI's voice**: 18 Gemini voices (Aoede, Kore, Leda, Zephyr, Callirrhoe, Autonoe, Despina,
+     Sulafat, Erinome, Laomedeia, Puck, Charon, Fenrir, Orus, Achird, Gacrux, Umbriel, Iapetus) —
+     all verified live on 2026-09-22.
+   Choices are remembered on the device. In a session, the header shows the setup and a
+   **Change setup** button (settings are baked into the token, so this starts a new conversation).
+4. **Start session** → K.AI greets by name (and opens the chosen practice mode).
 5. **Tap to talk**: tap the mic (or Space), speak, tap again. Silence auto-stop after a grace
    window. While you talk, K.AI's voice stops (barge-in). Live captions show both sides.
 6. Status reads **Listening… / Thinking… / Speaking… / Your turn**.
@@ -45,8 +56,11 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 ## Tutor persona (server/gemini/tutorPrompt.ts)
 Ported from the production K.AI prompt in ENGAI: acknowledge → correct with WHY → one question;
 1–2 short spoken sentences (<35 words); learner does 80 % of the talking; topic guard; adapts to
-level; says its name as "kaa-ee". Language mode per session: English-only or native + English
-70/30 in Roman script.
+level; says its name as "kaa-ee". Language mode per session: English-only or X + English 70/30 in
+Roman script (hand-tuned phrases for 7 languages, a generic rule for the rest). A **SESSION MODE**
+block adds the chosen practice mode's role-play rules. Options are validated server-side against
+`frontend/src/lib/aiPartnerOptions.ts` and stored on `chat_sessions` (language, level, scenario,
+voice), so reconnects keep the same mode and voice.
 
 ## Limits ([[features/premium]])
 Free **20 min / week** (resets Monday IST) · Pro **60 min / day** (IST) · one live conversation

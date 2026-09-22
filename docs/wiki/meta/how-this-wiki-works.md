@@ -2,7 +2,7 @@
 title: How this wiki works
 type: meta
 tags: [wiki, memory, karpathy]
-links: [index, log]
+links: [index, log, meta/graph]
 updated: 2026-09-22
 ---
 
@@ -29,6 +29,13 @@ Plus the memory files in `docs/memory/`: `DECISIONS.md` (append-only "why") and 
   as a page or section.
 - **Lint** — periodically check for: contradictions with the code, stale claims, orphan pages
   (not linked from [[index]]), missing pages for concepts that are mentioned a lot.
+
+## Graph memory (D-028)
+`node docs/wiki/build-graph.mjs` compiles the wiki + `docs/memory/DECISIONS.md` into a graph:
+nodes = pages, decisions (D-0xx) and the STATUS file; edges = page→page links, page→decision
+citations, decision→decision supersedes. Outputs `docs/wiki/graph.json` (for agents/tools) and
+[[meta/graph]] (Mermaid map + decision index + lint). **Re-run it after every wiki edit** and fix
+anything under "Lint". To answer "what depends on X?", read `graph.json` edges instead of grepping.
 
 ## Conventions (graph-ready)
 - Frontmatter on every page: `title`, `type` (overview|feature|architecture|operations|meta|index|log),

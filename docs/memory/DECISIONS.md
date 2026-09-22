@@ -226,3 +226,13 @@
   `D-0xx` in DECISIONS.md → nodes (pages, decisions) and edges (page→page links, page→decision
   references, decision→decision supersedes). Writes `graph.json` (machine-readable) and
   `meta/graph.md` (Mermaid map + adjacency + broken-link lint). Re-run after editing the wiki.
+
+## D-029 · Customer support panel: navbar "Help" dropdown → ticket + Resend email — 2026-09-22
+- Owner: "customer support panel which uses Resend to send me mail if anything happens … phone and
+  desktop with drop down menu". Built as a navbar Help button (every in-app screen) opening a
+  dropdown panel with an issue-type select + message; also on /support. Navbar, not a floating
+  button, so it never covers the AI Partner mic bar on phones.
+- `POST /api/support` (guests allowed with email; 5/hour per account or IP) → `support_tickets`
+  → Resend HTTP API email to `SUPPORT_EMAIL_TO` (ec.devbx@gmail.com) with Reply-To = learner.
+  Admin inbox `/v3/admin/support` (open/resolved). Admin home + menu also list "Pro applications"
+  (existing /v3/admin/pro-trials, now with a "Don't approve" button for pending applications).

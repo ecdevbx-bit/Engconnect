@@ -12,8 +12,11 @@ Then open `docs/wiki/index.md` and follow links to the pages relevant to the tas
 
 ## Knowledge base = Karpathy "LLM Wiki" (see docs/wiki/meta/how-this-wiki-works.md)
 - **After any meaningful change**: update the affected wiki pages (keep frontmatter `links:` in
-  sync with body `[[links]]`), append one line to `docs/wiki/log.md`, and overwrite
-  `docs/memory/STATUS.md` (done / in progress / next / blocked).
+  sync with body `[[links]]`), append one line to `docs/wiki/log.md`, overwrite
+  `docs/memory/STATUS.md` (done / in progress / next / blocked), then rebuild the graph memory with
+  `node docs/wiki/build-graph.mjs` and fix anything it lists under Lint.
+- **Graph memory**: `docs/wiki/graph.json` (nodes = wiki pages + decisions + status; edges = links,
+  citations, supersedes). Use it to find everything connected to a feature before changing it.
 - **When you make a decision** that isn't obvious from the code: append `D-0xx` to
   `docs/memory/DECISIONS.md` (append-only; supersede, never rewrite).
 - **Before answering "how does X work"**: check the wiki; if it's wrong, fix it (lint).

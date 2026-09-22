@@ -8,7 +8,7 @@ updated: 2026-09-22
 
 # Database — Supabase Postgres 17
 
-Project ref `uycpxwajvhcigyhvepci`. Schema source of truth: `supabase/migrations/*.sql`, applied
+Project ref `uycpxwajvhcigyhvepci`. 12 migrations applied (2026-09-22). Schema source of truth: `supabase/migrations/*.sql`, applied
 with `node supabase/apply-migrations.mjs` ([[operations/runbook]]).
 
 ## Access model
@@ -25,8 +25,9 @@ with `node supabase/apply-migrations.mjs` ([[operations/runbook]]).
 | Catalogs | `levels`, `badges`, `feature_flags`, `app_settings` (JSON docs: jumble, pronunciation_timings, ai_partner_rewards, quotas, pro_trial, pro_invite) |
 | Content | `problems` (category jumble/pronunciation; difficulty; `sort_order`; progressive `base`/`variant`; `initial`/`final`), `problem_rewards` (XP once per problem per IST day) |
 | Practice | `pronunciation_attempts` (words JSON, audio_key in R2), `word_bank` |
-| AI Partner | `chat_sessions` (billing, talk-time, XP, lease), `chat_messages`, `learner_memory` |
+| AI Partner | `chat_sessions` (billing, talk-time, XP, lease, language/level/scenario/voice), `chat_messages`, `learner_memory` |
 | Premium | `pro_trial_applications`, `feedback`, `pro_invite_signups`, `subscriptions` |
+| Support & auth limits | `support_tickets` (category, message, page, emailed/email_error, open/resolved), `auth_email_events` (per-email/IP send log) |
 | Gemini pool | `gemini_api_keys`, `gemini_key_lanes`, `gemini_key_leases`, `gemini_key_events`, view `gemini_key_overview` |
 
 ## Functions
@@ -38,6 +39,7 @@ with `node supabase/apply-migrations.mjs` ([[operations/runbook]]).
 | `leaderboard_rows(metric)` | Ranked rows for xp / streak / weekly |
 | `bump_daily_usage` | Free-tier counters (IST day) |
 | `gemini_lease_key`, `gemini_heartbeat_lease`, `gemini_release_lease`, `gemini_refresh_key_states`, `next_pacific_midnight` | Key pool ([[architecture/gemini-key-pool]]) |
+| `auth_email_allow` | Check-and-record auth email sends (3/address, 10/IP per hour) |
 | `ist_today`, `set_updated_at`, `handle_new_user` | Helpers / triggers |
 
 ## Rules

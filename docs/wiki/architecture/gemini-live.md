@@ -16,7 +16,7 @@ preview* and recommends **`gemini-3.8-live`** (stable) — switching is just `GE
 - `uses: 1` (resuming the same session doesn't count), `expireTime` = session budget + 2 min,
   `newSessionExpireTime` = +2 min.
 - `liveConnectConstraints` = model + `responseModalities:[AUDIO]`, the **K.AI system prompt**,
-  voice (`GEMINI_LIVE_VOICE`, default Aoede), `inputAudioTranscription:{}`,
+  the learner-chosen voice (one of 18, validated; default Aoede — D-026), `inputAudioTranscription:{}`,
   `outputAudioTranscription:{}`, `realtimeInputConfig.automaticActivityDetection.disabled = true`
   (tap-to-talk), `contextWindowCompression.slidingWindow`.
 - `lockAdditionalFields: []` → every field above is locked; the browser can't change the prompt.
@@ -39,6 +39,12 @@ Text parts in `modelTurn` are internal reasoning on native-audio models → neve
 - Quota/key error in the close reason → server `reconnect` on another key + replay last 12 turns.
 - Token expired → server `reconnect` (fresh token).
 - Reply watchdog: if nothing comes back in 15 s, the mic unlocks.
+
+## Voices
+All 18 prebuilt voices offered in the UI return audio on this model (probe 2026-09-22): Aoede, Puck,
+Charon, Kore, Fenrir, Leda, Orus, Zephyr, Callirrhoe, Autonoe, Despina, Sulafat, Achird, Gacrux,
+Umbriel, Iapetus, Erinome, Laomedeia. An unknown name closes the socket with 1007 — hence server
+validation.
 
 ## Verified (2026-09-22, scratch probes)
 Token mint ✓ · setupComplete ✓ · spoken greeting (14 audio chunks) + transcript ✓ · resumption
