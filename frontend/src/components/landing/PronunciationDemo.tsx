@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { SpeakStep } from "@/app/(app)/dashboard/pronunciation/components/SpeakStep";
@@ -9,7 +9,7 @@ import type { RecorderPhase } from "@/app/(app)/dashboard/pronunciation/hooks/us
 import type { PronunciationAttemptResult } from "@/lib/v3Pronunciation";
 
 // Landing showcase for the Pronunciation Trainer — reuses the REAL step
-// components (Speak → Review → Feedback) driven by a scripted timeline and a
+// components (Speak → Check → Feedback) driven by a scripted timeline and a
 // mock scored result, looping forever. The Listen step is skipped here so the
 // demo opens straight on the action. No mic / backend involved.
 
@@ -55,18 +55,12 @@ const MOCK_RESULT: PronunciationAttemptResult = {
 type Stage = "countdown" | "recording" | "review" | "feedback";
 
 // The three labelled steps shown to the user, in order. Speak covers the
-// countdown + recording phases; Review is the playback; Feedback is the score.
-const STEP_LABELS = ["Speak", "Review", "Feedback"] as const;
+// countdown + recording phases; Check is the instant scoring; Feedback is the score.
+const STEP_LABELS = ["Speak", "Check", "Feedback"] as const;
 
 export function PronunciationDemo() {
   const [stage, setStage] = useState<Stage>("countdown");
   const [remainingMs, setRemainingMs] = useState(COUNTDOWN_MS);
-  // A tiny empty blob so SpeakStep's review state shows the player UI (never
-  // played — it's a demo).
-  const blobRef = useRef<Blob | null>(null);
-  if (blobRef.current === null && typeof Blob !== "undefined") {
-    blobRef.current = new Blob([], { type: "audio/webm" });
-  }
 
   useEffect(() => {
     let cancelled = false;
@@ -108,7 +102,7 @@ export function PronunciationDemo() {
   }, []);
 
   const isSpeak = stage === "countdown" || stage === "recording" || stage === "review";
-  // Which labelled step is on screen: Speak (0) · Review (1) · Feedback (2).
+  // Which labelled step is on screen: Speak (0) · Check (1) · Feedback (2).
   const activeStep = stage === "feedback" ? 2 : stage === "review" ? 1 : 0;
 
   return (
@@ -158,14 +152,11 @@ export function PronunciationDemo() {
           remainingMs={remainingMs}
           countdownMs={COUNTDOWN_MS}
           recordDurationMs={RECORD_MS}
-          blob={stage === "review" ? blobRef.current : null}
-          durationMs={4200}
           stream={null}
           errorMessage={null}
           onMicClick={noop}
           onStopClick={noop}
           onRetry={noop}
-          onSubmit={noop}
           demo
         />
       )}
