@@ -14,9 +14,11 @@ Learners read a sentence aloud and get **word-by-word feedback** on what was cle
 Four steps, shown in a side stepper:
 1. **Listen** — the sentence appears; a play button reads it in an Indian-English device voice
    (browser speech synthesis — no server audio).
-2. **Speak** — countdown (default 5 s, admin-set), then recording starts automatically and stops
-   after the band's limit (default easy 6 s / medium 8 s / hard 12 s) or on Stop. Learner can
-   replay, **Retry** (nothing uploaded) or **Submit**.
+2. **Speak** — countdown (default 5 s, admin-set), then recording starts automatically and **stops by
+   itself ~1.3 s after the learner finishes speaking** (in-browser voice detection), at the band's limit
+   (default easy 6 s / medium 8 s / hard 12 s) or on Stop — and is **scored straight away**. No
+   listen-back, no Submit button, nothing stored (D-038). If no voice was heard: "We couldn't hear you"
+   + **Try again** (not sent, no attempt used).
 3. **Feedback** — accuracy ring + headline:
    ≥90 **Excellent** · ≥80 **Great job** · ≥55 **Solid effort** · ≥40 **Getting there** · else
    **Keep going**. Each word is green (correct), red (mispronounced) or amber (unclear); tap for
@@ -33,17 +35,23 @@ Four steps, shown in a side stepper:
 ## How scoring works (`frontend/src/server/gemini/scoring.ts`)
 1. Browser converts the recording to **16 kHz mono WAV** (`src/audio/toWav.ts`) — Gemini accepts
    WAV reliably; Safari's mp4 and Chrome's webm are normalised away.
-2. `POST /api/pronunciation/attempts` (multipart). Server sniffs the real format from bytes.
+2. `POST /api/pronunciation/attempts` (multipart). Server sniffs the real format from bytes and
+   **rejects silence** (`speechStats`: < 250 ms of voiced audio → `422 NO_SPEECH`) — a silent clip used
+   to score 100% because the model "heard" the expected sentence (D-038).
 3. **Gemini `gemini-3.1-flash-lite`** hears the audio + the expected sentence and returns strict
    JSON: transcript, one verdict per expected word (CORRECT/INCORRECT/UNCLEAR + heard + confidence
    + what-went-wrong tip + `syllables` + `native` respelling in the learner's script), a feedback
    message and 1–3 tips. The audio goes **straight from our server to Gemini** inside the request —
    nothing has to be stored first. The prompt says: *do not penalise an Indian
    accent, only sounds that change or blur the word* (v/w, th, stress, dropped syllables).
-4. Server recomputes **similarity** (Levenshtein) and **accuracy = correct ÷ expected words**, so
+4. A **blind listener** (same model, audio only — it is NOT told the sentence) transcribes in parallel;
+   expected words it didn't hear can't stay CORRECT (downgraded to INCORRECT/UNCLEAR, "It sounded like
+   …"), and its transcript is what's shown as "what you said". The scorer prompt is strict: t/th, w/v,
+   dropped endings, wrong vowel/stress → INCORRECT; unsure → UNCLEAR.
+5. Server recomputes **similarity** (Levenshtein) and **accuracy = correct ÷ expected words**, so
    numbers are deterministic. Uses the key pool's `text` lane with fail-over
    ([[architecture/gemini-key-pool]]).
-5. Verified 2026-09-22: learner said "Yesterday I go to the market and buy vegetables" for
+6. Verified 2026-09-22: learner said "Yesterday I go to the market and buy vegetables" for
    "…I went… bought…" → exactly `went` and `bought` marked INCORRECT. `scripts/pronunciation-probe.mjs`
    (real API, native language set): "Wednesday" → INCORRECT "You said 'banana'; say 'WENZ-day'…",
    syllables for every word, Hindi and Tamil respellings.

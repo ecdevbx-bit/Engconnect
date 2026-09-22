@@ -30,9 +30,22 @@
     theme-toggle hydration fix (D-037).
   - **Deployed 220ff40** (READY) — production smoke **32/32**, AI Partner + pronunciation probes pass
     on production. Then: Beginner rules tightened (modelled sentence must be fully correct; one ask
-    per reply) — verified locally, shipped in the next commit.
+    per reply) — shipped in 9be5cb6 (READY).
+  - **Pronunciation fixed** (D-038): silence no longer scores 100% (NO_SPEECH), blind second listener,
+    stricter rubric; auto-stop + instant scoring, no listen-back — verified via API probes.
 
 ## In progress 🔧
+- **K.AI hands-free, like GPT voice mode** (owner: "continuous convo, not click; interruption allowed;
+  only a mute option"). DONE but UNCOMMITTED (would break prod without the client part):
+  `server/gemini/liveToken.ts` (automatic VAD on, low sensitivities, START_OF_ACTIVITY_INTERRUPTS,
+  `silenceDurationMs` = level `pauseMs` 1500/1100/800), `instructions/levels.ts` (pauseMs),
+  `tutorPrompt.ts` ("hands-free voice call" rules), `routes/chat.ts` (passes pauseMs). Tested live:
+  continuous audio with no activity markers → K.AI answered by itself. TODO: `useGeminiLiveSession.ts`
+  (mic streams continuously after connect, no activityStart/End — the API rejects them when auto-VAD is
+  on; commit user text when K.AI starts replying, commit assistant text on `interrupted`; echo gate —
+  while K.AI plays, zero mic frames under RMS ~0.06 so its own voice can't interrupt it; mute =
+  stop mic + `realtimeInput.audioStreamEnd`; talk-time from voiced frames), V3AIPartner UI → one
+  mute button (+ end), status Listening/Speaking/Muted; then verify barge-in and ship together.
 - **Landing page redesign** (glassmorphism, lighter, KEEP the scroll-swipe section, drop generic copy
   like "built for ambitious learners", Land-book-style designer feel) by a helper agent —
   files `frontend/src/components/ShowcaseV4.tsx` + `src/components/landing/*`; not yet committed.

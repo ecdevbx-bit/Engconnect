@@ -4,13 +4,13 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import { useMediaRecorder } from "./useMediaRecorder";
 
-// State machine for the record-and-review loop:
+// State machine for the record-and-score loop:
 //
 //   idle ──(sentence ready)──► countdown(countdownMs)
 //   countdown ──(tick to 0 | mic click)──► recording(autoCutMs)
-//   recording ──(tick to 0 | stop click)──► review (we have a blob)
-//   review ──(retry)──► countdown(countdownMs)       (discard blob)
-//   review ──(submit)──► submitting
+//   recording ──(speech ended | tick to 0 | stop click)──► review (blob ready)
+//   review ──(auto, by the page)──► submitting   — no listen-back step
+//   review ──(no speech heard / api error → retry)──► countdown(countdownMs)
 //   submitting ──(api ok | api err)──► review|results
 //   results ──(next)──► idle (caller fetches a new sentence)
 //
@@ -39,7 +39,7 @@ type Action =
   | { type: "ARM"; countdownMs: number; recordDurationMs: number }
   | { type: "TICK"; deltaMs: number }
   | { type: "START_RECORDING" }
-  | { type: "STOP_RECORDING"; blob: Blob | null; durationMs: number }
+  | { type: "STOP_RECORDING"; blob: Blob | null; durationMs: number; noSpeech?: boolean }
   | { type: "RETRY" }
   | { type: "SUBMIT" }
   | { type: "SUBMIT_OK" }
@@ -76,7 +76,14 @@ function reducer(s: State, a: Action): State {
     case "START_RECORDING":
       return { ...s, phase: "recording", remainingMs: s.recordDurationMs };
     case "STOP_RECORDING":
-      return { ...s, phase: "review", remainingMs: 0, blob: a.blob, durationMs: a.durationMs };
+      return {
+        ...s,
+        phase: "review",
+        remainingMs: 0,
+        blob: a.blob,
+        durationMs: a.durationMs,
+        errorMessage: a.noSpeech ? NO_SPEECH_MESSAGE : s.errorMessage,
+      };
     case "RETRY":
       return {
         ...s,
@@ -100,6 +107,9 @@ function reducer(s: State, a: Action): State {
 }
 
 const TICK_MS = 250;
+// Less than this much voice in a take = we didn't hear the learner; don't send it.
+const MIN_VOICED_MS = 300;
+const NO_SPEECH_MESSAGE = "We couldn't hear you — check your microphone and speak a little louder.";
 
 export function useRecorderStateMachine() {
   const [state, dispatch] = useReducer(reducer, initial);
@@ -141,14 +151,14 @@ export function useRecorderStateMachine() {
     }
   }, [state.phase, state.remainingMs, recorder]);
 
-  // Recording hit auto-cut → stop and bank the blob.
+  // Recording hit auto-cut, or the learner finished speaking → stop and bank
+  // the blob. The MediaRecorder produces the blob asynchronously via onstop;
+  // it's attached by the next effect that watches recorder.blob.
   useEffect(() => {
-    if (state.phase === "recording" && state.remainingMs <= 0) {
+    if (state.phase === "recording" && (state.remainingMs <= 0 || recorder.speechEnded)) {
+      const noSpeech = recorder.getVoicedMs() < MIN_VOICED_MS;
       const dur = recorder.stop();
-      // The MediaRecorder produces the blob asynchronously via onstop. We
-      // dispatch with the live duration; the blob arrives via the next
-      // effect that watches recorder.blob.
-      dispatch({ type: "STOP_RECORDING", blob: null, durationMs: dur });
+      dispatch({ type: "STOP_RECORDING", blob: null, durationMs: dur, noSpeech });
     }
   }, [state.phase, state.remainingMs, recorder]);
 
@@ -186,8 +196,9 @@ export function useRecorderStateMachine() {
 
   const stopRecording = useCallback(() => {
     if (state.phase !== "recording") return;
+    const noSpeech = recorder.getVoicedMs() < MIN_VOICED_MS;
     const dur = recorder.stop();
-    dispatch({ type: "STOP_RECORDING", blob: null, durationMs: dur });
+    dispatch({ type: "STOP_RECORDING", blob: null, durationMs: dur, noSpeech });
   }, [state.phase, recorder]);
 
   const retry = useCallback(() => {

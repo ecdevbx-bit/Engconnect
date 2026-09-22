@@ -31,6 +31,13 @@ export function useMediaRecorder() {
   // it via a Web Audio analyser. Null whenever nothing is recording.
   const [stream, setStream] = useState<MediaStream | null>(null);
 
+  // Voice activity on the live mic (~100 ms RMS checks): `speechEnded` flips
+  // once the learner has spoken and then gone quiet, so the take can stop by
+  // itself; getVoicedMs() tells the caller whether anything was said at all.
+  const [speechEnded, setSpeechEnded] = useState(false);
+  const voicedMsRef = useRef(0);
+  const vadRef = useRef<{ ctx: AudioContext; timer: number } | null>(null);
+
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -38,14 +45,23 @@ export function useMediaRecorder() {
 
   // Tear everything down — stop tracks, drop the recorder. Safe to call
   // when nothing is running.
+  const stopVad = useCallback(() => {
+    const v = vadRef.current;
+    if (!v) return;
+    window.clearInterval(v.timer);
+    void v.ctx.close().catch(() => {});
+    vadRef.current = null;
+  }, []);
+
   const cleanup = useCallback(() => {
+    stopVad();
     recorderRef.current = null;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
     setStream(null);
-  }, []);
+  }, [stopVad]);
 
   useEffect(() => cleanup, [cleanup]);
 
@@ -100,9 +116,40 @@ export function useMediaRecorder() {
     recorder.start();
     setIsRecording(true);
     setStream(stream);
+
+    voicedMsRef.current = 0;
+    setSpeechEnded(false);
+    try {
+      const AC: typeof AudioContext =
+        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AC();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 1024;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      const samples = new Float32Array(analyser.fftSize);
+      let silentMs = 0;
+      const timer = window.setInterval(() => {
+        analyser.getFloatTimeDomainData(samples);
+        let sum = 0;
+        for (const x of samples) sum += x * x;
+        if (Math.sqrt(sum / samples.length) > 0.02) {
+          voicedMsRef.current += 100;
+          silentMs = 0;
+        } else {
+          silentMs += 100;
+        }
+        if (voicedMsRef.current >= 400 && silentMs >= 1300) setSpeechEnded(true);
+      }, 100);
+      vadRef.current = { ctx, timer };
+    } catch {
+      // No Web Audio: the time limit still ends the take.
+    }
   }, []);
 
+  const getVoicedMs = useCallback(() => voicedMsRef.current, []);
+
   const stop = useCallback((): number => {
+    stopVad();
     const rec = recorderRef.current;
     if (rec && rec.state !== "inactive") {
       rec.stop();
@@ -115,13 +162,14 @@ export function useMediaRecorder() {
     const duration = startedAtRef.current ? Math.round(performance.now() - startedAtRef.current) : 0;
     startedAtRef.current = 0;
     return duration;
-  }, []);
+  }, [stopVad]);
 
   const reset = useCallback(() => {
     setBlob(null);
     setError(null);
+    setSpeechEnded(false);
     chunksRef.current = [];
   }, []);
 
-  return { isRecording, blob, error, stream, start, stop, reset };
+  return { isRecording, blob, error, stream, speechEnded, getVoicedMs, start, stop, reset };
 }

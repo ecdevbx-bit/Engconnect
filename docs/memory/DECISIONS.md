@@ -299,3 +299,19 @@
 - ThemeToggle: label/icon gated on mount (fixes the hydration-mismatch warning).
 - Landing: owner likes the scroll-driven horizontal swipe — keep it (GSAP ScrollTrigger ≈ 30 KB gz is
   fine); make the rest lighter (lazy demos, CSS motion, glassmorphism) — landing redesign in progress.
+
+## D-038 · Pronunciation: never score silence, blind second listener, no listen-back — 2026-09-22
+- Owner: "for any pronunciation it shows perfect always", "send directly … without listening yourself",
+  "we don't have to store or show their recording". Root cause found by test: a SILENT recording scored
+  100% — primed with the expected sentence, the model "hears" it anyway.
+- Server (`server/gemini/scoring.ts`, `routes/pronunciation.ts`): `speechStats()` measures voiced 20 ms
+  frames in the WAV; < 250 ms of voice → `422 NO_SPEECH` (not scored, no quota used). A **blind listener**
+  (same flash-lite model, audio only, no expected text) runs in parallel; after word alignment, expected
+  words it didn't hear are downgraded (sim < 0.5 → INCORRECT, < 0.8 → UNCLEAR) and its transcript is the
+  shown "what you said". Stricter rubric (t/th, w/v, dropped endings → INCORRECT; unsure → UNCLEAR).
+- Browser: recording stops by itself ~1.3 s after the learner finishes (Web Audio VAD) or at the time
+  limit, and is scored immediately — the review/replay/Submit step is gone; no audio kept (R2 off, D-036).
+- Model check 2026-09-22: omni-1.1-flash has no free quota (429); 3.8/3.5-flash often 503 and 20–50 s;
+  3.5-transcribe normalises words; 3.1-flash-lite is fastest (2–9 s) and caught phonetic slips
+  ("Tenk yu wery mach" → 25%). Kept flash-lite for both scorer and blind listener. Phoneme-exact option
+  for later: Azure AI Speech Pronunciation Assessment (needs an Azure key).

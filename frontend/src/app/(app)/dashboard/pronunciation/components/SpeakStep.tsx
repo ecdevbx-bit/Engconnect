@@ -1,17 +1,17 @@
 "use client";
 
-import { Mic, RotateCcw, Send } from "lucide-react";
+import { Mic, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import type { RecorderPhase } from "../hooks/useRecorderStateMachine";
 import { RecordingWaveform } from "./RecordingWaveform";
-import { RecordingPlayer } from "./RecordingPlayer";
 
 // Speak step — implements the spec's auto-record timer state machine in
 // terms of the recorder FSM. The countdown ring shows time remaining; the
-// recording state turns the mic red and shows the auto-cut countdown.
+// recording state turns the mic red and stops by itself when the learner
+// finishes speaking. There is no listen-back: the take is scored straight away.
 
 function formatSeconds(ms: number) {
   return Math.max(0, Math.ceil(ms / 1000)).toString();
@@ -29,14 +29,11 @@ export function SpeakStep({
   remainingMs,
   countdownMs,
   recordDurationMs,
-  blob,
-  durationMs,
   stream,
   errorMessage,
   onMicClick,
   onStopClick,
   onRetry,
-  onSubmit,
   demo = false,
 }: {
   sentence: string;
@@ -44,14 +41,11 @@ export function SpeakStep({
   remainingMs: number;
   countdownMs: number;
   recordDurationMs: number;
-  blob: Blob | null;
-  durationMs: number;
   stream: MediaStream | null;
   errorMessage: string | null;
   onMicClick: () => void;
   onStopClick: () => void;
   onRetry: () => void;
-  onSubmit: () => void;
   /** Landing-demo mode: hides the auto-start countdown helper hint. */
   demo?: boolean;
 }) {
@@ -116,6 +110,9 @@ export function SpeakStep({
               <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
               Recording
             </span>
+            {!demo && (
+              <p className="text-sm text-muted-foreground">Read it aloud — we&apos;ll stop when you finish.</p>
+            )}
             <RecordingWaveform stream={stream} demo={demo} />
             {/* Pill: a left→right progress fill toward the auto-stop, the
                 elapsed clock on the left, and the red stop button on the right. */}
@@ -139,40 +136,23 @@ export function SpeakStep({
           </>
         )}
 
-        {phase === "review" && (
-          <>
-            <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-              Review your take
-            </span>
-            {blob ? (
-              <RecordingPlayer blob={blob} durationMs={durationMs} />
-            ) : (
-              <p className="mt-2 text-sm text-muted-foreground">Preparing audio…</p>
-            )}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <Button onClick={onRetry} variant="secondary">
+        {(phase === "review" || phase === "submitting") &&
+          (errorMessage ? (
+            <>
+              <p role="alert" className="max-w-sm text-sm text-destructive">
+                {errorMessage}
+              </p>
+              <Button onClick={onRetry} size="lg" className="mt-2">
                 <RotateCcw className="h-4 w-4" />
-                Retry
+                Try again
               </Button>
-              <Button onClick={onSubmit} disabled={!blob}>
-                <Send className="h-4 w-4" />
-                Submit
-              </Button>
-            </div>
-            {errorMessage && (
-              <p className="mt-3 text-sm text-destructive">{errorMessage}</p>
-            )}
-          </>
-        )}
-
-        {phase === "submitting" && (
-          <>
-            <span className={cn("text-xs uppercase tracking-[0.18em] text-primary")}>
-              Analyzing your recording
-            </span>
-            <p className="mt-2 text-sm text-muted-foreground">Hold tight…</p>
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <span className="text-xs uppercase tracking-[0.18em] text-primary">Checking your pronunciation</span>
+              <p className="mt-2 text-sm text-muted-foreground">Hold tight…</p>
+            </>
+          ))}
 
         {phase === "results" && (
           <p className="text-sm text-muted-foreground">Open the Feedback step to see results.</p>

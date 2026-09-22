@@ -85,3 +85,11 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
   (Beginner/Job Interview/Hindi) and pronunciation probe (Hindi respellings, "You said 'banana'") pass
   on production. Beginner rules tightened afterwards ([[features/k-ai-instructions]]).
 - Landing redesign (glassmorphism, lighter, keep the scroll swipe, less generic copy) still in progress.
+
+## [2026-09-22] fix | Pronunciation no longer "always perfect"; instant scoring
+- Silent clips scored 100% (model primed by the expected sentence). Now: silence rejected
+  (`NO_SPEECH`), blind second listener downgrades words it didn't hear, stricter rubric; recording
+  auto-stops when the learner finishes and is scored at once — no listen-back (D-038,
+  [[features/pronunciation]]).
+- K.AI hands-free conversation (auto voice detection, interruptions, mute-only UI) in progress —
+  server side tested live, not shipped until the client is done.

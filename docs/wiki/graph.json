@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T09:38:58.768Z",
+  "generatedAt": "2026-09-22T11:29:35.270Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -582,6 +582,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-038",
+      "title": "Pronunciation: never score silence, blind second listener, no listen-back",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1046,6 +1054,11 @@
     },
     {
       "source": "features/pronunciation",
+      "target": "D-038",
+      "kind": "cites"
+    },
+    {
+      "source": "features/pronunciation",
       "target": "D-035",
       "kind": "cites"
     },
@@ -1380,6 +1393,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-038",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -1597,6 +1615,11 @@
     {
       "source": "memory/status",
       "target": "D-037",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-038",
       "kind": "cites"
     }
   ],

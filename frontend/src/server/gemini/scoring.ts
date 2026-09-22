@@ -88,6 +88,7 @@ Judge each expected word:
 - UNCLEAR: you genuinely cannot tell (noise, mumbling, cut off).
 Return exactly one entry per expected word in order, even if the learner skipped it (then heard = "" and status INCORRECT).
 If the recording is silent or unrelated speech, mark every word INCORRECT and say so kindly in the message.
+Be strict and honest — judge only what you actually hear, never what the sentence should be. A word is CORRECT only if every sound in it is clearly right (t for th, w for v, dropped endings like -s/-ed, a wrong vowel or misplaced stress → INCORRECT). If you are not sure, choose UNCLEAR, not CORRECT.
 For every word also give:
 - syllables: how to SAY it, split into spoken syllables with simple English sounds, the stressed syllable in CAPITALS, joined by "-" (vegetable → "VEJ-tuh-bul", pronunciation → "pruh-nun-see-AY-shun", comfortable → "KUMF-tuh-bul"). One-syllable words: just the word in capitals.
 - native: the SAME syllables written phonetically in the learner's native script (so they can read how it sounds), joined by "-". Leave empty when no native script is requested.
@@ -130,6 +131,79 @@ function similarity(a: string, b: string): number {
   return 1 - dp[x.length][y.length] / Math.max(x.length, y.length);
 }
 
+// ── Speech presence (16-bit PCM WAV) ────────────────────────────────
+// A silent or near-silent recording must never be scored: primed with the
+// expected sentence, the model "hears" it anyway (silence scored 100% in a
+// 2026-09-22 test). 20 ms frames above ~-38 dBFS count as voice.
+const SPEECH_RMS = 420;
+const MIN_SPEECH_MS = 250;
+
+export function speechStats(buf: Buffer): { speechMs: number; hasSpeech: boolean } | null {
+  if (buf.length < 44 || buf.toString("ascii", 0, 4) !== "RIFF" || buf.toString("ascii", 8, 12) !== "WAVE") return null;
+  let off = 12;
+  let rate = 16000;
+  let bits = 16;
+  let channels = 1;
+  while (off + 8 <= buf.length) {
+    const id = buf.toString("ascii", off, off + 4);
+    const size = buf.readUInt32LE(off + 4);
+    if (id === "fmt ") {
+      channels = buf.readUInt16LE(off + 10);
+      rate = buf.readUInt32LE(off + 12);
+      bits = buf.readUInt16LE(off + 22);
+    } else if (id === "data") {
+      if (bits !== 16) return null;
+      const end = Math.min(buf.length, off + 8 + size);
+      const frame = Math.max(1, Math.round(rate * 0.02)) * channels * 2;
+      let voiced = 0;
+      for (let p = off + 8; p + frame <= end; p += frame) {
+        let sum = 0;
+        for (let i = p; i < p + frame; i += 2) {
+          const s = buf.readInt16LE(i);
+          sum += s * s;
+        }
+        if (Math.sqrt(sum / (frame / 2)) > SPEECH_RMS) voiced++;
+      }
+      const speechMs = voiced * 20;
+      return { speechMs, hasSpeech: speechMs >= MIN_SPEECH_MS };
+    }
+    off += 8 + size + (size % 2);
+  }
+  return null;
+}
+
+// ── Blind transcript alignment ──────────────────────────────────────
+// A second listener transcribes the audio WITHOUT seeing the expected
+// sentence (so it can't be primed). Expected words it didn't hear can't
+// stay CORRECT. Word-level alignment: gap = 1, substitution = 1 - similarity.
+function alignWords(expected: string[], heard: string[]): (string | null)[] {
+  const n = expected.length;
+  const m = heard.length;
+  const d = Array.from({ length: n + 1 }, (_, i) => [i, ...new Array(m).fill(0)]);
+  for (let j = 1; j <= m; j++) d[0][j] = j;
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (1 - similarity(expected[i - 1], heard[j - 1])));
+    }
+  }
+  const out: (string | null)[] = new Array(n).fill(null);
+  let i = n;
+  let j = m;
+  while (i > 0 && j > 0) {
+    if (Math.abs(d[i][j] - (d[i - 1][j - 1] + (1 - similarity(expected[i - 1], heard[j - 1])))) < 1e-9) {
+      out[i - 1] = heard[j - 1];
+      i--;
+      j--;
+    } else if (Math.abs(d[i][j] - (d[i - 1][j] + 1)) < 1e-9) i--;
+    else j--;
+  }
+  return out;
+}
+
+const BLIND_INSTRUCTION = `Transcribe exactly what the speaker says in this recording, word for word, in English letters.
+Do not correct grammar or pronunciation: if a word is mispronounced, write what it sounded like (e.g. "tis" for a "this" said with a t, "wery" for "very").
+If there is no clear speech, return an empty transcript.`;
+
 function clamp01(n: unknown): number {
   const v = typeof n === "number" && Number.isFinite(n) ? n : 0;
   return Math.max(0, Math.min(1, v));
@@ -146,6 +220,25 @@ export async function scorePronunciation(args: {
   const expected = args.expectedText.trim().split(/\s+/).filter(Boolean);
   const model = env.geminiTextModel();
   const script = SCRIPTS[(args.nativeLang ?? "").trim()] ?? "";
+
+  // Blind listener runs in parallel with the scorer (no extra latency).
+  const blindCall = withTextKey(args.userId, async (apiKey) => {
+    const ai = new GoogleGenAI({ apiKey });
+    const res = await ai.models.generateContent({
+      model,
+      contents: [{ role: "user", parts: [{ inlineData: { mimeType: args.mimeType, data: args.audio.toString("base64") } }] }],
+      config: {
+        systemInstruction: BLIND_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema: { type: Type.OBJECT, properties: { transcript: { type: Type.STRING } }, required: ["transcript"] },
+        temperature: 0,
+        maxOutputTokens: 512,
+      },
+    });
+    return String((JSON.parse(res.text ?? "{}") as { transcript?: string }).transcript ?? "").trim();
+  })
+    .then((r) => r.result)
+    .catch(() => null); // scoring still works if this listener fails
 
   const { result: raw } = await withTextKey(args.userId, async (apiKey) => {
     const ai = new GoogleGenAI({ apiKey });
@@ -208,6 +301,26 @@ export async function scorePronunciation(args: {
     };
   });
 
+  // Words the blind listener didn't hear can't stay CORRECT.
+  const blind = await blindCall;
+  let downgraded = 0;
+  if (blind !== null) {
+    const aligned = alignWords(expected, blind.split(/\s+/).filter((w) => norm(w)));
+    words.forEach((w, i) => {
+      if (w.status !== "CORRECT") return;
+      const h = aligned[i];
+      const sim = h ? similarity(w.expected, h) : 0;
+      if (sim >= 0.8) return;
+      downgraded++;
+      w.status = sim >= 0.5 ? "UNCLEAR" : "INCORRECT";
+      w.similarity = Math.round(sim * 100) / 100;
+      if (h) w.heard = h;
+      else delete w.heard;
+      const say = w.syllables ? ` — say "${w.syllables}"` : "";
+      w.reason = h ? `It sounded like "${h}"${say}.` : `We didn't hear this word clearly${say}.`;
+    });
+  }
+
   const correct = words.filter((w) => w.status === "CORRECT").length;
   const accuracy = expected.length ? correct / expected.length : 0;
   const tips = (raw.tips ?? [])
@@ -216,10 +329,13 @@ export async function scorePronunciation(args: {
     .map((t) => ({ title: String(t.title).trim(), body: String(t.body ?? "").trim() }));
 
   return {
-    transcript: (raw.transcript ?? "").trim(),
+    // The unprimed transcript is the honest "what you said".
+    transcript: (blind ?? raw.transcript ?? "").trim(),
     words,
     accuracy,
-    message: (raw.message ?? "").trim() || defaultMessage(accuracy),
+    // The scorer's message was written before the blind check — don't let it
+    // praise words we just downgraded.
+    message: (!downgraded && (raw.message ?? "").trim()) || defaultMessage(accuracy),
     tips: tips.length ? tips : defaultTips(words),
     scorer: model,
   };

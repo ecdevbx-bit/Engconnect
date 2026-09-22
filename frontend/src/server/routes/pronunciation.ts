@@ -4,9 +4,9 @@ import { after } from "next/server";
 
 import { activeProblems, claimDailyReward, findProblem, parseDifficulty } from "../domain/problems";
 import { awardProgress, bumpUsage, getAttributes, isPro, setCursor, usageToday } from "../domain/users";
-import { scorePronunciation } from "../gemini/scoring";
+import { scorePronunciation, speechStats } from "../gemini/scoring";
 import { requireUser } from "../guards";
-import { fail, int, ok, readJson, str } from "../http";
+import { ApiFailure, fail, int, ok, readJson, str } from "../http";
 import { putObject } from "../r2";
 import type { Router } from "../router";
 import { getSettings } from "../settings";
@@ -116,6 +116,13 @@ export function registerPronunciationRoutes(r: Router) {
 
     const buf = Buffer.from(await audio.arrayBuffer());
     const mime = sniffAudio(buf, audio.type);
+
+    // Never score silence — primed with the sentence, the model "hears" it anyway.
+    // Not counted against the daily quota; the learner just tries again.
+    const stats = mime === "audio/wav" ? speechStats(buf) : null;
+    if (stats && !stats.hasSpeech) {
+      throw new ApiFailure(422, "NO_SPEECH", "We couldn't hear you — check your microphone and speak a little louder.");
+    }
 
     const { data: prof } = await db().from("profiles").select("native_lang").eq("id", u.id).maybeSingle();
     const score = await scorePronunciation({

@@ -9,7 +9,7 @@ updated: 2026-09-22
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(62 nodes · 202 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(63 nodes · 205 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -169,9 +169,9 @@ flowchart LR
 | [[features/ai-partner]] | D-026, D-032, D-033 |
 | [[features/k-ai-instructions]] | D-032 |
 | [[features/premium]] | D-033, D-010 |
-| [[features/pronunciation]] | D-035, D-036 |
+| [[features/pronunciation]] | D-038, D-035, D-036 |
 | [[features/support]] | D-029, D-034 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023 |
 | [[operations/deployment]] | D-022 |
@@ -216,6 +216,7 @@ flowchart LR
 | D-035 | Pronunciation "how to say it": syllables + native-script respelling | active | [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-036 | Cloudflare R2 is not needed for pronunciation | active | [[architecture/storage-r2]] [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-037 | Lighter UI: app-only layer out of the root providers; new mobile tab bar | active | [[log]] [[memory/status]] |
+| D-038 | Pronunciation: never score silence, blind second listener, no listen-back | active | [[features/pronunciation]] [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

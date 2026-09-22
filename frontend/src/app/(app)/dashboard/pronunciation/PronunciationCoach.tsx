@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HelpCircle, Mic } from "lucide-react";
 import { useNextStep } from "nextstepjs";
@@ -123,14 +123,11 @@ function DemoStage({ demoStep }: { demoStep: CoachStep }) {
           remainingMs={DEMO_RECORD_MS - 2200}
           countdownMs={DEMO_COUNTDOWN_MS}
           recordDurationMs={DEMO_RECORD_MS}
-          blob={null}
-          durationMs={0}
           stream={null}
           errorMessage={null}
           onMicClick={demoNoop}
           onStopClick={demoNoop}
           onRetry={demoNoop}
-          onSubmit={demoNoop}
           demo
         />
       );
@@ -304,6 +301,16 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
     }
   }, [accessToken, dispatch, phrase, recorder]);
 
+  // No listen-back step: as soon as a take's audio is ready (and we heard
+  // speech), score it. One submit per recording — errors wait for "Try again".
+  const submittedBlobRef = useRef<Blob | null>(null);
+  useEffect(() => {
+    const blob = recorder.blob;
+    if (recorder.phase !== "review" || !blob || recorder.errorMessage || submittedBlobRef.current === blob) return;
+    submittedBlobRef.current = blob;
+    void onSubmit();
+  }, [recorder.phase, recorder.blob, recorder.errorMessage, onSubmit]);
+
   const onNext = useCallback(() => {
     const next = Math.min(SESSION_SIZE, phraseIndex + 1);
     setPhraseIndex(next);
@@ -376,14 +383,11 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
                 remainingMs={recorder.remainingMs}
                 countdownMs={recorder.countdownMs}
                 recordDurationMs={recorder.recordDurationMs}
-                blob={recorder.blob}
-                durationMs={recorder.durationMs}
                 stream={recorder.stream}
                 errorMessage={recorder.errorMessage}
                 onMicClick={recorder.skipCountdown}
                 onStopClick={recorder.stopRecording}
                 onRetry={recorder.retry}
-                onSubmit={onSubmit}
               />
             )}
             {!loadingPhrase && phrase && step === "feedback" && result && (
