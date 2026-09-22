@@ -139,9 +139,8 @@ export default function ShowcaseV4() {
               </span>
             </h1>
             <p className="lp-rise mt-7 max-w-xl text-lg leading-relaxed text-body sm:text-xl" style={delay(140)}>
-              Just talk. K.AI answers out loud, captions both of you, and fixes your grammar
-              mid-conversation — in English, or mixed with Hindi, Tamil, Bengali and {INDIAN_LANGUAGES - 3}{" "}
-              more Indian languages.
+              Just talk. K.AI replies out loud and fixes your English — in English, or mixed with
+              your own language.
             </p>
             <div className="lp-rise mt-9 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6" style={delay(200)}>
               <Link href="/signup" className="lp-btn lp-btn-primary px-7">
@@ -185,8 +184,7 @@ export default function ShowcaseV4() {
               Every mistake comes back as a fix you can use.
             </h2>
             <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              Grammar, pronunciation, word order — you don&apos;t just get marked wrong. You see the right
-              version, why it&apos;s right, and you say it again.
+              You see the right version, and you say it again.
             </p>
           </div>
 
@@ -207,9 +205,8 @@ export default function ShowcaseV4() {
               </div>
               <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_250px] lg:items-end">
                 <p className="max-w-md text-sm leading-relaxed text-body sm:text-base">
-                  Every word you read aloud gets a verdict, the stressed syllable in capitals, and the same sounds
-                  spelled in your own script. An Indian accent is fine — only sounds that change the word are
-                  flagged.
+                  Read aloud and see how each word should sound — in your script too. Your accent is
+                  never marked wrong.
                 </p>
                 <div className="rounded-2xl border border-border bg-surface-2/70 p-4">
                   <span className="rounded-full bg-rose-500/15 px-2.5 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
@@ -238,7 +235,7 @@ export default function ShowcaseV4() {
               <p className="mt-4 flex items-center gap-2 text-base font-bold text-heading">
                 <ArrowRight className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />I have worked in a bank.
               </p>
-              <p className="mt-3 text-sm text-body">Tap the words into order. Stuck? The coach drops a hint.</p>
+              <p className="mt-3 text-sm text-body">Tap the words into order. Stuck? Take a hint.</p>
             </article>
 
             {/* Talk time */}
@@ -248,8 +245,7 @@ export default function ShowcaseV4() {
                 20<span className="ml-1 text-2xl text-body">min</span>
               </p>
               <p className="mt-3 text-sm leading-relaxed text-body">
-                of free conversation with K.AI every week — with XP for every minute you talk. Pro makes it 20
-                minutes every day.
+                of talking with K.AI every week, free. Pro gives you 20 minutes a day.
               </p>
             </article>
 
@@ -262,7 +258,7 @@ export default function ShowcaseV4() {
                     &ldquo;One small correction&rdquo; — in the language you think in.
                   </p>
                 </div>
-                <p className="max-w-sm text-sm text-body">About 70% English, 30% yours, always in Roman script.</p>
+                <p className="max-w-sm text-sm text-body">Mostly English, a little of your language.</p>
               </div>
               <ul className="mt-6 flex flex-wrap gap-2">
                 {CORRECTION_PHRASES.map((p) => (
@@ -289,7 +285,7 @@ export default function ShowcaseV4() {
               </h2>
             </div>
             <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              Three short drills, one progress bar. Keep scrolling to watch each one run.
+              Three ways to practise. Scroll to see each one.
             </p>
           </div>
         </section>
@@ -370,7 +366,7 @@ export default function ShowcaseV4() {
             <div className="grid gap-4 lg:col-span-7">
               <div className="lp-glass lp-reveal rounded-[28px] p-6 sm:p-8">
                 <h3 className="text-lg font-bold text-heading">Language</h3>
-                <p className="mt-1 text-sm text-body">English only, or English mixed with your language.</p>
+                <p className="mt-1 text-sm text-body">English only, or mixed with your language.</p>
                 <ul className="mt-5 flex flex-wrap gap-2" aria-label="Languages">
                   {AI_PARTNER_LANGUAGES.map((l) => (
                     <li
@@ -425,7 +421,6 @@ export default function ShowcaseV4() {
               </h2>
             </div>
             <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              It grins at a good answer, puzzles over a tricky one and calms you down when you&apos;re nervous.
               Tap a feeling to see it.
             </p>
           </div>
@@ -444,8 +439,7 @@ export default function ShowcaseV4() {
               </h2>
             </div>
             <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              XP and levels, a daily streak, badges at every milestone and a weekly leaderboard — here&apos;s the
-              inside of the app.
+              XP, streaks, badges and a weekly leaderboard.
             </p>
           </div>
           <div className="mx-auto mt-12 max-w-[1440px]">
@@ -509,8 +503,7 @@ export default function ShowcaseV4() {
                 20 minutes a week, free. 20 a day on Pro.
               </h2>
               <p className="mt-5 max-w-md text-base leading-relaxed text-body sm:text-lg">
-                Jumble Words, Pronunciation and K.AI all work on the free plan. Pro takes the daily caps off and
-                gives you K.AI every day.
+                Everything works on the free plan. Pro removes the daily limits.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
@@ -570,7 +563,7 @@ export default function ShowcaseV4() {
                   Say your first sentence to K.AI today.
                 </h2>
                 <p className="mt-5 max-w-lg text-base text-body sm:text-lg">
-                  A free account with Google or email is all it takes.
+                  Free with Google or email.
                 </p>
               </div>
               <div className="flex flex-col gap-4 lg:col-span-4 lg:items-end">
@@ -677,7 +670,7 @@ const STEPS: {
     n: "01",
     label: "AI Partner",
     title: "Talk it out with K.AI.",
-    body: "Pick a practice mode — casual chat, a job interview, IELTS or TOEFL, travel, the office — then just talk. K.AI replies out loud when you pause, and you can cut in any time.",
+    body: "Pick a mode — chat, job interview, IELTS, travel, office — and talk. K.AI answers when you pause.",
     facts: [
       { k: "Hands-free", v: "It waits while you think" },
       { k: "Captions", v: "Live, for both of you" },
@@ -692,7 +685,7 @@ const STEPS: {
     n: "02",
     label: "Jumble Words",
     title: "Build the sentence, move the train.",
-    body: "Tap scrambled words into order. Every word becomes a coach — get the order right and the train leaves the station; get it wrong and it derails.",
+    body: "Tap the scrambled words into order and the train leaves the station.",
     facts: [
       { k: "Hints", v: "From your AI coach" },
       { k: "Combo", v: "Right answers in a row" },
@@ -707,7 +700,7 @@ const STEPS: {
     n: "03",
     label: "Pronunciation Coach",
     title: "Hear exactly where a word slipped.",
-    body: "Read a sentence aloud. You get a score, a word-by-word check and a tip for each word that needs work — spelled the way it sounds.",
+    body: "Read a sentence aloud and get a score, word by word, with a tip for each one.",
     facts: [
       { k: "Score", v: "For every attempt" },
       { k: "Breakdown", v: "Word by word" },
@@ -778,11 +771,6 @@ const REVIEWS: { name: string; city: string; body: string }[] = [
     name: "Sneha M.",
     city: "Chennai",
     body: "It feels like talking to a friend on the phone. The voice AI catches things I never would have caught reading.",
-  },
-  {
-    name: "Karthik V.",
-    city: "Coimbatore",
-    body: "Wow… I can study English using videos I actually like just by pasting a link? Genuinely thought I'd dropped my old class for nothing.",
   },
 ];
 

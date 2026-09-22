@@ -115,3 +115,8 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 - Glass editorial landing built around the product (live captions, respelling, jumble, minutes), the
   scroll-swipe kept, demos lazy-mounted, generic copy gone, hands-free wording; sign-up states the
   Terms/Privacy agreement (D-041).
+
+## [2026-09-23] ui | Landing copy cut back
+- Owner: "too much text, obscure". Every section reduced to one short line (hero, mistakes, coach
+  tiles, how-it-works, setup, mascot, progress, plans, final CTA). Removed a testimonial that
+  described pasting video links — not a feature of this app ([[features/premium]], D-041).
