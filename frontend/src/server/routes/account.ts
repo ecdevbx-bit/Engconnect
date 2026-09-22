@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { buildSessionUser, recordLogin } from "../domain/session";
+import { buildSessionUser, maybeGrantProLink, recordLogin } from "../domain/session";
 import { requireUser, verifyToken } from "../guards";
 import { ApiFailure, fail, ok, readJson, str } from "../http";
 import type { Router } from "../router";
@@ -90,8 +90,13 @@ export function registerAccountRoutes(r: Router) {
   r.on("POST", "/session/start", async ({ req }) => {
     const u = await verifyToken(req);
     await recordLogin(u.id, u.sessionId);
+    // Email-link sign-ins that started on /pro carry the Pro-link cookie here.
+    const viaPro = /(?:^|;\s*)ec_pro_link=1(?:;|$)/.test(req.headers.get("cookie") ?? "");
+    if (viaPro) await maybeGrantProLink(u.id, "", true);
     const token = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-    return ok({ user: await buildSessionUser({ userId: u.id, email: u.email, sessionId: u.sessionId, accessToken: token }) });
+    const res = ok({ user: await buildSessionUser({ userId: u.id, email: u.email, sessionId: u.sessionId, accessToken: token }) });
+    if (viaPro) res.headers.append("Set-Cookie", "ec_pro_link=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax");
+    return res;
   });
 
   r.on("POST", "/account/signup", async ({ req }) => {

@@ -10,8 +10,8 @@ updated: 2026-09-22
 
 - **Code**: GitHub `ecdevbx-bit/Engconnect`, branch `main`. Pushing to `main` deploys production;
   other branches/PRs get preview deployments.
-- **Host**: Vercel team `engconnect`, project `engconnect`, **Root Directory = `frontend`**,
-  framework Next.js. `ENABLE_EXPERIMENTAL_COREPACK=1` so Vercel uses the pinned pnpm 11.
+- **Host**: Vercel team `engconnect`, project `engconnect` → https://engconnect-beta.vercel.app, **Root Directory = `frontend`**,
+  framework Next.js. Install: `npx -y pnpm@11.0.8 install --frozen-lockfile`; build: `npx -y pnpm@11.0.8 run build` (Vercel ignores `packageManager` outside the repo root — D-022).
 - **Database**: Supabase (not deployed by Vercel) — apply migrations separately
   ([[operations/runbook]]) *before* pushing code that needs them.
 

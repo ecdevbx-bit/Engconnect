@@ -176,3 +176,14 @@
 - Supersedes D-010. The live /pro page explicitly promises existing accounts ("Already have an
   account? Use this same button…"), so the backend now honours that. Guard rails: admin on/off,
   end date, max redemptions, and `pro_invite_signups` (one grant per account).
+
+## D-022 · Vercel builds with explicit pnpm 11 commands; email links handled client-side — 2026-09-22
+- Vercel's corepack check reads `packageManager` from the REPO ROOT (ours is in `frontend/`), fell
+  back to an old pnpm → "ERR_INVALID_THIS" and "Ignoring not compatible lockfile". Fix: project
+  settings `installCommand = npx -y pnpm@11.0.8 install --frozen-lockfile`,
+  `buildCommand = npx -y pnpm@11.0.8 run build` (root directory `frontend`).
+- Supabase free tier forbids editing email templates while using the built-in SMTP, so default
+  templates are used: their links return tokens in the URL #fragment. `/auth/confirm` is therefore a
+  CLIENT page handling `#access_token`, `?token_hash` and `?code`. Branded token_hash templates are
+  applied automatically by `supabase/configure-auth.mjs` once SMTP env vars are given.
+- Production URL: https://engconnect-beta.vercel.app (Vercel project `engconnect`, team `engconnect`).
