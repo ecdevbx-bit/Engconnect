@@ -23,11 +23,12 @@
 - Support: navbar Help dropdown + /support form → `support_tickets` + Resend email to ec.devbx@gmail.com;
   admin inbox. Pro applications: Approve / Don't approve.
 - Knowledge: CLAUDE.md schema, wiki (22 pages), DECISIONS D-001…D-029, graph memory.
-- Verified: tsc clean; `next build` ✓; production smoke 28/28 (before this last batch).
+- Verified: tsc clean; `next build` ✓; **production smoke 32/32** on commit b61c5c8 (incl. Tamil /
+  Job Interview / Sulafat session, invalid-option fallback, support ticket emailed via Resend).
 
 ## Next ⏭️
-1. After the next deploy: re-run the production smoke test incl. a support ticket + a session with
-   non-default language/mode/voice; owner to try a real voice conversation and a pronunciation take.
+1. Owner to try in a real browser: a voice conversation with K.AI (mic) and a pronunciation
+   recording — both verified only by scripts so far.
 2. **Verify a sending domain in Resend** (e.g. englishconnection.in) → re-run
    `supabase/configure-auth.mjs` with `SMTP_FROM=noreply@<domain>` and set `SUPPORT_EMAIL_FROM`.
 3. R2 credentials → recordings stored; add a 90-day lifecycle rule.

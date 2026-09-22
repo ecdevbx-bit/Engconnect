@@ -60,3 +60,6 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 
 ## [2026-09-22] wiki | Graph memory
 - `docs/wiki/build-graph.mjs` → `graph.json` + [[meta/graph]] (D-028). Wiki updated for all of the above.
+
+## [2026-09-22] ops | Production verified
+- Deploy b61c5c8 READY; production smoke 32/32 (setup options, support email via Resend, Google on).
