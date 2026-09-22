@@ -79,3 +79,9 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
   (D-035, [[features/pronunciation]]). R2 not needed for scoring (D-036, [[architecture/storage-r2]]).
 - Mobile tab bar redesigned (glass, raised K.AI button, custom icon); tours/celebrations/Pro
   prompts load only inside the app; theme-toggle hydration warning fixed (D-037).
+
+## [2026-09-22] ops | Deployed 220ff40, production verified
+- Vercel deploy of 220ff40 READY; `scripts/smoke-test.mjs` on production **32/32**; AI Partner probe
+  (Beginner/Job Interview/Hindi) and pronunciation probe (Hindi respellings, "You said 'banana'") pass
+  on production. Beginner rules tightened afterwards ([[features/k-ai-instructions]]).
+- Landing redesign (glassmorphism, lighter, keep the scroll swipe, less generic copy) still in progress.

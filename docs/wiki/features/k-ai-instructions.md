@@ -22,7 +22,7 @@ pasted into the system prompt that the server locks into the Gemini Live token
 ## Levels (learner picks one on the start card)
 | Level | How K.AI behaves |
 |---|---|
-| **Beginner** (A0–A1) | Speaks **softly and slowly** with pauses; only very common words; one idea per sentence; gives the sentence and says "say with me"; checks understanding with yes/no questions; accepts answers in the learner's language and turns them into English; fixes only the ONE most important mistake per turn by modelling it; up to half the learner's language for explanations (if a blend was chosen); replies under ~20 words |
+| **Beginner** (A0–A1) | Speaks **softly and slowly** with pauses; only very common words; one idea per sentence; gives the sentence and says "say with me"; checks understanding with yes/no questions; accepts answers in the learner's language and turns them into English; explains only the ONE most important mistake per turn but always models a fully correct sentence; a "say it after me" repeat is the only ask in that reply; up to half the learner's language for explanations (if a blend was chosen); replies under ~25 words |
 | **Intermediate** (A2–B1) | Friendly, slightly slower than native; pushes full sentences, past/future, one new phrase at a time; corrects every error briefly with a one-line reason and asks for a repeat; 70/30 blend; under 35 words |
 | **Expert** (B2–C1) | Natural confident pace; opinions, comparisons, "argue the other side"; idioms, phrasal verbs, collocations, tone; corrects subtle errors fast and suggests more natural phrasing; English almost only; under 45 words |
 
@@ -51,4 +51,8 @@ saved on the session (`chat_sessions.material_seed`) so a reconnect rebuilds the
 `node scripts/ai-partner-probe.mjs <appUrl> <Level> "<Mode>" <Language>` starts a real session
 through the API and prints K.AI's replies to two scripted learner turns. 2026-09-22: Beginner +
 Hindi modelled "I have worked in a bank for two years", said "Mere saath boliye…"; Expert + IELTS
-opened Part 1 with the session's topics and corrected "buyed → bought" in one line.
+opened Part 1 with the session's topics and corrected "buyed → bought" in one line. Production run
+(Beginner + Job Interview + Hindi) showed two issues — replies asked two things at once, and one
+modelled sentence kept an error ("since two years") — so the Beginner rules now say: the modelled
+sentence must be 100% correct, and a "say it after me" repeat is the only task in that reply (next
+question afterwards). Re-probe: corrections correct ("for two years", "went … bought"), one ask per reply.

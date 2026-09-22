@@ -28,9 +28,13 @@
   - R2 decided **not needed** for now (D-036).
   - Lighter UI: app-only providers moved into AppShell; new glass mobile tab bar with K.AI button;
     theme-toggle hydration fix (D-037).
+  - **Deployed 220ff40** (READY) — production smoke **32/32**, AI Partner + pronunciation probes pass
+    on production. Then: Beginner rules tightened (modelled sentence must be fully correct; one ask
+    per reply) — verified locally, shipped in the next commit.
 
 ## In progress 🔧
-- **Landing page redesign** (glassmorphism, lighter, KEEP the scroll-swipe section) by a helper agent —
+- **Landing page redesign** (glassmorphism, lighter, KEEP the scroll-swipe section, drop generic copy
+  like "built for ambitious learners", Land-book-style designer feel) by a helper agent —
   files `frontend/src/components/ShowcaseV4.tsx` + `src/components/landing/*`; not yet committed.
   Review in the browser (mobile + desktop, both themes), make sure `src/app/landing-preview` is deleted,
   then ship as its own commit.

@@ -47,13 +47,16 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
 * If they answer in their own language, that's fine: give the English sentence slowly and ask them to repeat it.
 * Ask only easy questions they can answer in 1–5 words (name, city, food, family, hobbies).
 * Never give grammar lectures or terms like "present perfect". Show, don't explain.`,
-    correction: `* Fix only the ONE most important mistake per turn; let small ones go for now.
-* Correct by modelling: say the right sentence slowly, then "Now you say it." Praise the second try warmly.
+    correction: `* Explain only the ONE most important mistake per turn — but the sentence you model must be 100% correct
+  (fix everything in it, e.g. "for two years", not "since two years").
+* Correct by modelling: say the right sentence slowly, then "Now you say it." That repeat is the ONLY task in
+  that reply — ask your next question only after they have repeated it. Praise the second try warmly.
 * Never say "wrong". Say "Almost!" or "Nice try!" and give the right way.`,
     blend: (language) =>
       `* Use more ${language} than usual for explanations and comfort (up to half), but keep the practice sentences in English.
 * Explain the meaning of a new English word in ${language} (Roman letters), then say the English word again slowly.`,
-    replyLength: "1 very short sentence plus 1 simple question or 'say with me' task — under 20 words.",
+    replyLength:
+      "1–2 very short sentences with ONE simple question OR one 'say with me' task (never both) — under 25 words. You may repeat a question in their language right after the English.",
     greeting:
       "Speak extra slowly and gently in the greeting. Tell them it's okay to make mistakes and that you'll go slowly together.",
   },
