@@ -5,8 +5,11 @@
 //   * AudioWorklet on the audio thread, ScriptProcessor fallback;
 //   * batches the worklet's 128-sample frames into ~100 ms chunks so we send
 //     ~10 messages/s instead of ~125;
-//   * exposes an analyser (MicLevelRing) and the time of the last voiced frame
-//     (silence auto-stop in tap-to-talk).
+//   * exposes an analyser (MicLevelRing) and the time of the last voiced frame;
+//   * optional `gate`: frames it rejects are sent as silence (zeros) instead —
+//     the hands-free AI Partner uses it so K.AI's own voice leaking from the
+//     speaker can't count as the learner talking (the stream never pauses, so
+//     Gemini's voice detection keeps seeing a continuous signal).
 
 const WORKLET_SOURCE = `
 class PCMRecorder extends AudioWorkletProcessor {
@@ -49,6 +52,7 @@ export class MicPcmStream {
   private pendingSamples = 0;
   private onChunk: ((b64: string) => void) | null = null;
   lastVoiceAt = 0;
+  gate: ((rms: number) => boolean) | null = null;
   sampleRate = 16000;
 
   getAnalyser(): AnalyserNode | null {
@@ -82,10 +86,12 @@ export class MicPcmStream {
     source.connect(this.analyser);
 
     const chunkSamples = Math.round((this.sampleRate * CHUNK_MS) / 1000);
-    const push = (frame: Int16Array) => {
+    const push = (raw: Int16Array) => {
       let sum = 0;
-      for (let i = 0; i < frame.length; i++) sum += (frame[i] / 32768) ** 2;
-      if (Math.sqrt(sum / Math.max(1, frame.length)) > VOICE_RMS) this.lastVoiceAt = performance.now();
+      for (let i = 0; i < raw.length; i++) sum += (raw[i] / 32768) ** 2;
+      const rms = Math.sqrt(sum / Math.max(1, raw.length));
+      if (rms > VOICE_RMS) this.lastVoiceAt = performance.now();
+      const frame = this.gate && !this.gate(rms) ? new Int16Array(raw.length) : raw;
       this.pending.push(frame);
       this.pendingSamples += frame.length;
       if (this.pendingSamples >= chunkSamples) this.flush();

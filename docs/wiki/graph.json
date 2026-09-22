@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T11:38:16.075Z",
+  "generatedAt": "2026-09-22T14:30:24.805Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -338,7 +338,7 @@
       "title": "AI Partner keeps its UI; only the plumbing under it changes",
       "type": "decision",
       "date": "2026-09-22",
-      "status": "active",
+      "status": "superseded",
       "path": "docs/memory/DECISIONS.md"
     },
     {
@@ -590,6 +590,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-039",
+      "title": "K.AI is hands-free (auto voice detection + interruptions, mute only)",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -778,6 +786,11 @@
       "kind": "cites"
     },
     {
+      "source": "architecture/gemini-live",
+      "target": "D-039",
+      "kind": "cites"
+    },
+    {
       "source": "architecture/storage-r2",
       "target": "operations/credentials",
       "kind": "links"
@@ -920,6 +933,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-032",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-039",
       "kind": "cites"
     },
     {
@@ -1403,6 +1421,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-039",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -1508,6 +1531,11 @@
       "kind": "links"
     },
     {
+      "source": "operations/runbook",
+      "target": "D-039",
+      "kind": "cites"
+    },
+    {
       "source": "overview",
       "target": "features/jumble-words",
       "kind": "links"
@@ -1573,6 +1601,11 @@
       "kind": "supersedes"
     },
     {
+      "source": "D-039",
+      "target": "D-007",
+      "kind": "supersedes"
+    },
+    {
       "source": "D-021",
       "target": "D-010",
       "kind": "supersedes"
@@ -1625,6 +1658,11 @@
     {
       "source": "memory/status",
       "target": "D-038",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-039",
       "kind": "cites"
     }
   ],

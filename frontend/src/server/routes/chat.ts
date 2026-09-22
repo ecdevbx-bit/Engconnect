@@ -6,7 +6,7 @@ import { awardProgress, getProfile, isProRow, type ProfileRow } from "../domain/
 import { heartbeatLease, releaseLease, classifyGeminiError, type Outcome } from "../gemini/keyPool";
 import { grantLiveSession, LIVE_LEASE_TTL_SECONDS, type LiveGrant } from "../gemini/liveToken";
 import { compileSessionMemory } from "../gemini/memory";
-import { normalizeLevel } from "../gemini/instructions/levels";
+import { LEVEL_INSTRUCTIONS, normalizeLevel } from "../gemini/instructions/levels";
 import { buildKickoff, buildSystemPrompt, type LearnerContext } from "../gemini/tutorPrompt";
 import { isAdminEmail, requireUser, type AuthedUser } from "../guards";
 import {
@@ -320,7 +320,13 @@ export function registerChatRoutes(r: Router) {
     const systemPrompt = buildSystemPrompt(ctx, language, scenario, materialSeed);
     const budget = usage.cap > 0 ? usage.remaining : rewards.sessionSeconds;
 
-    const grant = await grantLiveSession({ userId: u.id, systemPrompt, sessionSeconds: budget, voice });
+    const grant = await grantLiveSession({
+      userId: u.id,
+      systemPrompt,
+      sessionSeconds: budget,
+      voice,
+      pauseMs: LEVEL_INSTRUCTIONS[normalizeLevel(level)].pauseMs,
+    });
     const session = must(
       await db()
         .from("chat_sessions")
@@ -394,6 +400,7 @@ export function registerChatRoutes(r: Router) {
       sessionSeconds: left,
       exclude,
       voice: isKnownVoice(s.voice) ? s.voice : DEFAULT_AI_PARTNER_VOICE,
+      pauseMs: LEVEL_INSTRUCTIONS[normalizeLevel(s.level)].pauseMs,
     });
     await db().from("chat_sessions").update({ lease_id: grant.leaseId, model: grant.model }).eq("id", s.id);
     return ok({ live: livePayload(grant) });

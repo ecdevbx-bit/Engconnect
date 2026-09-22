@@ -34,20 +34,12 @@
   - **Pronunciation fixed** (D-038): silence no longer scores 100% (NO_SPEECH), blind second listener,
     stricter rubric; auto-stop + instant scoring, no listen-back — deployed 2b167d8, production smoke
     32/32, silence/noise → NO_SPEECH on production.
-  - PRO badge only for Pro members; "Unlock Pro" card on the mobile home for free users.
+  - PRO badge only for Pro members; "Unlock Pro" card on the mobile home for free users (03b5728,
+    production smoke 32/32).
+  - **K.AI hands-free** like GPT voice mode (D-039): auto voice detection, interruptions, mute-only UI,
+    echo gate. Owner verifies on a real phone/laptop (echo with speakers is the thing to watch).
 
 ## In progress 🔧
-- **K.AI hands-free, like GPT voice mode** (owner: "continuous convo, not click; interruption allowed;
-  only a mute option"). DONE but UNCOMMITTED (would break prod without the client part):
-  `server/gemini/liveToken.ts` (automatic VAD on, low sensitivities, START_OF_ACTIVITY_INTERRUPTS,
-  `silenceDurationMs` = level `pauseMs` 1500/1100/800), `instructions/levels.ts` (pauseMs),
-  `tutorPrompt.ts` ("hands-free voice call" rules), `routes/chat.ts` (passes pauseMs). Tested live:
-  continuous audio with no activity markers → K.AI answered by itself. TODO: `useGeminiLiveSession.ts`
-  (mic streams continuously after connect, no activityStart/End — the API rejects them when auto-VAD is
-  on; commit user text when K.AI starts replying, commit assistant text on `interrupted`; echo gate —
-  while K.AI plays, zero mic frames under RMS ~0.06 so its own voice can't interrupt it; mute =
-  stop mic + `realtimeInput.audioStreamEnd`; talk-time from voiced frames), V3AIPartner UI → one
-  mute button (+ end), status Listening/Speaking/Muted; then verify barge-in and ship together.
 - **Landing page redesign** (glassmorphism, lighter, KEEP the scroll-swipe section, drop generic copy
   like "built for ambitious learners", Land-book-style designer feel) by a helper agent —
   files `frontend/src/components/ShowcaseV4.tsx` + `src/components/landing/*`; not yet committed.
@@ -55,8 +47,10 @@
   then ship as its own commit.
 
 ## Next ⏭️
-1. Owner tests on the phone: AI Partner (Beginner vs Expert, IELTS), pronunciation "How to say it"
-   cards, new tab bar, /v3/admin/wiki.
+1. Owner tests on the phone: hands-free K.AI (talk, pause, interrupt, mute; with speakers AND
+   headphones), pronunciation auto-stop + strict scoring, Pro card, /v3/admin/wiki. If K.AI cuts
+   itself off on speakers → raise BARGE_IN_RMS in useGeminiLiveSession.ts; if it answers too early
+   → raise the level's pauseMs.
 2. Verify a sending domain in Resend → re-run `supabase/configure-auth.mjs` with `SMTP_FROM` and set
    `SUPPORT_EMAIL_FROM`.
 3. Ideas not built yet: post-session review card (talk ratio, mistakes, IELTS band estimate saved per

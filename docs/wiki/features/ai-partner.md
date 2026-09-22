@@ -32,9 +32,10 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
    Choices are remembered on the device. In a session, the header shows the setup and a
    **Change setup** button (settings are baked into the token, so this starts a new conversation).
 4. **Start session** → K.AI greets by name (and opens the chosen practice mode).
-5. **Tap to talk**: tap the mic (or Space), speak, tap again. Silence auto-stop after a grace
-   window. While you talk, K.AI's voice stops (barge-in). Live captions show both sides.
-6. Status reads **Listening… / Thinking… / Speaking… / Your turn**.
+5. **Just talk — hands-free, like GPT voice mode** (D-039): the mic opens by itself when the call
+   connects; K.AI answers when the learner pauses (longer pause allowed for Beginners); talking over
+   K.AI interrupts it. The only control is **mute** (mic button or Space). Live captions show both sides.
+6. Status reads **Listening… / Thinking… / Speaking… / Muted**.
 7. Talk-time earns XP (**+10 after 15 s of speaking, then +30 per extra minute**), shown on the
    "Speak to earn" card with celebrations.
 8. The session ends when the time allowance is used, or when the learner leaves.
@@ -43,7 +44,8 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 - The browser talks **directly to Google Gemini Live** (`gemini-3.1-flash-live-preview`) over a
   WebSocket, using a **single-use token** our server mints — see [[architecture/gemini-live]].
 - The server picks a healthy API key from the pool ([[architecture/gemini-key-pool]]), bakes the
-  K.AI prompt + voice + transcription + tap-to-talk mode into the token (locked), and returns it.
+  K.AI prompt + voice + transcription + hands-free voice-detection settings into the token (locked),
+  and returns it.
 - Gemini returns speech (24 kHz PCM → `PcmPlayer`) and **transcripts of both sides** — no
   Deepgram / browser speech recognition anymore.
 - Every ~20 s the browser posts **progress** (talk-time + new transcript lines). The server clamps

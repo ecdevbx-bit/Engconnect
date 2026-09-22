@@ -25,8 +25,8 @@ import {
   FaFlag,
   FaHourglassHalf,
   FaMicrophone,
+  FaMicrophoneSlash,
   FaRobot,
-  FaStop,
 } from "react-icons/fa6";
 import { FiAlertCircle, FiClock } from "react-icons/fi";
 
@@ -45,10 +45,6 @@ import SessionSetup, {
   setupSummary,
   type SessionSetupValue,
 } from "./aiPartner/SessionSetup";
-import {
-  useV3PushToTalk,
-  PUSH_TO_TALK_DEFAULT_MAX_MS,
-} from "./aiPartner/useV3PushToTalk";
 
 // Fallback session length used until the per-session rewards config
 // arrives. Admin can tune the real value via /v3/admin/ai-partner.
@@ -89,8 +85,8 @@ function buildInstructions(rewards: V3AIUsage["rewards"]) {
   return [
     {
       icon: FaMicrophone,
-      title: "Tap to talk",
-      body: "Tap the mic, say your piece, tap again. Take your time — K.AI waits.",
+      title: "Just talk",
+      body: "No buttons — speak naturally and K.AI answers when you pause. Talk over it any time to interrupt. Tap the mic to mute.",
     },
     { icon: FaHourglassHalf, title: "Earn as you speak", body: earnBody },
     {
@@ -201,10 +197,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     isAiTyping,
     isConnected,
     error: chatError,
-    sendUserMessage,
     close: closeChat,
     primeAudio,
-    interruptAudio,
     streamingMessageId,
     speechProgress,
     rewards,
@@ -212,9 +206,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     aiCapSeconds,
     aiLimitReached,
     isAiSpeaking,
-    // Gemini Live does speech-to-text itself (input transcription), so the
-    // mic capture comes from the same session hook — no Deepgram/Web Speech.
-    capture,
+    // Hands-free mic (D-039): opens by itself when the call connects, Gemini's
+    // voice detection takes the turns, the learner can only mute/unmute.
+    mic,
   } = useGeminiLiveSession({
     enabled: started && !isSessionEnded,
     accessToken,
@@ -223,37 +217,6 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     scenario: setup.scenario,
     voice: setup.voice,
   });
-
-  const sendCapturedTranscript = useCallback(
-    (text: string) => {
-      if (!text.trim() || isSessionEnded || !isConnected) return;
-      sendUserMessage(text);
-    },
-    [isSessionEnded, isConnected, sendUserMessage],
-  );
-
-  const maxRecordingMs = (rewards?.maxRecordingSeconds ?? 0) > 0
-    ? rewards!.maxRecordingSeconds * 1000
-    : PUSH_TO_TALK_DEFAULT_MAX_MS;
-
-  const ptt = useV3PushToTalk({
-    capture,
-    maxRecordingMs,
-    onCapture: sendCapturedTranscript,
-    // Guardrail: while a turn is submitted and K.AI hasn't started
-    // streaming its reply yet (isAiTyping), block recording so the user
-    // can't pile up inputs during the backend "thinking" gap. Re-enables
-    // the moment the response stream starts (isAiTyping flips false on the
-    // first ai_text_delta), so barge-in during playback still works.
-    enabled: started && !isSessionEnded && isConnected && !isAiTyping,
-  });
-
-  // Barge-in: the moment the learner starts talking, cut K.AI's voice (its text
-  // keeps streaming, the session/WS stays open). Centralised here so every start
-  // path — mic button and Space key — is covered. No-op when nothing's playing.
-  useEffect(() => {
-    if (ptt.isRecording) interruptAudio();
-  }, [ptt.isRecording, interruptAudio]);
 
   // Total session length comes from the admin-configured rewards.
   // useMemo (not state) so it's derived purely from the rewards prop —
@@ -269,7 +232,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
   );
 
   const motivation = getMotivation(secondsLeft, totalSeconds);
-  const isMicActive = ptt.isRecording || ptt.isStarting;
+  const isMicActive = mic.open && !mic.muted;
+  const toggleMute = mic.toggleMute;
 
   // ── Daily/weekly AI-time cap ─────────────────────────────────────────
   // Cap + already-used seconds for the in-session timer. Prefer the `usage`
@@ -308,18 +272,20 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
 
   // "speaking" now reflects real audio playback (PcmPlayer), not the thinking
   // gap; the thinking gap gets its own label below.
-  const agentState: AgentState = ptt.isRecording
-    ? "listening"
-    : isAiSpeaking || isAiTyping
-      ? "speaking"
+  const agentState: AgentState = isAiSpeaking || isAiTyping
+    ? "speaking"
+    : isMicActive
+      ? "listening"
       : "idle";
-  const agentLabel = ptt.isRecording
-    ? "Listening…"
-    : isAiSpeaking
-      ? "Speaking…"
-      : isAiTyping
-        ? "Thinking…"
-        : "Your turn";
+  const agentLabel = isAiSpeaking
+    ? "Speaking…"
+    : isAiTyping
+      ? "Thinking…"
+      : mic.muted
+        ? "Muted"
+        : isMicActive
+          ? "Listening…"
+          : "Connecting…";
 
   // Mascot mood: engaged while the user speaks, otherwise it reflects the
   // mood of K.AI's latest reply (cheap keyword detection). Thinking is shown
@@ -328,7 +294,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     () => [...messages].reverse().find((m) => m.role === "assistant")?.body ?? "",
     [messages],
   );
-  const mascotEmotion: MascotEmotion = ptt.isRecording
+  const mascotEmotion: MascotEmotion = mic.transcript
     ? "asking"
     : detectEmotion(lastAssistantText, "conversing");
 
@@ -445,11 +411,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
   }, [messages, isAiTyping]);
 
   useEffect(() => {
-    if (sessionOver) {
-      if (ptt.isRecording) ptt.toggle(); // hard-stop mic
-      closeChat();
-    }
-  }, [sessionOver, ptt, closeChat]);
+    if (sessionOver) closeChat(); // also releases the mic
+  }, [sessionOver, closeChat]);
 
   // Fire celebration on each fresh milestone — lastMilestoneId is bumped
   // by the WS event handler exactly once per crossed boundary.
@@ -463,8 +426,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     setCelebrating(true);
   }, [speechProgress.lastMilestoneId]);
 
-  // Keyboard: Space toggles the mic. Press-and-hold semantics are gone
-  // (per the new mic-only spec); a tap starts or stops recording.
+  // Keyboard: Space mutes / unmutes (the conversation itself is hands-free).
   useEffect(() => {
     if (!started || sessionOver) return;
     const isTyping = (t: EventTarget | null) => {
@@ -479,7 +441,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
         e.preventDefault();
         if (spaceDownRef.current) return; // ignore key-repeat
         spaceDownRef.current = true;
-        ptt.toggle();
+        toggleMute();
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
@@ -493,7 +455,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [started, sessionOver, ptt]);
+  }, [started, sessionOver, toggleMute]);
 
   // ── How-to-play walkthrough ──────────────────────────────────────────
   // The tour highlights elements that only exist in the active session
@@ -937,9 +899,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                 </div>
               </div>
 
-              {(chatError || ptt.error) && (
+              {(chatError || mic.error) && (
                 <div className="shrink-0 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-[13px] text-destructive">
-                  {chatError || ptt.error}
+                  {chatError || mic.error}
                 </div>
               )}
 
@@ -998,33 +960,37 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                         <p
                           className={cn(
                             "line-clamp-2 select-none text-[14px] leading-5",
-                            ptt.isRecording && ptt.transcript
+                            isMicActive && mic.transcript
                               ? "text-heading"
                               : "text-muted-foreground"
                           )}
                         >
-                          {ptt.isRecording
-                            ? ptt.transcript || "Listening… speak now"
-                            : ptt.isStarting
-                              ? "Getting ready…"
-                              : !isConnected
-                                ? "Connecting to K.AI…"
-                                : isAiTyping
-                                  ? "K.AI is thinking…"
-                                  : "Tap the mic and start speaking"}
+                          {!isConnected
+                            ? "Connecting to K.AI…"
+                            : mic.muted
+                              ? "You're muted — tap the mic to talk"
+                              : mic.starting
+                                ? "Getting the mic ready…"
+                                : mic.transcript
+                                  ? mic.transcript
+                                  : isAiSpeaking
+                                    ? "K.AI is speaking — just talk to interrupt"
+                                    : isAiTyping
+                                      ? "K.AI is thinking…"
+                                      : "Listening… just talk"}
                         </p>
                       </div>
 
-                      {/* Mic button — pinned to the far right, like a composer's
-                          send button (but it's voice). */}
+                      {/* Mute button — the only control in a hands-free call. */}
                       <div className="relative grid shrink-0 place-items-center">
-                        <MicLevelRing active={isMicActive} getAnalyser={ptt.getAnalyser} />
+                        <MicLevelRing active={isMicActive} getAnalyser={mic.getAnalyser} />
                         <button
                           type="button"
-                          onClick={() => ptt.toggle()}
-                          disabled={sessionOver || !started || !isConnected || isAiTyping}
-                          aria-pressed={isMicActive}
-                          aria-label={isMicActive ? "Stop recording" : "Start recording"}
+                          onClick={toggleMute}
+                          disabled={sessionOver || !started || !isConnected}
+                          aria-pressed={mic.muted}
+                          aria-label={mic.muted ? "Unmute microphone" : "Mute microphone"}
+                          title={mic.muted ? "Unmute" : "Mute"}
                           className={cn(
                             "relative grid h-12 w-12 select-none place-items-center rounded-full transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:w-14",
                             isMicActive
@@ -1032,8 +998,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                               : "border border-white/[0.08] bg-surface-3 text-primary hover:bg-surface-2"
                           )}
                         >
-                          {isMicActive ? (
-                            <FaStop className="text-[18px]" />
+                          {mic.muted ? (
+                            <FaMicrophoneSlash className="text-[22px]" />
                           ) : (
                             <FaMicrophone className="text-[22px]" />
                           )}
@@ -1041,18 +1007,14 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                       </div>
                     </div>
 
-                    {/* No recording UI: the auto-stop is fully silent — a hidden
-                        grace window, then a silence-based stop. Show only the
-                        idle Space hint when not recording (desktop). */}
-                    {ptt.isRecording ? null : (
-                      <p className="mt-1.5 hidden text-center text-[11px] text-muted-foreground sm:block">
-                        Tap{" "}
-                        <kbd className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[10px] text-heading">
-                          Space
-                        </kbd>{" "}
-                        to toggle the mic
-                      </p>
-                    )}
+                    {/* Desktop hint: Space mutes / unmutes. */}
+                    <p className="mt-1.5 hidden text-center text-[11px] text-muted-foreground sm:block">
+                      Just talk — K.AI answers when you pause. Press{" "}
+                      <kbd className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[10px] text-heading">
+                        Space
+                      </kbd>{" "}
+                      to {mic.muted ? "unmute" : "mute"}
+                    </p>
                   </>
                 )}
               </div>

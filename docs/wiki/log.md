@@ -98,3 +98,8 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 - Navbar PRO badge now only for Pro members (session `isPro`); mobile home shows the "Unlock Pro"
   card for free users (phones had no way to buy/apply); card copy fixed to 20 min/day with K.AI
   ([[features/premium]]). Deployed 2b167d8 before this: production smoke 32/32, silence → NO_SPEECH.
+
+## [2026-09-22] feature | K.AI hands-free conversation (GPT-voice style)
+- No more tap-to-talk: mic streams continuously, Gemini's voice detection takes the turns (pause length
+  per level), talking over K.AI interrupts it, echo gate stops K.AI interrupting itself, mute is the only
+  control (D-039, [[features/ai-partner]], [[architecture/gemini-live]]).

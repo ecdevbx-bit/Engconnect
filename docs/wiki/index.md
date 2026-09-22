@@ -16,7 +16,7 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | [[overview]] | What English Connection is, who it's for, the four trainers, tech at a glance |
 | [[features/jumble-words]] | Sentence unscrambling game: rounds, hints, progressive sets, XP rules |
 | [[features/pronunciation]] | Read-aloud coach: record → Gemini scores each word → feedback |
-| [[features/ai-partner]] | K.AI voice tutor on Gemini Live: language/level/mode/voice setup, tap-to-talk, captions, memory, caps |
+| [[features/ai-partner]] | K.AI voice tutor on Gemini Live: language/level/mode/voice setup, hands-free talk + interruptions, captions, memory, caps |
 | [[features/k-ai-instructions]] | K.AI's instruction files: Beginner/Intermediate/Expert behaviour, practice modes, IELTS & interview material |
 | [[features/word-bank]] | Saved words + 3-take practice (feature-flagged) |
 | [[features/progress-and-rewards]] | XP, levels, streaks, combos, badges, leaderboard |
@@ -32,7 +32,7 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | [[architecture/database]] | Tables, Postgres functions, RLS model, migrations |
 | [[architecture/auth]] | Supabase Auth (Google + email/password), sessions, single-session rule |
 | [[architecture/gemini-key-pool]] | 7 free + 1 paid keys: lanes, tiers, leases, cooldowns, fail-over |
-| [[architecture/gemini-live]] | Ephemeral tokens, WebSocket protocol, tap-to-talk, resumption |
+| [[architecture/gemini-live]] | Ephemeral tokens, WebSocket protocol, hands-free voice detection, resumption |
 | [[architecture/storage-r2]] | Cloudflare R2 object storage: what's stored, keys, presigning |
 
 ## Operations

@@ -9,7 +9,7 @@ updated: 2026-09-22
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(63 nodes · 206 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(64 nodes · 212 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -162,19 +162,20 @@ flowchart LR
 | [[architecture/auth]] | D-008, D-024, D-025, D-020, D-009, D-023 |
 | [[architecture/database]] | D-013 |
 | [[architecture/gemini-key-pool]] | D-027, D-011 |
-| [[architecture/gemini-live]] | D-026 |
+| [[architecture/gemini-live]] | D-026, D-039 |
 | [[architecture/storage-r2]] | D-036 |
 | [[architecture/system]] | D-002 |
 | [[features/admin]] | D-023, D-018, D-031 |
-| [[features/ai-partner]] | D-026, D-032, D-033 |
+| [[features/ai-partner]] | D-026, D-032, D-039, D-033 |
 | [[features/k-ai-instructions]] | D-032 |
 | [[features/premium]] | D-033, D-010 |
 | [[features/pronunciation]] | D-038, D-035, D-036 |
 | [[features/support]] | D-029, D-034 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023 |
 | [[operations/deployment]] | D-022 |
+| [[operations/runbook]] | D-039 |
 
 ## Decisions (from docs/memory/DECISIONS.md)
 | Id | Decision | Status | Cited by |
@@ -185,7 +186,7 @@ flowchart LR
 | D-004 | AI Partner = Gemini Live, browser ↔ Google directly via ephemeral tokens | active | — |
 | D-005 | Gemini quotas are per **Google Cloud project**, not per key | active | — |
 | D-006 | Key pool design (rotation, cooldown, admin page) | active | — |
-| D-007 | AI Partner keeps its UI; only the plumbing under it changes | active | — |
+| D-007 | AI Partner keeps its UI; only the plumbing under it changes | superseded → D-039 | — |
 | D-008 | Auth = Supabase Auth ONLY (Google + email/password); NextAuth removed | active | [[architecture/auth]] [[log]] |
 | D-009 | Single active session uses the Supabase JWT `session_id` claim | active | [[architecture/auth]] [[log]] |
 | D-010 | /pro invite link grants Pro only to NEWLY created accounts | superseded → D-021 | [[features/premium]] |
@@ -217,6 +218,7 @@ flowchart LR
 | D-036 | Cloudflare R2 is not needed for pronunciation | active | [[architecture/storage-r2]] [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-037 | Lighter UI: app-only layer out of the root providers; new mobile tab bar | active | [[log]] [[memory/status]] |
 | D-038 | Pronunciation: never score silence, blind second listener, no listen-back | active | [[features/pronunciation]] [[log]] [[memory/status]] |
+| D-039 | K.AI is hands-free (auto voice detection + interruptions, mute only) | active | [[architecture/gemini-live]] [[features/ai-partner]] [[log]] [[operations/runbook]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

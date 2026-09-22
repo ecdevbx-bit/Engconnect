@@ -71,7 +71,7 @@
   `PcmPlayer` (already 24 kHz PCM16 — exactly Gemini's output), tour element ids (`#aip-tour-*`).
 - Replaced: `useV3ChatSession` (old `/ws/chat`) + Deepgram/WebSpeech capture → one
   `useGeminiLiveSession` hook with the same return shape, so the component barely changes.
-- **Tap-to-talk stays** (manual `activityStart`/`activityEnd`, Gemini auto-VAD off). Why:
+- **Tap-to-talk stays** (manual `activityStart`/`activityEnd`, Gemini auto-VAD off) — **superseded by D-039**. Why:
   learners pause mid-sentence to think; auto-VAD would cut them off and answer too early.
 - Server keeps authority over what it can: session create checks time caps and returns
   rewards; the browser posts `progress` heartbeats (speaking seconds) and the server clamps
@@ -315,3 +315,20 @@
   3.5-transcribe normalises words; 3.1-flash-lite is fastest (2–9 s) and caught phonetic slips
   ("Tenk yu wery mach" → 25%). Kept flash-lite for both scorer and blind listener. Phoneme-exact option
   for later: Azure AI Speech Pronunciation Assessment (needs an Azure key).
+
+## D-039 · K.AI is hands-free (auto voice detection + interruptions, mute only) — 2026-09-22
+- Supersedes the tap-to-talk part of D-007. Owner: "K.AI should work like GPT voice mode / ENGAI —
+  continuous conversation, not click; interruption should be allowed; there should be only a mute option";
+  "till I press the button it doesn't respond".
+- Token (`server/gemini/liveToken.ts`): automatic activity detection ON, start/end sensitivity LOW,
+  prefixPadding 200 ms, `silenceDurationMs` = level `pauseMs` (Beginner 1500 / Intermediate 1100 /
+  Expert 800, `instructions/levels.ts`) so thinking pauses don't end the turn; START_OF_ACTIVITY_INTERRUPTS.
+  Prompt: "hands-free voice call" rules (stop and listen when interrupted; don't jump in on a noise).
+- Client (`hooks/useGeminiLiveSession.ts`): mic opens on setupComplete and streams continuously (no
+  activityStart/End); echo gate — while K.AI plays, mic frames under RMS 0.05 are sent as zeros (hold
+  1.5 s after a louder frame) so K.AI's own voice can't interrupt it; on `interrupted` the player is flushed
+  and K.AI's bubble closed; the learner's bubble closes when K.AI starts answering; mute = release mic +
+  `audioStreamEnd`; talk-time = voiced mic time while K.AI is silent (server still clamps).
+  `V3AIPartner.tsx`: push-to-talk wrapper removed; one mute button (+ Space), status Listening/Speaking/Muted.
+- Verified 2026-09-22 against Gemini with continuous audio: K.AI answered by itself after the learner
+  stopped. Real-mic/echo behaviour to be checked by the owner on phone + laptop speakers.

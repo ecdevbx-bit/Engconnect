@@ -28,7 +28,7 @@ Checks: `npx tsc --noEmit` · `npx -y pnpm@11.0.8 lint` · `npx -y pnpm@11.0.8 b
 |---|---|
 | `node scripts/smoke-test.mjs [url]` | Whole API end-to-end with a throwaway user (32 checks on 2026-09-22), incl. AI Partner token + setup options and a support ticket (sends one email to the team) |
 | `node scripts/gemini-live-probe.mjs [keyIndex] [apiVersion]` | Ephemeral token → constrained socket → spoken reply + transcript + resume handle |
-| `node scripts/gemini-speech-probe.mjs [keyIndex]` | Tap-to-talk voice turn (input transcription + correction) and pronunciation scoring |
+| `node scripts/gemini-speech-probe.mjs [keyIndex]` | Voice turn with manual activity markers (old tap-to-talk wire format; the app is hands-free since D-039) + pronunciation scoring |
 | `node scripts/gemini-voice-probe.mjs [Voice…]` | Which prebuilt voices the Live model accepts |
 | `node scripts/ai-partner-probe.mjs [url] [Level] "[Mode]" [Language]` | Real AI Partner session via the API; prints K.AI's replies to two learner turns (checks the level/mode instruction files) |
 | `node scripts/pronunciation-probe.mjs [url] [NativeLang]` | Real pronunciation attempt (TTS clip with one wrong word); prints verdicts, syllables, native-script respellings, tips |

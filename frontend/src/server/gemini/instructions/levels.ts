@@ -30,6 +30,8 @@ export type LevelInstruction = {
   replyLength: string;
   /** Extra line for the very first greeting. */
   greeting: string;
+  /** Silence (ms) that ends the learner's turn in the hands-free conversation. */
+  pauseMs: number;
 };
 
 export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
@@ -59,6 +61,8 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
       "1–2 very short sentences with ONE simple question OR one 'say with me' task (never both) — under 25 words. You may repeat a question in their language right after the English.",
     greeting:
       "Speak extra slowly and gently in the greeting. Tell them it's okay to make mistakes and that you'll go slowly together.",
+    // Beginners stop to search for words — give them time before K.AI answers.
+    pauseMs: 1500,
   },
 
   // ── INTERMEDIATE ──────────────────────────────────────────────────────────
@@ -78,6 +82,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
       `* Keep the 70/30 balance: mostly English, ${language} for warmth and quick clarifications only.`,
     replyLength: "1–2 short spoken sentences, under 35 words, ending with one question or task.",
     greeting: "Greet them naturally and get them talking about something real in their life.",
+    pauseMs: 1100,
   },
 
   // ── EXPERT ────────────────────────────────────────────────────────────────
@@ -96,6 +101,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
       `* Use English almost entirely. Use ${language} only if they are clearly stuck or ask for a translation.`,
     replyLength: "1–3 natural sentences, under 45 words, ending with a thought-provoking question.",
     greeting: "Greet them confidently and open with an interesting question.",
+    pauseMs: 800,
   },
 };
 

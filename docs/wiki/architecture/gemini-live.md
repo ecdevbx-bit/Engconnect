@@ -17,8 +17,10 @@ preview* and recommends **`gemini-3.8-live`** (stable) — switching is just `GE
   `newSessionExpireTime` = +2 min.
 - `liveConnectConstraints` = model + `responseModalities:[AUDIO]`, the **K.AI system prompt**,
   the learner-chosen voice (one of 18, validated; default Aoede — D-026), `inputAudioTranscription:{}`,
-  `outputAudioTranscription:{}`, `realtimeInputConfig.automaticActivityDetection.disabled = true`
-  (tap-to-talk), `contextWindowCompression.slidingWindow`.
+  `outputAudioTranscription:{}`, **automatic voice detection on** (low start/end sensitivity,
+  `prefixPaddingMs` 200, `silenceDurationMs` = the level's pause: Beginner 1500 / Intermediate 1100 /
+  Expert 800) with `activityHandling = START_OF_ACTIVITY_INTERRUPTS` (hands-free, barge-in — D-039),
+  `contextWindowCompression.slidingWindow`.
 - `lockAdditionalFields: []` → every field above is locked; the browser can't change the prompt.
   `sessionResumption` is deliberately *not* locked so the client can pass its resume handle.
 
@@ -29,7 +31,7 @@ URL: `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1
 |---|---|
 | → | `{setup:{model:"models/…", sessionResumption:{handle?}}}` |
 | ← | `setupComplete` → send `kickoff` as `clientContent` (K.AI greets) |
-| → tap mic | `realtimeInput.activityStart`, then `realtimeInput.audio {mimeType:"audio/pcm;rate=16000", data}` every ~100 ms, then `activityEnd` |
+| → mic (continuous) | `realtimeInput.audio {mimeType:"audio/pcm;rate=16000", data}` every ~100 ms for the whole call — no activityStart/End (rejected when auto-VAD is on). While K.AI plays, quiet frames are sent as zeros (echo gate). Mute → mic released + `realtimeInput.audioStreamEnd` |
 | ← | `serverContent.inputTranscription` (learner caption), `outputTranscription` (K.AI caption), `modelTurn.parts[].inlineData` (24 kHz PCM → `PcmPlayer`), `interrupted`, `turnComplete` |
 | ← | `sessionResumptionUpdate.newHandle`, `goAway`, `usageMetadata` |
 Text parts in `modelTurn` are internal reasoning on native-audio models → never shown.
