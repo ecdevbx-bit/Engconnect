@@ -37,8 +37,8 @@
   - PRO badge only for Pro members; "Unlock Pro" card on the mobile home for free users (03b5728,
     production smoke 32/32).
   - **Gemini 503 "model busy" handled** (D-040): keys are no longer cooled down for Google's
-    overload, calls retry, scoring falls back to other models, and the learner sees "Google's AI is
-    busy, try again in a few seconds" instead of an internal error. Also: expired-token 401 →
+    overload, calls retry, scoring falls back to other models, and the learner sees "K.AI is
+    busy, try again in a few seconds" instead of an internal error (messages say "K.AI", never Gemini/Google). Also: expired-token 401 →
     refresh + retry; silence detection adapts to quiet mics.
   - **Landing page redesigned** (D-041): glass editorial hero, real product panels, the scroll-swipe
     kept, lazy demos, no generic copy; sign-up shows the Terms/Privacy agreement.

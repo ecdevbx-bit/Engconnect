@@ -341,7 +341,7 @@
   (→ 500 INTERNAL) and the consecutive-error rule shrank the pool for a fault that wasn't ours.
 - `isModelBusy()` (503/500/"high demand"/"overloaded"/"unavailable"/"try again later"): the lease is
   released as **ok** (key stays healthy), the call is retried after 400 ms × attempt, and if every
-  attempt is busy the API answers `503 AI_MODEL_BUSY` — "Google's AI is busy right now. Please try
+  attempt is busy the API answers `503 AI_MODEL_BUSY` — "K.AI is busy right now. Please try
   again in a few seconds." instead of a generic internal error.
 - Pronunciation scoring also falls back across models when the configured one stays busy:
   `gemini-3.1-flash-lite` → `gemini-3.5-flash-lite` → `gemini-2.5-flash-lite` → `gemini-2.5-flash`

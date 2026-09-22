@@ -172,13 +172,13 @@ export async function withTextKey<T>(
   if (busy) {
     console.error("[gemini] text model busy on every attempt:", lastError.slice(0, 200));
     throw fail.unavailable(
-      "Google's AI is busy right now. Please try again in a few seconds.",
+      "K.AI is busy right now. Please try again in a few seconds.",
       "AI_MODEL_BUSY",
     );
   }
   console.error("[gemini] text lane exhausted:", lastError || "no keys available");
   throw fail.unavailable(
-    "Our AI coach is at capacity right now. Please try again in a minute.",
+    "K.AI is at capacity right now. Please try again in a minute.",
     "AI_CAPACITY_EXHAUSTED",
   );
 }
