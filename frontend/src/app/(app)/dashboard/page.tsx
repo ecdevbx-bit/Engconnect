@@ -239,6 +239,15 @@ export default function DashboardPage() {
         <TrainingShowcaseCarousel isPro={isPro} />
       </section>
 
+      {/* ── Go Pro (mobile only, free users) — phones have no "Pro" navbar tab,
+          so the home screen carries the way to buy or apply for Pro. Waits for
+          the profile so Pro members never see it flash. ── */}
+      {!loading && !isPro && session.data?.user?.isPro !== true && (
+        <section className="md:hidden">
+          <PremiumUpsellCard isPro={false} premiumUntil={null} />
+        </section>
+      )}
+
       {/* ── Your Activities (mobile only, < md) — Monthly (heatmap) + Weekly
           (this-week chart) stats in an infinite carousel with a toggle. On
           md+ these render standalone below instead. ── */}
@@ -249,8 +258,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Activity heatmap (md+ only) + Premium upsell beside it. Mobile shows
-          the heatmap in "Your Activities" above; Premium lives in the navbar
-          there. ── */}
+          the heatmap in "Your Activities" and the Pro card above. ── */}
       <section className="hidden gap-6 md:grid lg:grid-cols-[1fr_320px]">
         <div className="min-w-0">
           {loading ? (
@@ -329,7 +337,7 @@ function PremiumUpsellCard({
   const benefits = [
     { icon: Puzzle, value: "4,500", label: "Jumble Words sentences" },
     { icon: Mic, value: "1,500", label: "Pronunciation sentences" },
-    { icon: Sparkles, value: "1 hr/day", label: "with K.AI" },
+    { icon: Sparkles, value: "20 min/day", label: "with K.AI" },
   ];
   const untilLabel = premiumUntil
     ? new Date(premiumUntil).toLocaleDateString("en-US", {

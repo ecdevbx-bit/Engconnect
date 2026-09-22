@@ -19,6 +19,8 @@ export type SessionUser = {
   avatar: string;
   onboardingCompleted: boolean;
   isAdmin: boolean;
+  // Pro right now (premium_until in the future) — drives the navbar PRO badge.
+  isPro: boolean;
 };
 
 export async function buildSessionUser(args: {
@@ -44,6 +46,7 @@ export async function buildSessionUser(args: {
     avatar: p?.avatar ?? "",
     onboardingCompleted: p?.onboarding_completed ?? false,
     isAdmin: isAdminEmail(email),
+    isPro: !!p?.premium_until && new Date(p.premium_until).getTime() > Date.now(),
   };
 }
 

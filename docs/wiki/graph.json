@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T11:29:35.270Z",
+  "generatedAt": "2026-09-22T11:38:16.075Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -1285,6 +1285,11 @@
     {
       "source": "log",
       "target": "architecture/storage-r2",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "features/premium",
       "kind": "links"
     },
     {

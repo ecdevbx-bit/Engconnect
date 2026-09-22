@@ -32,7 +32,9 @@
     on production. Then: Beginner rules tightened (modelled sentence must be fully correct; one ask
     per reply) — shipped in 9be5cb6 (READY).
   - **Pronunciation fixed** (D-038): silence no longer scores 100% (NO_SPEECH), blind second listener,
-    stricter rubric; auto-stop + instant scoring, no listen-back — verified via API probes.
+    stricter rubric; auto-stop + instant scoring, no listen-back — deployed 2b167d8, production smoke
+    32/32, silence/noise → NO_SPEECH on production.
+  - PRO badge only for Pro members; "Unlock Pro" card on the mobile home for free users.
 
 ## In progress 🔧
 - **K.AI hands-free, like GPT voice mode** (owner: "continuous convo, not click; interruption allowed;

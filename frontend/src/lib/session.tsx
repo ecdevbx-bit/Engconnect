@@ -25,6 +25,7 @@ export type SessionUser = {
   avatar: string;
   onboardingCompleted: boolean;
   isAdmin: boolean;
+  isPro: boolean;
 };
 
 export type Session = { user: SessionUser; expires: string; error?: string };
@@ -65,6 +66,7 @@ function basicUser(s: SupabaseSession): SessionUser {
     avatar: "",
     onboardingCompleted: false,
     isAdmin: false,
+    isPro: false,
   };
 }
 

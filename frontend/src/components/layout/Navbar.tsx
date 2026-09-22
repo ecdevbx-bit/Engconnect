@@ -32,6 +32,8 @@ export default function Navbar() {
 
   const user = fromSessionUser(session.data?.user);
   const isAuthenticated = !!user?.uid && user.emailVerified === true;
+  // The PRO badge is a status mark, so only Pro members get it.
+  const isPro = isAuthenticated && session.data?.user?.isPro === true;
   const accessToken = session.data?.user?.accessToken ?? "";
 
   // Growth stage (1..10) for the user's current level — drives the little
@@ -55,13 +57,15 @@ export default function Navbar() {
             height={44}
             className="h-9 w-auto sm:h-6"
           />
-          {/* PRO badge — sits right next to the logo mark. */}
-          <span
-            className="rounded-full px-2 py-0.5 text-[10px] font-black leading-none tracking-tight text-white drop-shadow-sm lg:hidden"
-            style={{ background: "var(--pro-pill)" }}
-          >
-            PRO
-          </span>
+          {/* PRO badge — next to the logo mark, for Pro members only. */}
+          {isPro && (
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-black leading-none tracking-tight text-white drop-shadow-sm"
+              style={{ background: "var(--pro-pill)" }}
+            >
+              PRO
+            </span>
+          )}
           <span className="hidden text-sm font-bold text-heading sm:block">
             English Connection
           </span>

@@ -93,3 +93,8 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
   [[features/pronunciation]]).
 - K.AI hands-free conversation (auto voice detection, interruptions, mute-only UI) in progress —
   server side tested live, not shipped until the client is done.
+
+## [2026-09-22] ui | PRO badge for Pro members only; Pro card on mobile home
+- Navbar PRO badge now only for Pro members (session `isPro`); mobile home shows the "Unlock Pro"
+  card for free users (phones had no way to buy/apply); card copy fixed to 20 min/day with K.AI
+  ([[features/premium]]). Deployed 2b167d8 before this: production smoke 32/32, silence → NO_SPEECH.

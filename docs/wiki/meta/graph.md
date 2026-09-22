@@ -9,7 +9,7 @@ updated: 2026-09-22
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(63 nodes · 205 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(63 nodes · 206 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid

@@ -19,6 +19,13 @@ forward (`extendPremium`), never back.
 | AI Partner | 20 min / week (Mon IST) | 20 min / day (IST) — D-033 |
 Over-limit responses: `DAILY_QUOTA_REACHED` (games) / `AI_TIME_LIMIT_REACHED` (AI) → Go-Pro prompt.
 
+## Where learners see Pro
+- **PRO badge** next to the logo in the navbar — shown **only to Pro members** (`isPro` in the
+  `/api/session` payload, from `profiles.premium_until`).
+- **Desktop**: the "Pro" navbar tab and the green "Unlock Pro" card beside the activity heatmap.
+- **Mobile**: the same "Unlock Pro" card on the home screen (free users only) → `/v3/premium`
+  (buy / apply for the trial).
+
 ## Ways to get Pro
 1. **Pro trial program** — learner applies with a phone number (`POST /api/trial/apply`); admin
    approves at `/v3/admin/pro-trials`; Pro runs until the program's shared end date (`endsOn`,
