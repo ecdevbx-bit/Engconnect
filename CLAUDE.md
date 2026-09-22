@@ -21,11 +21,33 @@ Then open `docs/wiki/index.md` and follow links to the pages relevant to the tas
   `docs/memory/DECISIONS.md` (append-only; supersede, never rewrite).
 - **Before answering "how does X work"**: check the wiki; if it's wrong, fix it (lint).
 
+## Workflow (how every change is made — follow it in order)
+1. **Orient**: read STATUS + DECISIONS (auto-loaded), `docs/wiki/index.md`, and the relevant pages;
+   use `docs/wiki/graph.json` to see what a feature touches.
+2. **Build**: code in `frontend/` (conventions in `frontend/CLAUDE.md`); schema changes as a NEW
+   file in `supabase/migrations/` → `node supabase/apply-migrations.mjs` (Management API).
+   Auth/SMTP/Google settings → `node supabase/configure-auth.mjs` (env-var driven, idempotent).
+3. **Check locally**: `rm -rf frontend/.next` (stale types) → `npx tsc --noEmit` → eslint on the
+   changed files → `npx -y pnpm@11.0.8 build` for big changes. Gemini changes: verify live with
+   `scripts/gemini-*-probe.mjs`. UI changes: look at them in the browser pane.
+4. **Record**: update wiki pages + `log.md`, add `D-0xx` for non-obvious decisions, overwrite
+   STATUS, `node docs/wiki/build-graph.mjs` (0 lint).
+5. **Ship**: scan staged diff for secrets (sb_secret_, sbp_, vcp_, AQ.Ab8, re_, GOCSPX-, AIza) →
+   commit (with the Co-Authored-By line) → `git push origin main` → Vercel auto-deploys
+   (new env vars: `scripts/vercel-setup.mjs` pattern / Vercel API with the token in credentials.txt).
+6. **Verify prod**: wait for the deployment READY, then
+   `node scripts/smoke-test.mjs https://engconnect-beta.vercel.app` (must be all ✓), record the
+   result in STATUS, commit.
+
 ## Repo layout
 - `frontend/` — Next.js 16 app. API = `src/app/api/[...path]/route.ts` → `src/server/**`.
   See `frontend/CLAUDE.md` for code conventions.
 - `supabase/migrations/` — schema (source of truth). Apply: `node supabase/apply-migrations.mjs`.
-- `docs/wiki/` — product + architecture wiki. `docs/memory/` — decisions + status.
+- `docs/wiki/` — product + architecture wiki (+ `build-graph.mjs`, `graph.json`). `docs/memory/` —
+  decisions + status.
+- `scripts/` — `smoke-test.mjs` (end-to-end, local or prod), `gemini-live-probe.mjs`,
+  `gemini-speech-probe.mjs` (tap-to-talk + scoring), `gemini-voice-probe.mjs [Voice…]`,
+  `vercel-setup.mjs` (project + env + deploy). All read secrets from local files, print none.
 - `credentials.txt` — REAL SECRETS, git-ignored. Read only when needed; **never print values**
   (redact when inspecting), never copy into code, docs or commits.
 

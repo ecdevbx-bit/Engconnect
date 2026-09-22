@@ -22,7 +22,8 @@
 - Pronunciation scoring with gemini-3.1-flash-lite (verified); R2 upload code (waiting for creds).
 - Support: navbar Help dropdown + /support form → `support_tickets` + Resend email to ec.devbx@gmail.com;
   admin inbox. Pro applications: Approve / Don't approve.
-- Knowledge: CLAUDE.md schema, wiki (22 pages), DECISIONS D-001…D-029, graph memory.
+- Knowledge: CLAUDE.md schema + Workflow, wiki (23 pages), DECISIONS D-001…D-030, graph memory,
+  `scripts/` (smoke test + Gemini probes).
 - Verified: tsc clean; `next build` ✓; **production smoke 32/32** on commit b61c5c8 (incl. Tamil /
   Job Interview / Sulafat session, invalid-option fallback, support ticket emailed via Resend).
 

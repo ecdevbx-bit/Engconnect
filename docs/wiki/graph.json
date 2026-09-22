@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T08:43:19.588Z",
+  "generatedAt": "2026-09-22T08:45:46.344Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -498,6 +498,14 @@
     {
       "id": "D-029",
       "title": "Customer support panel: navbar \"Help\" dropdown → ticket + Resend email",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-030",
+      "title": "Verification scripts live in `scripts/`; the workflow is written in CLAUDE.md",
       "type": "decision",
       "date": "2026-09-22",
       "status": "active",
@@ -1113,6 +1121,11 @@
     },
     {
       "source": "log",
+      "target": "operations/runbook",
+      "kind": "links"
+    },
+    {
+      "source": "log",
       "target": "D-008",
       "kind": "cites"
     },
@@ -1174,6 +1187,11 @@
     {
       "source": "log",
       "target": "D-028",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-030",
       "kind": "cites"
     },
     {
@@ -1358,7 +1376,7 @@
     },
     {
       "source": "memory/status",
-      "target": "D-029",
+      "target": "D-030",
       "kind": "cites"
     }
   ],

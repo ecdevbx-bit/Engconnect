@@ -9,7 +9,7 @@ updated: 2026-09-22
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(53 nodes · 170 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(54 nodes · 172 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -163,7 +163,7 @@ flowchart LR
 | [[features/ai-partner]] | D-026 |
 | [[features/premium]] | D-010 |
 | [[features/support]] | D-029 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030 |
 | [[meta/how-this-wiki-works]] | D-028 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023 |
 | [[operations/deployment]] | D-022 |
@@ -199,7 +199,8 @@ flowchart LR
 | D-026 | AI Partner session setup: language × level × mode × voice (ENGAI-style) | active | [[architecture/gemini-live]] [[features/ai-partner]] [[log]] |
 | D-027 | The 7 free Gemini keys are from different Google Cloud projects | active | [[architecture/gemini-key-pool]] [[log]] [[operations/credentials]] |
 | D-028 | Graph memory = generated from the wiki (`docs/wiki/graph.json`) | active | [[log]] [[meta/how-this-wiki-works]] |
-| D-029 | Customer support panel: navbar "Help" dropdown → ticket + Resend email | active | [[features/support]] [[log]] [[memory/status]] |
+| D-029 | Customer support panel: navbar "Help" dropdown → ticket + Resend email | active | [[features/support]] [[log]] |
+| D-030 | Verification scripts live in `scripts/`; the workflow is written in CLAUDE.md | active | [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

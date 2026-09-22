@@ -63,3 +63,7 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 
 ## [2026-09-22] ops | Production verified
 - Deploy b61c5c8 READY; production smoke 32/32 (setup options, support email via Resend, Google on).
+
+## [2026-09-22] ops | Workflow + scripts saved before compaction
+- Smoke test and Gemini probes moved to `scripts/` (D-030); workflow written into root CLAUDE.md;
+  [[operations/runbook]] lists the scripts.

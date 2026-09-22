@@ -236,3 +236,9 @@
   → Resend HTTP API email to `SUPPORT_EMAIL_TO` (ec.devbx@gmail.com) with Reply-To = learner.
   Admin inbox `/v3/admin/support` (open/resolved). Admin home + menu also list "Pro applications"
   (existing /v3/admin/pro-trials, now with a "Don't approve" button for pending applications).
+
+## D-030 · Verification scripts live in `scripts/`; the workflow is written in CLAUDE.md — 2026-09-22
+- The smoke test and Gemini probes were in a temporary scratch folder; moved to `scripts/` with
+  repo-relative paths (read secrets from `frontend/.env.local` / `credentials.txt`, print none).
+- Root `CLAUDE.md` now has a numbered **Workflow**: orient → build → check → record (wiki, D-entry,
+  STATUS, graph) → ship (secret scan, commit, push) → verify prod (`scripts/smoke-test.mjs`).
