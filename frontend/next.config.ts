@@ -1,13 +1,8 @@
 import type { NextConfig } from "next";
-import path from "path";
-import { fileURLToPath } from "url";
 
 const nextConfig: NextConfig = {
-  // Pin the Turbopack workspace root to this folder — the parent ec-new/ has
-  // its own package.json (run-scripts only), which would otherwise be ambiguous.
-  turbopack: {
-    root: path.dirname(fileURLToPath(import.meta.url)),
-  },
+  // No turbopack.root pin: the repo root has no package.json, and on Vercel the
+  // pin conflicted with outputFileTracingRoot (repo root) — see DECISIONS D-022.
   async headers() {
     return [
       {

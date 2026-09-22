@@ -20,6 +20,6 @@ Secrets live **only** in: `credentials.txt` (repo root, git-ignored, local), `fr
 | Google OAuth client ID + secret | Google sign-in (entered into Supabase, not our env) | Google Cloud Console → Credentials → OAuth client (Web); redirect `https://uycpxwajvhcigyhvepci.supabase.co/auth/v1/callback` | ❌ needed |
 | SMTP host/port/user/pass/from | real email volume + limits | Resend / Brevo / etc. | ❌ needed for production |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | recordings storage | Cloudflare → R2 → Manage API tokens (Object Read & Write, one bucket) | ❌ needed |
-| Vercel token (vcp_…) | create project + env vars — tooling only | Vercel account | ✅ have |
+| Vercel token (vcp_…) | create project + env vars — tooling only | Vercel account | ✅ have — project `engconnect` created, env vars set |
 | `INTERNAL_API_KEY`, `ADMIN_EMAILS` | admin actions; admin allow-list | generated / owner | ✅ generated / set |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | payments | Razorpay dashboard | optional, later |

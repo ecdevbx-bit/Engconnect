@@ -14,11 +14,15 @@ Decision D-008 (replaces the earlier NextAuth plan). Methods: **Google** and **e
 - **Google**: browser → `supabase.auth.signInWithOAuth({provider:"google", redirectTo: <site>/auth/callback})`
   → Google → Supabase (`https://uycpxwajvhcigyhvepci.supabase.co/auth/v1/callback`) →
   `/auth/callback?code=…` (our route: exchange code → session cookies → record login → /pro grant → redirect).
-- **Email sign-up**: our rate-limited endpoint → `supabase.auth.signUp` → Supabase emails a link to
-  `/auth/confirm?token_hash=…&type=email` → verify → signed in.
+- **Email sign-up**: our rate-limited endpoint → `supabase.auth.signUp` → Supabase emails a link →
+  `/auth/confirm` (a **client page**: handles the default template's `#access_token` fragment, our
+  branded `?token_hash` links once custom SMTP exists, and `?code`) → `POST /api/session/start`.
 - **Email sign-in**: `supabase.auth.signInWithPassword` in the browser → `POST /api/session/start`.
-- **Forgot password**: rate-limited endpoint → reset email → `/auth/confirm?type=recovery` →
+- **Forgot password**: rate-limited endpoint → reset email → `/auth/confirm` (type recovery) →
   `/reset-password` → `updateUser({password})`.
+- **Config** (`node supabase/configure-auth.mjs`): site URL https://engconnect-beta.vercel.app,
+  redirect allow-list (prod, previews, localhost), password ≥ 8. Google, SMTP and branded
+  templates are added by the same script when their env vars are passed (D-022).
 
 ## Sessions
 - `@supabase/ssr` keeps the session in cookies; `src/proxy.ts` refreshes it on requests.

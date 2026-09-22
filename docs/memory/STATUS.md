@@ -22,9 +22,11 @@
 - Docs: root CLAUDE.md (schema), wiki (18 pages), DECISIONS D-001…D-021, READMEs, .env.example.
 
 ## In progress 🔧
-- First commit + push, Vercel project `engconnect` (root `frontend`, env vars), first deploy.
-- Supabase Auth config: site_url = production URL, redirect allow-list, email templates with
-  token_hash links → `/auth/confirm`, password min length 8.
+- Pushed to GitHub (commits 10a4ac8, 4388fa5). Vercel project `engconnect` created (root `frontend`,
+  12 env vars, explicit pnpm 11 install/build — D-022). First build failed on old pnpm (fixed);
+  second build running → https://engconnect-beta.vercel.app.
+- Supabase Auth configured (site URL, allow-list, password ≥ 8). Email templates can't be edited on
+  free-tier SMTP → `/auth/confirm` is a client page that handles default-template links.
 
 ## Next ⏭️
 1. When the owner sends Google OAuth creds → enable Google provider via Management API.

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -62,6 +62,18 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
   const [error, setError] = useState<string | null>(null);
   // After sign-up (or an unconfirmed sign-in): "check your inbox" state.
   const [sentTo, setSentTo] = useState<string | null>(null);
+  // Is Google enabled in Supabase Auth? (public settings endpoint). null = unknown.
+  const [googleOn, setGoogleOn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    if (!url || !key) return;
+    fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
+      .then((r) => r.json())
+      .then((s: { external?: { google?: boolean } }) => setGoogleOn(s.external?.google === true))
+      .catch(() => setGoogleOn(null));
+  }, []);
 
   async function handleGoogle() {
     setGoogleLoading(true);
@@ -147,10 +159,15 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
             </div>
           ) : (
             <>
-              <Button type="button" onClick={handleGoogle} disabled={googleLoading} size="lg" variant="outline" className="w-full gap-3">
+              <Button type="button" onClick={handleGoogle} disabled={googleLoading || googleOn === false} size="lg" variant="outline" className="w-full gap-3">
                 <GoogleMark />
                 {googleLoading ? "Redirecting…" : "Continue with Google"}
               </Button>
+              {googleOn === false && (
+                <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                  Google sign-in is being set up — please use email for now.
+                </p>
+              )}
 
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-white/10" />

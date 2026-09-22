@@ -2,7 +2,7 @@
 // Adding a destination is a one-line data change, not a layout edit.
 
 import type { LucideIcon } from "lucide-react";
-import { User, Puzzle, Sparkles, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, LayoutDashboard, LifeBuoy, Link2, ToggleRight } from "lucide-react";
+import { User, Puzzle, Sparkles, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, LayoutDashboard, LifeBuoy, Link2, ToggleRight, KeyRound, LayoutGrid } from "lucide-react";
 
 export interface NavItem {
   id: string;
@@ -43,6 +43,20 @@ export const accountMenu: NavItem[] = [
 
 /** Admin-only rows in the account dropdown. Rendered only when user.isAdmin is true. */
 export const adminMenu: NavItem[] = [
+  {
+    id: "admin-home",
+    label: "Admin home",
+    href: "/v3/admin",
+    icon: LayoutGrid,
+    description: "Every admin tool in one place",
+  },
+  {
+    id: "admin-keys",
+    label: "Gemini Keys",
+    href: "/v3/admin/keys",
+    icon: KeyRound,
+    description: "Which API keys are live, cooling down or exhausted",
+  },
   {
     id: "admin-problems",
     label: "Manage Problems",

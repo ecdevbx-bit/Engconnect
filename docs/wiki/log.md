@@ -42,3 +42,9 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 
 ## [2026-09-22] ops | First commit + deploy prep
 - `.env.example`, READMEs, root CLAUDE.md schema. Next: Vercel project + Supabase auth URLs.
+
+## [2026-09-22] ops | Production live
+- https://engconnect-beta.vercel.app READY (commit 4388fa5) after fixing Vercel's pnpm detection
+  (D-022). Supabase Auth: site URL + redirect allow-list + password ≥ 8 configured.
+- Login card disables "Continue with Google" until the Google provider is enabled in Supabase.
+- Account menu (admins): Admin home + Gemini Keys links.
