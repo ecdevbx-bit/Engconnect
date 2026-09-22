@@ -110,3 +110,8 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
   [[architecture/gemini-key-pool]], [[features/pronunciation]]).
 - Expired access token → refresh once and retry (the "unauthorized" on long-open tabs).
 - Silence detection is relative to the room's noise floor, so quiet mics still count as speech.
+
+## [2026-09-23] ui | Landing page redesign shipped
+- Glass editorial landing built around the product (live captions, respelling, jumble, minutes), the
+  scroll-swipe kept, demos lazy-mounted, generic copy gone, hands-free wording; sign-up states the
+  Terms/Privacy agreement (D-041).

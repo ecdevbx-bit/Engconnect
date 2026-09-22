@@ -40,15 +40,10 @@
     overload, calls retry, scoring falls back to other models, and the learner sees "Google's AI is
     busy, try again in a few seconds" instead of an internal error. Also: expired-token 401 →
     refresh + retry; silence detection adapts to quiet mics.
+  - **Landing page redesigned** (D-041): glass editorial hero, real product panels, the scroll-swipe
+    kept, lazy demos, no generic copy; sign-up shows the Terms/Privacy agreement.
   - **K.AI hands-free** like GPT voice mode (D-039): auto voice detection, interruptions, mute-only UI,
     echo gate. Owner verifies on a real phone/laptop (echo with speakers is the thing to watch).
-
-## In progress 🔧
-- **Landing page redesign** (glassmorphism, lighter, KEEP the scroll-swipe section, drop generic copy
-  like "built for ambitious learners", Land-book-style designer feel) by a helper agent —
-  files `frontend/src/components/ShowcaseV4.tsx` + `src/components/landing/*`; not yet committed.
-  Review in the browser (mobile + desktop, both themes), make sure `src/app/landing-preview` is deleted,
-  then ship as its own commit.
 
 ## Next ⏭️
 1. Owner tests on the phone: hands-free K.AI (talk, pause, interrupt, mute; with speakers AND

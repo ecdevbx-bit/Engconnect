@@ -218,6 +218,20 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
                 <Button type="submit" size="lg" className="w-full" disabled={busy || !email || !password}>
                   {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
                 </Button>
+
+                {mode === "signup" && (
+                  <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+                    By creating an account you agree to our{" "}
+                    <Link href="/terms" className="font-semibold text-primary hover:underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="font-semibold text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </p>
+                )}
               </form>
 
               <p className="mt-4 text-center text-xs text-muted-foreground">

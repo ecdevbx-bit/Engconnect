@@ -1,10 +1,12 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { TrainFront } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import AiCoachMascot from "@/components/jumbleWordsComponent/AiCoachMascot";
 import TrainEngine from "@/components/jumbleWordsComponent/TrainEngine";
+import { DemoSteps } from "./DemoSteps";
 
 // Landing showcase for Jumble Words — a self-contained, looping demo. A
 // scripted cursor lifts word tiles out of the "yard"; each becomes a coach on a
@@ -195,6 +197,7 @@ export function JumbleDemo() {
   return (
     <div
       ref={cardRef}
+      data-lp-card
       className="c-box relative flex min-h-[580px] w-full flex-col justify-between overflow-hidden rounded-[28px] p-6"
     >
       {/* Header — title + step indicator, kept as one block */}
@@ -204,46 +207,17 @@ export function JumbleDemo() {
         </p>
 
         {/* Two-step indicator: Arrange words → Submit */}
-        <div className="mt-4 flex items-center justify-center gap-1.5">
-        {STEP_LABELS.map((label, i) => (
-          <Fragment key={label}>
-            <span
-              className={cn(
-                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors",
-                i === activeStep
-                  ? "bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[#0b0e14]"
-                  : "bg-surface-2 text-muted-foreground",
-              )}
-            >
-              <span
-                className={cn(
-                  "grid h-4 w-4 place-items-center rounded-full text-[9px] font-bold",
-                  i === activeStep ? "bg-[#0b0e14]/20 text-[#0b0e14]" : "bg-white/10",
-                )}
-              >
-                {i + 1}
-              </span>
-              {label}
-            </span>
-            {i < STEP_LABELS.length - 1 && (
-              <span
-                className={cn(
-                  "h-px w-5 transition-colors",
-                  i < activeStep ? "bg-[#f59e0b]" : "bg-white/10",
-                )}
-              />
-            )}
-          </Fragment>
-        ))}
+        <div className="mt-4">
+          <DemoSteps labels={STEP_LABELS} active={activeStep} />
         </div>
       </div>
 
       {/* Word yard — label + tiles, kept as one block */}
       <div>
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          🚉 Word yard
+        <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <TrainFront className="h-3.5 w-3.5" aria-hidden="true" /> Word yard
         </p>
-        <div className="flex min-h-[52px] flex-wrap content-start gap-2 rounded-2xl border-2 border-dashed border-white/[0.08] bg-surface-1/40 p-3">
+        <div className="flex min-h-[52px] flex-wrap content-start gap-2 rounded-2xl border-2 border-dashed border-border bg-surface-1/40 p-3">
         {pool.length === 0 ? (
           <span className="w-full py-1 text-center text-xs italic text-muted-foreground">
             All words on the rail ✓
@@ -283,7 +257,7 @@ export function JumbleDemo() {
 
       {/* Mini train — faithful replica of the in-game train world, scaled down */}
       <div
-        className="relative w-full overflow-hidden rounded-2xl border border-white/[0.06]"
+        className="relative w-full overflow-hidden rounded-2xl border border-border"
         style={{ height: 184 * BAND_SCALE, background: "var(--bg)" }}
       >
         {placed.length === 0 && (
@@ -340,9 +314,9 @@ export function JumbleDemo() {
           className={cn(
             "rounded-2xl rounded-bl-sm px-3 py-2 text-sm font-medium transition-colors",
             feedback === "correct"
-              ? "bg-green-500/10 text-green-200"
+              ? "bg-green-500/10 text-green-700 dark:text-green-200"
               : feedback === "wrong"
-                ? "bg-red-500/10 text-red-200"
+                ? "bg-red-500/10 text-red-700 dark:text-red-200"
                 : "bg-surface-2 text-muted-foreground",
           )}
         >

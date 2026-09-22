@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { ChatBubble } from "@/components/game/ChatBubble";
+import { DemoSteps } from "./DemoSteps";
 import { DUMMY_AVATARS } from "@/lib/dummyAvatars";
 import { PixelMascot } from "@/components/v3/PixelMascot";
 import { SpeechProgressCard } from "@/components/game/aiPartner/SpeechProgressCard";
@@ -141,38 +142,14 @@ export function AiPartnerDemo() {
   const activeStep = phase === "earn" ? 2 : phase === "chat" ? 1 : 0;
 
   return (
-    <div className="c-box flex h-full flex-col rounded-[28px] p-5">
+    <div data-lp-card className="c-box flex h-full w-full flex-col rounded-[28px] p-5">
       <p className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
         AI Partner
       </p>
 
-      {/* Two-step indicator: Personalize → Talk */}
-      <div className="mb-4 mt-3 flex shrink-0 items-center justify-center gap-1.5">
-        {STEP_LABELS.map((label, i) => (
-          <Fragment key={label}>
-            <span
-              className={cn(
-                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors",
-                i === activeStep
-                  ? "bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[#0b0e14]"
-                  : "bg-surface-2 text-muted-foreground",
-              )}
-            >
-              <span
-                className={cn(
-                  "grid h-4 w-4 place-items-center rounded-full text-[9px] font-bold",
-                  i === activeStep ? "bg-[#0b0e14]/20 text-[#0b0e14]" : "bg-white/10",
-                )}
-              >
-                {i + 1}
-              </span>
-              {label}
-            </span>
-            {i < STEP_LABELS.length - 1 && (
-              <span className={cn("h-px w-5 transition-colors", i < activeStep ? "bg-[#f59e0b]" : "bg-white/10")} />
-            )}
-          </Fragment>
-        ))}
+      {/* Step indicator: Personalize → Talk → Earn */}
+      <div className="mb-4 mt-3 shrink-0">
+        <DemoSteps labels={STEP_LABELS} active={activeStep} />
       </div>
 
       {phase === "personalize" && <PersonalizeForm picked={picked} />}
@@ -231,11 +208,11 @@ function PersonalizeForm({ picked }: { picked: Picked }) {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all",
                   on
-                    ? "bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[#0b0e14]"
-                    : "border border-white/[0.06] bg-surface-2 text-muted-foreground",
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-surface-2 text-muted-foreground",
                 )}
               >
-                <span className={cn("grid h-4 w-4 place-items-center rounded-full text-[10px]", on ? "bg-[#0b0e14]/20" : "bg-white/10")}>
+                <span className={cn("grid h-4 w-4 place-items-center rounded-full text-[10px]", on ? "bg-primary-foreground/20" : "bg-heading/10")}>
                   {l.native}
                 </span>
                 {l.label}
@@ -256,8 +233,8 @@ function PersonalizeForm({ picked }: { picked: Picked }) {
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-all",
                   on
-                    ? "bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[#0b0e14]"
-                    : "border border-white/[0.06] bg-surface-2 text-muted-foreground",
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-surface-2 text-muted-foreground",
                 )}
               >
                 {s.emoji} {s.label}
@@ -279,7 +256,7 @@ function PersonalizeForm({ picked }: { picked: Picked }) {
                   "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all",
                   on
                     ? "border-primary/50 bg-primary/10 text-heading ring-1 ring-primary/40"
-                    : "border-white/[0.06] bg-surface-1/40 text-muted-foreground",
+                    : "border-border bg-surface-1/40 text-muted-foreground",
                 )}
               >
                 <span className="text-base">{r.emoji}</span>
@@ -302,7 +279,7 @@ function PersonalizeForm({ picked }: { picked: Picked }) {
                   "rounded-full px-2.5 py-1 text-[11px] font-medium transition-all",
                   on
                     ? "border border-primary/30 bg-primary/15 text-primary"
-                    : "border border-white/[0.06] bg-surface-2 text-muted-foreground",
+                    : "border border-border bg-surface-2 text-muted-foreground",
                 )}
               >
                 {h}
@@ -318,7 +295,7 @@ function PersonalizeForm({ picked }: { picked: Picked }) {
 function TypingIndicator() {
   return (
     <div className="flex items-end gap-3">
-      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/[0.06] bg-surface-2">
+      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-surface-2">
         <PixelMascot isThinking size={48} />
       </div>
       <div className="c-box rounded-[18px] px-5 py-4">

@@ -1,8 +1,8 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { DemoSteps } from "./DemoSteps";
 import { SpeakStep } from "@/app/(app)/dashboard/pronunciation/components/SpeakStep";
 import { FeedbackStep } from "@/app/(app)/dashboard/pronunciation/components/FeedbackStep";
 import type { RecorderPhase } from "@/app/(app)/dashboard/pronunciation/hooks/useRecorderStateMachine";
@@ -106,64 +106,38 @@ export function PronunciationDemo() {
   const activeStep = stage === "feedback" ? 2 : stage === "review" ? 1 : 0;
 
   return (
-    <div className="c-box w-full overflow-hidden rounded-[28px] p-6">
+    <div data-lp-card className="c-box flex w-full flex-col overflow-hidden rounded-[28px] p-6">
       <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-        Pronunciation Partner
+        Pronunciation Coach
       </p>
 
       {/* Step labels — make it obvious which stage of the flow is showing. */}
-      <div className="mb-6 flex items-center justify-center gap-1.5">
-        {STEP_LABELS.map((label, i) => (
-          <Fragment key={label}>
-            <span
-              className={cn(
-                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors",
-                i === activeStep
-                  ? "bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[#0b0e14]"
-                  : "bg-surface-2 text-muted-foreground",
-              )}
-            >
-              <span
-                className={cn(
-                  "grid h-4 w-4 place-items-center rounded-full text-[9px] font-bold",
-                  i === activeStep ? "bg-[#0b0e14]/20 text-[#0b0e14]" : "bg-white/10",
-                )}
-              >
-                {i + 1}
-              </span>
-              {label}
-            </span>
-            {i < STEP_LABELS.length - 1 && (
-              <span
-                className={cn(
-                  "h-px w-4 transition-colors",
-                  i < activeStep ? "bg-[#f59e0b]" : "bg-white/10",
-                )}
-              />
-            )}
-          </Fragment>
-        ))}
+      <div className="mb-6">
+        <DemoSteps labels={STEP_LABELS} active={activeStep} />
       </div>
 
-      {isSpeak && (
-        <SpeakStep
-          sentence={SENTENCE}
-          phase={stage as RecorderPhase}
-          remainingMs={remainingMs}
-          countdownMs={COUNTDOWN_MS}
-          recordDurationMs={RECORD_MS}
-          stream={null}
-          errorMessage={null}
-          onMicClick={noop}
-          onStopClick={noop}
-          onRetry={noop}
-          demo
-        />
-      )}
+      {/* Stage body — vertically centred when the card is taller than it. */}
+      <div className="flex flex-1 flex-col justify-center">
+        {isSpeak && (
+          <SpeakStep
+            sentence={SENTENCE}
+            phase={stage as RecorderPhase}
+            remainingMs={remainingMs}
+            countdownMs={COUNTDOWN_MS}
+            recordDurationMs={RECORD_MS}
+            stream={null}
+            errorMessage={null}
+            onMicClick={noop}
+            onStopClick={noop}
+            onRetry={noop}
+            demo
+          />
+        )}
 
-      {stage === "feedback" && (
-        <FeedbackStep result={MOCK_RESULT} onContinue={noop} onNext={noop} demo />
-      )}
+        {stage === "feedback" && (
+          <FeedbackStep result={MOCK_RESULT} onContinue={noop} onNext={noop} demo />
+        )}
+      </div>
     </div>
   );
 }

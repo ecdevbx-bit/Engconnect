@@ -1,453 +1,638 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { useRef, type ComponentType } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-import { motion, useScroll, useSpring, useReducedMotion } from "motion/react";
-import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
-import { Star, ArrowRight, Sparkles } from "lucide-react";
+import { Space_Grotesk } from "next/font/google";
+import type { CSSProperties, ReactNode } from "react";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  Building2,
+  Coffee,
+  GraduationCap,
+  MessageCircle,
+  Mic,
+  Plane,
+  Sparkles,
+  Star,
+  Target,
+  type LucideIcon,
+} from "lucide-react";
+
 import { CONTACT_NUMBERS, telLink, formatNumber } from "@/config/contact";
-import { AiPartnerDemo } from "@/components/landing/AiPartnerDemo";
+import {
+  AI_PARTNER_LANGUAGES,
+  AI_PARTNER_LEVELS,
+  AI_PARTNER_SCENARIOS,
+  AI_PARTNER_VOICES,
+} from "@/lib/aiPartnerOptions";
+import AccountChip from "@/components/layout/AccountChip";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { KaiFigure } from "@/components/landing/KaiFigure";
-import { JumbleDemo } from "@/components/landing/JumbleDemo";
-import { PronunciationDemo } from "@/components/landing/PronunciationDemo";
+import { LazyDemo, type LazyDemoKind } from "@/components/landing/LazyDemos";
 import { MascotEmotionMarquee } from "@/components/landing/MascotEmotionMarquee";
 import PlatformInsights from "@/components/landing/PlatformInsights";
-import AccountChip from "@/components/layout/AccountChip";
+import { ReviewsSwipe, StepsSwipe } from "@/components/landing/ScrollSwipe";
+import { LANDING_CSS } from "@/components/landing/landingStyles";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+// The public landing page (rendered by app/page.tsx for logged-out visitors).
+//
+// Editorial layout — big confident type, asymmetric/bento sections, the real
+// product UI in frosted-glass frames — over a softly lit gradient stage, in
+// BOTH themes (follows the next-themes toggle: orange on dark, Lumina blue on
+// light). Copy is specific and product-true: the Hindi/Tamil/… phrases are
+// K.AI's own (server/gemini/tutorPrompt.ts), the "WENZ-day" respelling is the
+// Pronunciation Coach's syllables/native-script output (server/gemini/scoring.ts).
+//
+// A Server Component on purpose: static content ships as plain HTML. Client
+// code is limited to the nav (theme toggle + account chip), the lazily mounted
+// demos (landing/LazyDemos) and the two scroll swipes (landing/ScrollSwipe —
+// GSAP is imported on demand, never for reduced motion). Everything else
+// animates with CSS (landing/landingStyles).
+
+// Display face for the big headings — self-hosted by next/font (no render-
+// blocking Google Fonts @import), exposed as --ff-kinetic.
+const kinetic = Space_Grotesk({ subsets: ["latin"], variable: "--ff-kinetic", display: "swap" });
+
+const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
+
+const INDIAN_LANGUAGES = AI_PARTNER_LANGUAGES.length - 1; // minus "English only"
 
 export default function ShowcaseV4() {
-  const root = useRef<HTMLDivElement>(null);
-  const stepsSection = useRef<HTMLDivElement>(null);
-  const stepsTrack = useRef<HTMLDivElement>(null);
-  const reviewsSection = useRef<HTMLDivElement>(null);
-  const reviewsViewport = useRef<HTMLDivElement>(null);
-  const reviewsTrack = useRef<HTMLDivElement>(null);
-
-  // ── Progress scrubber: tracks the whole film via window scroll ──
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
-
-  const reduced = useReducedMotion();
-  const [emblaRef] = useEmblaCarousel(
-    { loop: true, align: "start", dragFree: true },
-    reduced ? [] : [Autoplay({ delay: 2400, stopOnInteraction: false, stopOnMouseEnter: true })],
-  );
-
-  useGSAP(
-    () => {
-      const scope = root.current;
-      if (!scope) return;
-
-      const mm = gsap.matchMedia();
-      mm.add(
-        {
-          isDesktop: "(min-width: 1024px)",
-          reduce: "(prefers-reduced-motion: reduce)",
-        },
-        (ctx) => {
-          const conditions = (ctx.conditions ?? {}) as Record<string, boolean>;
-          const isDesktop = !!conditions.isDesktop;
-          const reduce = !!conditions.reduce;
-
-          // Generic fade-up reveals run in BOTH modes (content always ends visible).
-          makeReveals(scope, reduce);
-
-          // ── REDUCED MOTION: no pin/scrub/horizontal. Plain fade-ups. ──
-          if (reduce) {
-            gsap.from(".v4-tagline", {
-              opacity: 0,
-              y: 10,
-              duration: 0.5,
-              ease: "power2.out",
-              scrollTrigger: { trigger: ".v4-tagline", start: "top 85%", once: true },
-            });
-            gsap.utils.toArray<HTMLElement>(".v4-step-panel", scope).forEach((p) =>
-              gsap.from(p, {
-                opacity: 0,
-                y: 16,
-                duration: 0.5,
-                ease: "power2.out",
-                scrollTrigger: { trigger: p, start: "top 85%", once: true },
-              }),
-            );
-            return;
-          }
-
-          // ── FULL MOTION ──
-
-          // Hero choreographed page-load timeline
-          gsap.set(".v4-mask-line", { yPercent: 115 });
-          gsap.set([".v4-hero-eyebrow", ".v4-hero-stat", ".v4-hero-cta"], { autoAlpha: 0, y: 22 });
-          gsap.set(".v4-hero-demo", { autoAlpha: 0, x: 70, y: 24 });
-          const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
-          intro
-            .to(".v4-hero-eyebrow", { autoAlpha: 1, y: 0, duration: 0.5 })
-            .to(".v4-mask-line", { yPercent: 0, duration: 0.95, stagger: 0.12, ease: "expo.out" }, "-=0.2")
-            .to(".v4-hero-stat", { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.08 }, "-=0.5")
-            .to(".v4-hero-cta", { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.08 }, "-=0.35")
-            .to(".v4-hero-demo", { autoAlpha: 1, x: 0, y: 0, duration: 1.0, ease: "expo.out" }, "-=0.8");
-
-          // Tagline: masked word-by-word reveal
-          gsap.from(".v4-tagline-word", {
-            yPercent: 120,
-            opacity: 0,
-            duration: 0.7,
-            ease: "power3.out",
-            stagger: 0.05,
-            scrollTrigger: { trigger: ".v4-tagline", start: "top 72%", once: true },
-          });
-
-          // 3 STEPS — desktop: pinned horizontal act; mobile: stacked fade-up
-          const sec = stepsSection.current;
-          const track = stepsTrack.current;
-          if (isDesktop && sec && track) {
-            const horiz = gsap.to(track, {
-              x: () => -(track.scrollWidth - sec.clientWidth),
-              ease: "none",
-              scrollTrigger: {
-                trigger: sec,
-                start: "top top",
-                end: () => "+=" + (track.scrollWidth - sec.clientWidth),
-                pin: true,
-                scrub: 1,
-                anticipatePin: 1,
-                invalidateOnRefresh: true,
-              },
-            });
-            gsap.utils.toArray<HTMLElement>(".v4-step-panel", track).forEach((panel) => {
-              const meta = panel.querySelector<HTMLElement>(".v4-step-meta");
-              if (meta) {
-                gsap.fromTo(
-                  meta,
-                  { yPercent: 14 },
-                  {
-                    yPercent: -14,
-                    ease: "none",
-                    scrollTrigger: {
-                      trigger: panel,
-                      containerAnimation: horiz,
-                      start: "left right",
-                      end: "right left",
-                      scrub: true,
-                    },
-                  },
-                );
-              }
-            });
-          } else {
-            gsap.utils.toArray<HTMLElement>(".v4-step-panel", scope).forEach((p) =>
-              gsap.from(p, {
-                opacity: 0,
-                y: 28,
-                duration: 0.7,
-                ease: "power2.out",
-                scrollTrigger: { trigger: p, start: "top 82%", once: true },
-              }),
-            );
-          }
-
-          // Reviews scrub past horizontally (non-pinned, clipped)
-          const rsec = reviewsSection.current;
-          const rtrack = reviewsTrack.current;
-          const rview = reviewsViewport.current;
-          if (rsec && rtrack && rview) {
-            gsap.fromTo(
-              rtrack,
-              { x: 0 },
-              {
-                x: () => -(rtrack.scrollWidth - rview.clientWidth),
-                ease: "none",
-                scrollTrigger: { trigger: rsec, start: "top 65%", end: "bottom top", scrub: 1, invalidateOnRefresh: true },
-              },
-            );
-          }
-
-          // Stats count up on enter
-          gsap.utils.toArray<HTMLElement>("[data-count]", scope).forEach(countUp);
-        },
-      );
-    },
-    { scope: root },
-  );
-
   return (
-    <div ref={root} className="force-dark relative min-h-screen overflow-x-hidden bg-[#18181c] font-body text-body antialiased">
-      <style>{STYLES}</style>
+    <div
+      className={`lp ${kinetic.variable} relative isolate min-h-dvh overflow-x-clip bg-background font-body text-body antialiased`}
+    >
+      <style>{LANDING_CSS}</style>
 
-      {/* Cinematic dark-stage backdrop */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="v4-float absolute -left-32 top-24 h-96 w-96 rounded-full bg-primary/15 blur-[120px]" />
-        <div className="v4-pulse absolute right-[-10%] top-1/3 h-[28rem] w-[28rem] rounded-full bg-[#00e3fd]/8 blur-[140px]" />
-        <div className="v4-float absolute bottom-24 left-1/3 h-80 w-80 rounded-full bg-[#b79fff]/8 blur-[130px]" />
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-surface-1 focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-heading"
+      >
+        Skip to content
+      </a>
 
-        {/* Extra ambient fill up top — warm blurred bubbles + soft light streaks
-            so the hero never reads as empty dark space. */}
-        <div className="v4-float absolute left-1/3 -top-16 h-72 w-72 rounded-full bg-[#f97316]/12 blur-[120px]" />
-        <div className="v4-pulse absolute left-[12%] top-[14%] h-64 w-64 rounded-full bg-[#f59e0b]/10 blur-[110px]" />
-        <div className="v4-float absolute right-1/3 -top-10 h-80 w-80 rounded-full bg-[#fb923c]/8 blur-[130px]" />
-        <div className="absolute left-[18%] -top-10 h-72 w-px rotate-[20deg] bg-gradient-to-b from-transparent via-white/15 to-transparent blur-[2px]" />
-        <div className="absolute left-[42%] -top-16 h-80 w-px rotate-[12deg] bg-gradient-to-b from-transparent via-white/10 to-transparent blur-[2px]" />
-        <div className="absolute right-[26%] -top-12 h-72 w-px -rotate-[16deg] bg-gradient-to-b from-transparent via-[#f59e0b]/25 to-transparent blur-[2px]" />
+      {/* Ambient stage: a few soft radial "orbs" + a faint grid near the top. */}
+      <div aria-hidden="true" className="lp-bg">
+        <div className="lp-orb lp-orb-a" />
+        <div className="lp-orb lp-orb-b" />
+        <div className="lp-orb lp-orb-c" />
+        <div className="lp-orb lp-orb-d" />
+        <div className="lp-grid" />
       </div>
 
-      {/* Fixed top: progress scrubber + nav */}
-      <div className="fixed inset-x-0 top-0 z-50">
-        <motion.div
-          aria-hidden="true"
-          className="v4-progress h-[3px] w-full origin-left bg-gradient-to-r from-[#f59e0b] to-[#f97316]"
-          style={{ scaleX, transformOrigin: "0% 50%" }}
-        />
-        <nav className="flex items-center justify-between gap-2 border-b border-white/[0.04] bg-[#18181c]/75 px-3 py-2 backdrop-blur-md sm:px-5">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Link href="/" className={`group flex shrink-0 items-center gap-2.5 ${FOCUS} rounded-full`}>
-              <span className="inline-flex">
-                <Image src="/logo.svg" alt="English Connection logo" width={34} height={34} className="h-[34px] w-[34px]" />
-              </span>
-              <span className="text-base font-bold text-heading transition-colors group-hover:text-primary sm:text-lg">
+      {/* ───────────────────────── NAV (frosted, floating) ───────────────────────── */}
+      <header className="fixed inset-x-0 top-0 z-50">
+        <div className="lp-progress" aria-hidden="true" />
+        <div className="mx-auto max-w-7xl px-3 pt-3 sm:px-5">
+          <nav
+            aria-label="Main"
+            className="lp-glass-strong lp-blur flex h-16 items-center justify-between gap-2 rounded-2xl px-2 sm:px-3"
+          >
+            <Link
+              href="/"
+              aria-label="English Connection — home"
+              className="group flex min-h-11 min-w-11 shrink-0 items-center gap-2.5 rounded-xl px-1"
+            >
+              <Image src="/logo.svg" alt="" width={34} height={34} className="h-[34px] w-[34px]" />
+              <span className="hidden text-lg font-bold text-heading transition-colors duration-200 group-hover:text-primary sm:inline">
                 English Connection
               </span>
             </Link>
-          </div>
-          <AccountChip size="sm" />
-        </nav>
-      </div>
-
-      {/* ───────────────────────── HERO ───────────────────────── */}
-      <section className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center gap-10 px-5 pb-16 pt-28 lg:flex-row lg:gap-12 lg:pt-32">
-        <div className="w-full lg:flex-1">
-          <h1 className="v4-kinetic text-4xl font-extrabold leading-[1.05] tracking-tight text-heading sm:text-5xl lg:text-6xl">
-            <span className="v4-mask">
-              <span className="v4-mask-line block">English Connection,</span>
-            </span>
-            <span className="v4-mask">
-              <span className="v4-mask-line block">
-                your{" "}
-                <span className="bg-gradient-to-r from-[#f59e0b] to-[#f97316] bg-clip-text text-transparent">
-                  AI English coach
-                </span>
-              </span>
-            </span>
-          </h1>
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <div className="v4-hero-stat flex items-center gap-2">
-              <Stars />
-              <span className="text-sm font-semibold text-heading">
-                <span data-count="4.9" data-decimals="1">4.9</span> rating
-              </span>
+            <ul className="hidden items-center gap-1 lg:flex">
+              {NAV_LINKS.map((l) => (
+                <li key={l.href}>
+                  <a
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-body transition-colors duration-200 hover:bg-heading/5 hover:text-heading"
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="lp-nav-tools flex items-center gap-1.5 sm:gap-2">
+              <ThemeToggle />
+              <AccountChip size="sm" />
             </div>
-            <div className="v4-hero-stat text-sm font-semibold text-heading">
-              1,00,000+ <span className="text-body">learners</span>
-            </div>
-          </div>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/signup" className={`v4-hero-cta ${BTN_PRIMARY}`}>
-              Open webapp <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link href="/login" className={`v4-hero-cta ${BTN_SECONDARY}`}>
-              I already have an account
-            </Link>
-          </div>
+          </nav>
         </div>
+      </header>
 
-        <div className="v4-hero-demo relative w-full lg:flex-1">
-          <div className="mx-auto flex h-[520px] w-full max-w-[440px] sm:h-[560px]">
-            <KaiFigure />
-          </div>
-        </div>
-      </section>
-
-      {/* ───────────────────────── BIG TAGLINE ───────────────────────── */}
-      <section className="v4-tagline mx-auto max-w-5xl px-5 py-24 text-center sm:py-32">
-        <h2 className="v4-kinetic text-3xl font-extrabold leading-tight tracking-tight text-heading sm:text-5xl lg:text-6xl">
-          {"English learning has never been this fun.".split(" ").map((word, i) => (
-            <span key={i} className="v4-mask-inline mr-[0.28em]">
-              <span className="v4-tagline-word inline-block">{word}</span>
-            </span>
-          ))}
-        </h2>
-      </section>
-
-      {/* ───────────────────────── 3 STEPS (pinned horizontal act) ───────────────────────── */}
-      <section ref={stepsSection} className="v4-steps-section relative lg:h-screen lg:overflow-hidden">
-        <div ref={stepsTrack} className="v4-steps-track flex flex-col lg:h-screen lg:flex-row">
-          {STEPS.map((s) => (
-            <article
-              key={s.n}
-              className="v4-step-panel flex w-full shrink-0 flex-col items-center justify-center gap-8 px-6 py-20 lg:h-screen lg:w-screen lg:flex-row lg:gap-16 lg:px-20"
+      <main id="main">
+        {/* ───────────────────────── HERO ───────────────────────── */}
+        <section
+          aria-labelledby="hero-title"
+          className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-28 sm:pt-36 lg:min-h-[100svh] lg:grid-cols-12 lg:gap-8 lg:pb-20"
+        >
+          <div className="lg:col-span-7">
+            <p className="lp-rise text-xs font-bold uppercase tracking-[0.16em] text-primary sm:text-sm sm:tracking-[0.24em]">
+              English Connection · K.AI voice tutor
+            </p>
+            <h1
+              id="hero-title"
+              className="lp-kinetic mt-5 text-[3.1rem] font-bold leading-[0.98] text-heading min-[400px]:text-[3.5rem] sm:text-7xl lg:text-[5.6rem]"
             >
-              <div className="v4-step-meta w-full max-w-md lg:flex-1">
-                <span className="v4-kinetic block text-7xl font-bold text-primary/30 lg:text-8xl">{s.n}</span>
-                <span className="v4-kinetic mt-2 block text-sm font-bold uppercase tracking-[0.22em] text-primary sm:text-base">
-                  {s.label}
+              {/* One masked block (not per-line spans) so phones wrap it naturally. */}
+              <span className="lp-mask">
+                <span>
+                  Speak English with a tutor that <span className="lp-grad-text">talks back.</span>
                 </span>
-                <h3 className="mt-1 text-2xl font-extrabold leading-tight text-heading sm:text-3xl lg:text-4xl">
-                  {s.title}
-                </h3>
-                <Link href="/signup" className={`mt-6 ${BTN_PRIMARY}`}>
-                  Try now <ArrowRight className="h-4 w-4" />
-                </Link>
+              </span>
+            </h1>
+            <p className="lp-rise mt-7 max-w-xl text-lg leading-relaxed text-body sm:text-xl" style={delay(140)}>
+              Just talk. K.AI answers out loud, captions both of you, and fixes your grammar
+              mid-conversation — in English, or mixed with Hindi, Tamil, Bengali and {INDIAN_LANGUAGES - 3}{" "}
+              more Indian languages.
+            </p>
+            <div className="lp-rise mt-9 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6" style={delay(200)}>
+              <Link href="/signup" className="lp-btn lp-btn-primary px-7">
+                Start talking — free <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex min-h-11 items-center justify-center rounded-full text-sm font-semibold text-heading underline decoration-heading/25 underline-offset-4 transition-colors duration-200 hover:decoration-primary"
+              >
+                I already have an account
+              </Link>
+            </div>
+            <p className="lp-rise mt-5 text-sm text-body" style={delay(240)}>
+              20 free minutes with K.AI every week · Sign in with Google or email
+            </p>
+            <div
+              className="lp-rise mt-10 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-border pt-6"
+              style={delay(280)}
+            >
+              <div className="flex items-center gap-2">
+                <Stars />
+                <span className="text-sm font-semibold text-heading">4.9 rating</span>
               </div>
-              <div className="flex w-full max-w-[560px] justify-center lg:flex-1">
-                <div className="relative flex h-[520px] w-full max-w-[520px] sm:h-[560px]">
-                  <div className="v4-pulse absolute -inset-5 -z-10 rounded-[40px] bg-primary/10 blur-3xl" />
-                  <s.Demo />
+              <span className="h-4 w-px bg-heading/15" aria-hidden="true" />
+              <div className="text-sm font-semibold text-heading">
+                1,00,000+ <span className="font-medium text-body">learners</span>
+              </div>
+            </div>
+          </div>
+
+          <HeroVisual />
+        </section>
+
+        {/* ───────────────────────── BENTO: what a fix looks like ───────────────────────── */}
+        <section id="features" aria-labelledby="fix-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
+          <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
+            <h2
+              id="fix-title"
+              className="lp-kinetic lp-reveal text-4xl font-bold leading-[1.02] text-heading sm:text-6xl lg:col-span-7"
+            >
+              Every mistake comes back as a fix you can use.
+            </h2>
+            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
+              Grammar, pronunciation, word order — you don&apos;t just get marked wrong. You see the right
+              version, why it&apos;s right, and you say it again.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-6">
+            {/* Pronunciation — the big tile */}
+            <article className="lp-glass lp-reveal relative overflow-hidden rounded-[28px] p-6 sm:p-8 md:col-span-4 md:row-span-2">
+              <TileLabel>Pronunciation Coach</TileLabel>
+              <p className="lp-kinetic mt-8 text-[3.4rem] font-bold leading-none text-heading min-[400px]:text-6xl sm:text-8xl">
+                Wednesday
+              </p>
+              <div className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-3">
+                <p className="lp-kinetic text-3xl font-bold text-primary sm:text-4xl">
+                  WENZ<span className="text-body">-day</span>
+                </p>
+                <p className="text-2xl font-semibold text-heading sm:text-3xl" lang="hi">
+                  वेन्ज़-डे
+                </p>
+              </div>
+              <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_250px] lg:items-end">
+                <p className="max-w-md text-sm leading-relaxed text-body sm:text-base">
+                  Every word you read aloud gets a verdict, the stressed syllable in capitals, and the same sounds
+                  spelled in your own script. An Indian accent is fine — only sounds that change the word are
+                  flagged.
+                </p>
+                <div className="rounded-2xl border border-border bg-surface-2/70 p-4">
+                  <span className="rounded-full bg-rose-500/15 px-2.5 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
+                    Needs work
+                  </span>
+                  <p className="mt-3 text-sm leading-relaxed text-heading">
+                    You said &ldquo;wed-nes-day&rdquo;. Say &ldquo;WENZ-day&rdquo; — the first d is silent.
+                  </p>
                 </div>
               </div>
             </article>
-          ))}
-        </div>
-      </section>
 
-      {/* ───────────────────────── MASCOT EMOTIONS ───────────────────────── */}
-      <section data-reveal className="mx-auto max-w-6xl px-5 py-16">
-        <MascotEmotionMarquee />
-      </section>
+            {/* Jumble */}
+            <article className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-2">
+              <TileLabel>Jumble Words</TileLabel>
+              <ul className="mt-5 flex flex-wrap gap-1.5" aria-label="Scrambled words">
+                {["worked", "I", "bank", "have", "a", "in"].map((w) => (
+                  <li
+                    key={w}
+                    className="rounded-lg border border-border bg-surface-2/70 px-2.5 py-1.5 text-sm font-semibold text-heading"
+                  >
+                    {w}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 flex items-center gap-2 text-base font-bold text-heading">
+                <ArrowRight className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />I have worked in a bank.
+              </p>
+              <p className="mt-3 text-sm text-body">Tap the words into order. Stuck? The coach drops a hint.</p>
+            </article>
 
-      {/* ───────── LESSON CAROUSEL (hidden — curated content not ready yet) ───────── */}
-      <section className="mx-auto hidden max-w-7xl px-5 py-20">
-        <div data-reveal className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <ComingSoonBadge />
-          <h2 className="v4-kinetic mt-4 text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
-            Endless lessons, picked just for you
-          </h2>
-          <p className="mt-3 text-body">Daily curated content tuned to what you struggle with most.</p>
-        </div>
-        <div data-reveal className="mt-10 overflow-hidden" ref={emblaRef}>
-          <div className="flex touch-pan-y pr-4">
-            {LESSONS.map((l) => (
-              <div key={l.title} className="min-w-0 flex-[0_0_85%] pl-4 sm:flex-[0_0_52%] lg:flex-[0_0_380px]">
-                <div className="group flex h-full min-h-[300px] flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.06] bg-surface-1 p-7 transition-transform duration-300 hover:-translate-y-1.5">
-                  <span className={`text-xs font-bold uppercase tracking-[0.18em] ${l.color}`}>{l.tag}</span>
-                  <h4 className="mt-3 text-xl font-bold leading-snug text-heading">{l.title}</h4>
-                  <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-body transition-colors group-hover:text-primary">
-                    Talk about this in English
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
+            {/* Talk time */}
+            <article className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-2">
+              <TileLabel>AI Partner</TileLabel>
+              <p className="lp-kinetic mt-4 text-6xl font-bold leading-none text-heading">
+                20<span className="ml-1 text-2xl text-body">min</span>
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-body">
+                of free conversation with K.AI every week — with XP for every minute you talk. Pro makes it 20
+                minutes every day.
+              </p>
+            </article>
+
+            {/* Corrections in your language */}
+            <article className="lp-glass lp-reveal rounded-[28px] p-6 sm:p-8 md:col-span-6">
+              <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <TileLabel>Mixed-language mode</TileLabel>
+                  <p className="mt-3 max-w-xl text-lg font-semibold leading-snug text-heading sm:text-xl">
+                    &ldquo;One small correction&rdquo; — in the language you think in.
+                  </p>
                 </div>
+                <p className="max-w-sm text-sm text-body">About 70% English, 30% yours, always in Roman script.</p>
               </div>
-            ))}
+              <ul className="mt-6 flex flex-wrap gap-2">
+                {CORRECTION_PHRASES.map((p) => (
+                  <li
+                    key={p.lang}
+                    className="inline-flex items-baseline gap-2 rounded-full border border-border bg-surface-2/60 px-4 py-2 text-sm"
+                  >
+                    <span className="font-semibold text-primary">{p.lang}</span>
+                    <span className="text-heading">{p.line}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ───────────────────────── WHY BENTO ───────────────────────── */}
-      <section className="mx-auto max-w-7xl px-5 py-20">
-        <h2 data-reveal className="v4-kinetic text-center text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
-          Why English Connection?
-        </h2>
-        <p data-reveal className="mx-auto mt-3 max-w-2xl text-center text-body">
-          A peek inside — track your XP, level and streak, climb the leaderboard, and get the
-          coaching that keeps you improving.
-        </p>
-        <div data-reveal className="mt-10">
-          <PlatformInsights />
-        </div>
-      </section>
+        {/* ───────────────────────── HOW IT WORKS: the scroll swipe ───────────────────────── */}
+        <section aria-labelledby="how-title" className="mx-auto max-w-7xl scroll-mt-24 px-5">
+          <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
+            <div className="lp-reveal lg:col-span-7">
+              <TileLabel>How it works</TileLabel>
+              <h2 id="how-title" className="lp-kinetic mt-3 scroll-mt-28 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
+                Talk. Build. Pronounce.
+              </h2>
+            </div>
+            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
+              Three short drills, one progress bar. Keep scrolling to watch each one run.
+            </p>
+          </div>
+        </section>
 
-      {/* ───────────────────────── REVIEWS (horizontal scrub) ───────────────────────── */}
-      <section ref={reviewsSection} className="py-20">
-        <h2 data-reveal className="v4-kinetic mx-auto max-w-3xl px-5 text-center text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
-          Speak English with confidence
-        </h2>
-        <div ref={reviewsViewport} className="v4-reviews-viewport mt-12 overflow-hidden">
-          <div ref={reviewsTrack} className="v4-reviews-track flex gap-5 px-6 lg:px-12">
-            {REVIEWS.map((r) => (
+        <section id="how-it-works" aria-label="The three drills" className="lp-swipe relative">
+          <div data-swipe-track>
+            {STEPS.map((s, i) => (
               <article
-                key={r.name}
-                className="v4-review-card flex w-[280px] shrink-0 flex-col gap-4 rounded-2xl border border-white/[0.06] bg-surface-1 p-6 sm:w-[340px]"
+                key={s.id}
+                id={s.id}
+                data-swipe-panel
+                aria-labelledby={`${s.id}-title`}
+                className="mx-auto max-w-7xl scroll-mt-24 px-5 py-12 sm:py-16 lg:py-20"
               >
-                <Stars />
-                <p className="text-sm leading-relaxed text-body">{r.body}</p>
-                <div className="mt-auto">
-                  <div className="text-sm font-bold text-heading">{r.name}</div>
-                  <div className="text-xs text-muted-foreground">{r.city}</div>
+                <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+                  <div data-col className={`lp-reveal max-w-xl ${i % 2 ? "lg:order-2" : ""}`}>
+                    <div data-swipe-meta>
+                      <div className="flex items-baseline gap-3">
+                        <span className="lp-kinetic text-6xl font-bold text-primary/30 lg:text-7xl" aria-hidden="true">
+                          {s.n}
+                        </span>
+                        <span className="text-sm font-bold uppercase tracking-[0.22em] text-primary">{s.label}</span>
+                      </div>
+                      <h3
+                        id={`${s.id}-title`}
+                        className="lp-kinetic mt-3 text-3xl font-bold leading-[1.05] text-heading sm:text-4xl lg:text-5xl"
+                      >
+                        {s.title}
+                      </h3>
+                      <p className="mt-5 text-base leading-relaxed text-body sm:text-lg">{s.body}</p>
+                      <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-border pt-6">
+                        {s.facts.map((f) => (
+                          <div key={f.k}>
+                            <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-body">{f.k}</dt>
+                            <dd className="mt-1 text-sm font-semibold leading-snug text-heading">{f.v}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      <Link href="/signup" className="lp-btn lp-btn-glass mt-8">
+                        {s.cta} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  </div>
+                  <div data-col className={`relative mx-auto w-full max-w-[540px] ${i % 2 ? "lg:order-1" : ""}`}>
+                    <div
+                      data-swipe-frame
+                      className="flex h-[var(--frame-h)] w-full"
+                      style={{ "--frame-h": `${s.frameH}px` } as CSSProperties}
+                    >
+                      <LazyDemo kind={s.kind} className="flex h-full w-full" />
+                    </div>
+                  </div>
                 </div>
               </article>
             ))}
           </div>
-        </div>
-        <div data-reveal className="mx-auto mt-12 grid max-w-md grid-cols-2 gap-4 px-5 text-center">
-          {REVIEW_STATS.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-white/[0.06] bg-surface-1 p-5">
-              <div
-                className="v4-kinetic text-3xl font-bold text-primary sm:text-4xl"
-                data-count={s.count}
-                data-suffix={s.suffix ?? ""}
-                data-decimals={s.decimals ?? "0"}
-              >
-                {s.count}
-                {s.suffix ?? ""}
-              </div>
-              <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+        </section>
+        <StepsSwipe targetId="how-it-works" />
 
-      {/* ───────────────────────── FINAL CTA ───────────────────────── */}
-      <section data-reveal className="mx-auto max-w-3xl px-5 py-24 text-center">
-        <h2 className="v4-kinetic text-4xl font-extrabold tracking-tight text-heading sm:text-5xl">So, are you ready?</h2>
-        <div className="mt-8 flex flex-col items-center gap-4">
-          <Link href="/signup" className={BTN_PRIMARY}>
-            Open the webapp <ArrowRight className="h-4 w-4" />
-          </Link>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-sm text-body">Or download the app</p>
-            <ComingSoonBadge />
+        {/* ───────────────────────── SET UP EACH CONVERSATION ───────────────────────── */}
+        <section id="languages" aria-labelledby="setup-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
+          <div className="grid gap-10 lg:grid-cols-12">
+            <div className="lp-reveal lg:col-span-5">
+              <TileLabel>Before every conversation</TileLabel>
+              <h2 id="setup-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
+                Choose how K.AI talks to you.
+              </h2>
+              <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8">
+                {SETUP_STATS.map((s) => (
+                  <div key={s.label} className="flex flex-col-reverse border-t border-border pt-4">
+                    <dt className="mt-1 text-sm font-semibold text-body">{s.label}</dt>
+                    <dd className="lp-kinetic text-5xl font-bold text-heading sm:text-6xl">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <div className="grid gap-4 lg:col-span-7">
+              <div className="lp-glass lp-reveal rounded-[28px] p-6 sm:p-8">
+                <h3 className="text-lg font-bold text-heading">Language</h3>
+                <p className="mt-1 text-sm text-body">English only, or English mixed with your language.</p>
+                <ul className="mt-5 flex flex-wrap gap-2" aria-label="Languages">
+                  {AI_PARTNER_LANGUAGES.map((l) => (
+                    <li
+                      key={l.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-2/60 py-1.5 pl-1.5 pr-3.5 text-sm font-medium text-heading"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 text-sm font-semibold text-primary"
+                      >
+                        {l.native}
+                      </span>
+                      {l.id === "English" ? "English only" : l.id}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="grid gap-4 md:grid-cols-5">
+                <div className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-3">
+                  <h3 className="text-lg font-bold text-heading">Practice mode</h3>
+                  <ul className="mt-4 grid gap-2.5 min-[400px]:grid-cols-2">
+                    {AI_PARTNER_SCENARIOS.map((sc) => {
+                      const Icon = SCENARIO_ICONS[sc.id] ?? MessageCircle;
+                      return (
+                        <li key={sc.id} className="flex items-center gap-2.5 text-sm font-medium text-heading">
+                          <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                          {stripLeadingEmoji(sc.label)}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+                <div className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-2">
+                  <h3 className="text-lg font-bold text-heading">Level &amp; voice</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-body">
+                    {AI_PARTNER_LEVELS.map((l) => l.label).join(" · ")}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-body">{VOICE_FEELS} — female and male voices.</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col gap-3 opacity-60 sm:flex-row">
-            <StoreButton kind="play" />
-            <StoreButton kind="apple" />
+        </section>
+
+        {/* ───────────────────────── K.AI REACTS (mascot emotions) ───────────────────────── */}
+        <section aria-labelledby="care-title" className="mx-auto max-w-7xl px-5 py-20 sm:py-28">
+          <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
+            <div className="lp-reveal lg:col-span-7">
+              <TileLabel>Made to care</TileLabel>
+              <h2 id="care-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
+                K.AI&apos;s face moves with the conversation.
+              </h2>
+            </div>
+            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
+              It grins at a good answer, puzzles over a tricky one and calms you down when you&apos;re nervous.
+              Tap a feeling to see it.
+            </p>
           </div>
-        </div>
-      </section>
+          <div className="mt-12">
+            <MascotEmotionMarquee bare />
+          </div>
+        </section>
+
+        {/* ───────────────────────── PROGRESS (in-app preview marquee) ───────────────────────── */}
+        <section id="progress" aria-labelledby="progress-title" className="scroll-mt-24 py-20 sm:py-28">
+          <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-12 lg:items-end">
+            <div className="lp-reveal lg:col-span-7">
+              <TileLabel>Your progress</TileLabel>
+              <h2 id="progress-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
+                Proof you&apos;re getting better.
+              </h2>
+            </div>
+            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
+              XP and levels, a daily streak, badges at every milestone and a weekly leaderboard — here&apos;s the
+              inside of the app.
+            </p>
+          </div>
+          <div className="mx-auto mt-12 max-w-[1440px]">
+            <PlatformInsights />
+          </div>
+        </section>
+
+        {/* ───────────────────────── REVIEWS (scroll swipe) ───────────────────────── */}
+        <section id="reviews" aria-labelledby="reviews-title" className="lp-reviews py-20 sm:py-28">
+          <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-12 lg:items-end">
+            <div className="lp-reveal lg:col-span-8">
+              <TileLabel>Learners</TileLabel>
+              <h2 id="reviews-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
+                Heard in Bengaluru, Pune, Delhi and Chennai.
+              </h2>
+            </div>
+            <dl className="lp-reveal flex gap-3 lg:col-span-4 lg:justify-end">
+              {REVIEW_STATS.map((s) => (
+                <div key={s.label} className="lp-glass flex min-w-[120px] flex-col-reverse rounded-2xl px-5 py-3">
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-body">{s.label}</dt>
+                  <dd className="lp-kinetic text-3xl font-bold text-primary">{s.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div data-swipe-viewport className="mt-12">
+            <ul data-swipe-track aria-label="Reviews" className="flex w-max gap-5 px-5 pb-2 lg:px-12">
+              {REVIEWS.map((r) => (
+                <li key={r.name} className="w-[280px] shrink-0 sm:w-[340px]">
+                  <figure className="lp-glass flex h-full flex-col gap-4 rounded-[28px] p-6">
+                    <Stars />
+                    <blockquote className="text-[0.95rem] leading-relaxed text-heading">
+                      <p>&ldquo;{r.body}&rdquo;</p>
+                    </blockquote>
+                    <figcaption className="mt-auto flex items-center gap-3 border-t border-border pt-4">
+                      <span
+                        aria-hidden="true"
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/15 text-sm font-bold text-primary"
+                      >
+                        {r.name[0]}
+                      </span>
+                      <span>
+                        <span className="block text-sm font-bold text-heading">{r.name}</span>
+                        <span className="block text-xs text-body">{r.city}</span>
+                      </span>
+                    </figcaption>
+                  </figure>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+        <ReviewsSwipe targetId="reviews" />
+
+        {/* ───────────────────────── PLANS ───────────────────────── */}
+        <section id="plans" aria-labelledby="plans-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
+          <div className="grid gap-10 lg:grid-cols-12">
+            <div className="lp-reveal lg:col-span-5">
+              <TileLabel>Plans</TileLabel>
+              <h2 id="plans-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
+                20 minutes a week, free. 20 a day on Pro.
+              </h2>
+              <p className="mt-5 max-w-md text-base leading-relaxed text-body sm:text-lg">
+                Jumble Words, Pronunciation and K.AI all work on the free plan. Pro takes the daily caps off and
+                gives you K.AI every day.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
+              <article aria-labelledby="plan-free" className="lp-glass lp-reveal flex flex-col rounded-[28px] p-6 sm:p-8">
+                <h3 id="plan-free" className="text-sm font-bold uppercase tracking-[0.2em] text-body">
+                  Free
+                </h3>
+                <p className="lp-kinetic mt-3 text-4xl font-bold text-heading">
+                  20 min<span className="text-xl text-body"> / week</span>
+                </p>
+                <p className="mt-1 text-sm text-body">with K.AI</p>
+                <ul className="mb-8 mt-6 space-y-2.5 border-t border-border pt-5 text-sm text-heading">
+                  <li>Daily Jumble Words</li>
+                  <li>Daily Pronunciation practice</li>
+                  <li>XP, levels, streaks &amp; badges</li>
+                </ul>
+                <Link href="/signup" className="lp-btn lp-btn-primary mt-auto">
+                  Start talking — free <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </article>
+
+              <article
+                aria-labelledby="plan-pro"
+                className="lp-glass-strong lp-reveal relative flex flex-col rounded-[28px] p-6 ring-1 ring-primary/40 sm:p-8"
+              >
+                <h3 id="plan-pro" className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-primary">
+                  <Sparkles className="h-4 w-4" aria-hidden="true" /> Pro
+                </h3>
+                <p className="lp-kinetic mt-3 text-4xl font-bold text-heading">
+                  20 min<span className="text-xl text-body"> / day</span>
+                </p>
+                <p className="mt-1 text-sm text-body">with K.AI</p>
+                <ul className="mb-8 mt-6 space-y-2.5 border-t border-border pt-5 text-sm text-heading">
+                  <li>No daily cap on Jumble Words</li>
+                  <li>No daily cap on Pronunciation</li>
+                  <li>Your streak, XP &amp; badges carry over</li>
+                </ul>
+                <Link href="/pro" className="lp-btn lp-btn-glass mt-auto">
+                  See Pro <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── FINAL CTA ───────────────────────── */}
+        <section aria-labelledby="ready-title" className="mx-auto max-w-7xl px-5 pb-24 pt-8">
+          <div className="lp-glass-strong lp-reveal relative overflow-hidden rounded-[36px] px-6 py-14 sm:px-12 sm:py-20">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full"
+              style={{ background: "radial-gradient(closest-side, var(--lp-orb-a), transparent)" }}
+            />
+            <div className="relative grid gap-10 lg:grid-cols-12 lg:items-end">
+              <div className="lg:col-span-8">
+                <h2 id="ready-title" className="lp-kinetic text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
+                  Say your first sentence to K.AI today.
+                </h2>
+                <p className="mt-5 max-w-lg text-base text-body sm:text-lg">
+                  A free account with Google or email is all it takes.
+                </p>
+              </div>
+              <div className="flex flex-col gap-4 lg:col-span-4 lg:items-end">
+                <Link href="/signup" className="lp-btn lp-btn-primary px-7">
+                  Open the webapp <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-heading underline decoration-heading/25 underline-offset-4 transition-colors duration-200 hover:decoration-primary"
+                >
+                  Log in
+                </Link>
+              </div>
+            </div>
+            <div className="relative mt-12 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex flex-wrap items-center gap-2 text-sm text-body">
+                Android and iOS apps <ComingSoonBadge />
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <StoreButton kind="play" />
+                <StoreButton kind="apple" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
       {/* ───────────────────────── FOOTER ───────────────────────── */}
-      <footer className="border-t border-white/[0.06] bg-surface-1/40">
+      <footer className="lp-glass rounded-none border-x-0 border-b-0">
         <div className="mx-auto max-w-7xl px-5 py-14">
-          <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-            <div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2">
-                <span className="inline-flex">
-                  <Image src="/logo.svg" alt="English Connection logo" width={26} height={26} className="h-6 w-6" />
-                </span>
+                <Image src="/logo.svg" alt="" width={26} height={26} className="h-6 w-6" />
                 <span className="text-sm font-bold text-heading">English Connection</span>
               </div>
               <p className="mt-3 max-w-xs text-sm text-body">
-                Your AI English coach — built for India&apos;s ambitious learners.
+                Spoken-English practice with K.AI, Jumble Words and the Pronunciation Coach.
               </p>
               <div className="mt-5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Reach us
-                </p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-body">Reach us</p>
                 <p className="mt-1 text-xs text-body">Call, text, or WhatsApp us:</p>
-                <div className="mt-2 space-y-1">
+                <ul className="mt-1">
                   {CONTACT_NUMBERS.map((n) => (
-                    <a
-                      key={n}
-                      href={telLink(n)}
-                      className="block text-sm font-semibold text-heading hover:text-primary"
-                    >
-                      {formatNumber(n)}
-                    </a>
+                    <li key={n}>
+                      <a
+                        href={telLink(n)}
+                        className="inline-flex min-h-11 items-center rounded text-sm font-semibold text-heading transition-colors duration-200 hover:text-primary"
+                      >
+                        {formatNumber(n)}
+                      </a>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             </div>
             <FooterCol title="Webapp" links={FOOTER_WEBAPP} />
             <FooterCol title="Company" links={FOOTER_COMPANY} />
             <FooterCol title="Get the app" links={FOOTER_APP} />
           </div>
-          <div className="mt-12 flex flex-col gap-2 border-t border-white/[0.06] pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>© 2026 English Connection · Built for India&apos;s ambitious learners</span>
+          <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6 text-xs text-body sm:flex-row sm:items-center sm:justify-between">
+            <span>© 2026 English Connection</span>
             <span>Made by Bharatrix Pvt. Ltd.</span>
           </div>
         </div>
@@ -456,34 +641,116 @@ export default function ShowcaseV4() {
   );
 }
 
-/* ───────────────────────── helpers ───────────────────────── */
+/* ───────────────────────── content ───────────────────────── */
 
-const FOCUS =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181c]";
-
-const BTN_PRIMARY = `inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#f59e0b] to-[#f97316] px-6 py-3 text-sm font-bold text-[#0b0e14] shadow-lg shadow-orange-500/20 transition-transform hover:scale-[1.03] active:scale-95 ${FOCUS}`;
-
-const BTN_SECONDARY = `inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-surface-2/60 px-6 py-3 text-sm font-semibold text-heading transition-colors hover:bg-surface-2 ${FOCUS}`;
-
-const STEPS: { n: string; label: string; title: string; Demo: ComponentType }[] = [
-  { n: "01", label: "AI Partner", title: "Talk it out with your AI partner", Demo: AiPartnerDemo },
-  { n: "02", label: "Jumble Words", title: "Rebuild real sentences in Jumble Words", Demo: JumbleDemo },
-  { n: "03", label: "Pronunciation Agent", title: "Speak, then see exactly what to fix", Demo: PronunciationDemo },
+const NAV_LINKS = [
+  { label: "How it works", href: "#how-title" },
+  { label: "Languages", href: "#languages" },
+  { label: "Plans", href: "#plans" },
 ];
 
-const LESSONS: { tag: string; title: string; color: string }[] = [
-  { tag: "MOTIVATION", title: "Why do I always feel stuck?", color: "text-primary-1" },
-  { tag: "CULTURE", title: "How British tea became a ritual", color: "text-cyan" },
-  { tag: "BUSINESS", title: "How Pixar found its biggest risk", color: "text-secondary-1" },
-  { tag: "INTERVIEW", title: "Inside a Grammy winner's mind", color: "text-pink" },
-  { tag: "DAILY LIFE", title: "Five ways to actually master small talk", color: "text-primary" },
-  { tag: "WELLNESS", title: "Why your accent never fully disappears", color: "text-cyan" },
-  { tag: "NEWS", title: "When AI rewrote the office", color: "text-primary-1" },
+// K.AI's own "one small correction" phrase per language (server/gemini/tutorPrompt.ts).
+const CORRECTION_PHRASES = [
+  { lang: "Hindi", line: "Ek choti si correction" },
+  { lang: "Tamil", line: "Oru chinna correction" },
+  { lang: "Bengali", line: "Ekta choto correction" },
+  { lang: "Telugu", line: "Oka chinna correction" },
+  { lang: "Marathi", line: "Ek chotishi correction" },
+  { lang: "Gujarati", line: "Ek nani correction" },
 ];
 
-const REVIEW_STATS: { count: string; suffix?: string; decimals?: string; label: string }[] = [
-  { count: "1", suffix: "L+", label: "Happy users" },
-  { count: "4.9", decimals: "1", label: "Rating" },
+// `frameH` = the demo's fixed box height (fixed so lazy mounting never shifts
+// the page; on desktop the pinned swipe caps it to the viewport).
+const STEPS: {
+  id: string;
+  n: string;
+  label: string;
+  title: string;
+  body: string;
+  facts: { k: string; v: string }[];
+  cta: string;
+  kind: LazyDemoKind;
+  frameH: number;
+}[] = [
+  {
+    id: "ai-partner",
+    n: "01",
+    label: "AI Partner",
+    title: "Talk it out with K.AI.",
+    body: "Pick a practice mode — casual chat, a job interview, IELTS or TOEFL, travel, the office — then just talk. K.AI replies out loud when you pause, and you can cut in any time.",
+    facts: [
+      { k: "Hands-free", v: "It waits while you think" },
+      { k: "Captions", v: "Live, for both of you" },
+      { k: "Rewards", v: "XP for every minute" },
+    ],
+    cta: "Talk to K.AI",
+    kind: "ai",
+    frameH: 580,
+  },
+  {
+    id: "jumble-words",
+    n: "02",
+    label: "Jumble Words",
+    title: "Build the sentence, move the train.",
+    body: "Tap scrambled words into order. Every word becomes a coach — get the order right and the train leaves the station; get it wrong and it derails.",
+    facts: [
+      { k: "Hints", v: "From your AI coach" },
+      { k: "Combo", v: "Right answers in a row" },
+      { k: "Rewards", v: "XP per sentence" },
+    ],
+    cta: "Play Jumble Words",
+    kind: "jumble",
+    frameH: 600,
+  },
+  {
+    id: "pronunciation",
+    n: "03",
+    label: "Pronunciation Coach",
+    title: "Hear exactly where a word slipped.",
+    body: "Read a sentence aloud. You get a score, a word-by-word check and a tip for each word that needs work — spelled the way it sounds.",
+    facts: [
+      { k: "Score", v: "For every attempt" },
+      { k: "Breakdown", v: "Word by word" },
+      { k: "Accent", v: "Never penalised" },
+    ],
+    cta: "Try it free",
+    kind: "pronunciation",
+    frameH: 690,
+  },
+];
+
+const SETUP_STATS = [
+  { value: String(INDIAN_LANGUAGES), label: "Indian languages to mix in" },
+  { value: String(AI_PARTNER_SCENARIOS.length), label: "practice modes" },
+  { value: String(AI_PARTNER_LEVELS.length), label: "levels" },
+  { value: String(AI_PARTNER_VOICES.length), label: "voices" },
+];
+
+const SCENARIO_ICONS: Record<string, LucideIcon> = {
+  "General Conversation": Coffee,
+  "Job Interview": BriefcaseBusiness,
+  "IELTS Speaking": GraduationCap,
+  "Travel & Daily Life": Plane,
+  "Office & Workplace": Building2,
+  "Grammar Workout": Target,
+};
+
+// Scenario labels carry a leading emoji for the in-app picker; the landing uses
+// SVG icons instead (no emoji as icons).
+function stripLeadingEmoji(label: string) {
+  return label.replace(/^[^\p{L}\p{N}]+/u, "");
+}
+
+// "Breezy, firm, youthful, bright and more" — straight from the voice list.
+const VOICE_FEELS = (() => {
+  const feels = [...new Set(AI_PARTNER_VOICES.map((v) => v.feel.toLowerCase()))].slice(0, 4);
+  const text = feels.join(", ");
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)} and more`;
+})();
+
+const REVIEW_STATS: { value: string; label: string }[] = [
+  { value: "1L+", label: "Happy users" },
+  { value: "4.9", label: "Rating" },
 ];
 
 const REVIEWS: { name: string; city: string; body: string }[] = [
@@ -522,8 +789,8 @@ const REVIEWS: { name: string; city: string; body: string }[] = [
 const FOOTER_WEBAPP = [
   { label: "Open dashboard", href: "/signup" },
   { label: "Log in", href: "/login" },
-  { label: "Practice library", href: "#" },
-  { label: "Leaderboard", href: "#" },
+  { label: "How it works", href: "#how-title" },
+  { label: "Plans", href: "#plans" },
 ];
 
 const FOOTER_COMPANY = [
@@ -538,39 +805,58 @@ const FOOTER_APP = [
   { label: "App Store", href: "https://www.apple.com/app-store/" },
 ];
 
-function makeReveals(scope: HTMLElement, reduce: boolean) {
-  gsap.utils.toArray<HTMLElement>("[data-reveal]", scope).forEach((el) => {
-    gsap.from(el, {
-      opacity: 0,
-      y: reduce ? 8 : 28,
-      duration: reduce ? 0.4 : 0.7,
-      ease: "power2.out",
-      scrollTrigger: { trigger: el, start: "top 88%", once: true },
-    });
-  });
+/* ───────────────────────── pieces ───────────────────────── */
+
+// K.AI over its glow, with one frosted live-caption card showing a real kind of
+// exchange (Hindi + English mode — K.AI's actual correction phrases).
+function HeroVisual() {
+  return (
+    <div className="lp-pop relative mx-auto w-full max-w-[460px] lg:col-span-5 lg:max-w-none" style={delay(120)}>
+      <div className="relative mx-auto aspect-square w-full max-w-[460px]">
+        <KaiFigure />
+      </div>
+      <figure
+        aria-label="Example: K.AI correcting a sentence"
+        className="lp-glass-strong lp-blur relative z-10 -mt-24 rounded-3xl p-4 sm:-mt-28 sm:p-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-body">
+          <span className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+            Live captions
+          </span>
+          <span>Hindi + English · Job interview</span>
+        </div>
+        <div className="mt-4 space-y-2.5 text-sm leading-relaxed sm:text-[0.95rem]">
+          <p className="rounded-2xl rounded-bl-md bg-surface-2/80 px-4 py-2.5 text-heading">
+            <span className="mr-2 text-xs font-bold uppercase tracking-wider text-body">You</span>I{" "}
+            <span className="lp-slip">am work</span> in a bank since 2019.
+          </p>
+          <p className="rounded-2xl rounded-br-md bg-primary/10 px-4 py-2.5 text-heading">
+            <span className="mr-2 text-xs font-bold uppercase tracking-wider text-primary">K.AI</span>
+            Ek choti si correction — &ldquo;I <span className="lp-fix">have worked</span>{" "}
+            in a bank since 2019.&rdquo; Ab ek baar sahi wala boliye.
+          </p>
+        </div>
+        <div className="mt-4 flex items-center gap-3 text-xs font-semibold text-body">
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground" aria-hidden="true">
+            <Mic className="h-4 w-4" />
+          </span>
+          Hands-free · K.AI answers when you pause
+        </div>
+      </figure>
+    </div>
+  );
 }
 
-function countUp(el: HTMLElement) {
-  const target = Number(el.dataset.count ?? "0");
-  const decimals = Number(el.dataset.decimals ?? "0");
-  const suffix = el.dataset.suffix ?? "";
-  const obj = { v: 0 };
-  gsap.to(obj, {
-    v: target,
-    duration: 1.4,
-    ease: "power2.out",
-    scrollTrigger: { trigger: el, start: "top 88%", once: true },
-    onUpdate: () => {
-      el.textContent = obj.v.toFixed(decimals) + suffix;
-    },
-  });
+function TileLabel({ children }: { children: ReactNode }) {
+  return <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{children}</p>;
 }
 
 function Stars() {
   return (
-    <span className="inline-flex items-center gap-0.5" aria-label="5 out of 5 stars">
+    <span className="inline-flex items-center gap-0.5" role="img" aria-label="5 out of 5 stars">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className="h-4 w-4 fill-current text-[#f59e0b]" aria-hidden="true" />
+        <Star key={i} className="lp-star h-4 w-4" aria-hidden="true" />
       ))}
     </span>
   );
@@ -591,8 +877,8 @@ function StoreButton({ kind }: { kind: "play" | "apple" }) {
       href={isApple ? "https://www.apple.com/app-store/" : "https://play.google.com/"}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={isApple ? "Download on the App Store" : "Get it on Google Play"}
-      className={`inline-flex items-center gap-3 rounded-xl border border-white/10 bg-surface-2/60 px-5 py-3 transition-colors hover:bg-surface-2 ${FOCUS}`}
+      aria-label={isApple ? "App Store (coming soon)" : "Google Play (coming soon)"}
+      className="lp-btn-glass inline-flex min-h-12 items-center gap-3 rounded-xl px-5 py-2.5 transition-transform duration-200 hover:-translate-y-px"
     >
       {isApple ? (
         <svg viewBox="0 0 384 512" className="h-6 w-6 fill-heading" aria-hidden="true">
@@ -601,13 +887,13 @@ function StoreButton({ kind }: { kind: "play" | "apple" }) {
       ) : (
         <svg viewBox="0 0 512 512" className="h-6 w-6" aria-hidden="true">
           <path d="M48 24v464l232-232z" fill="#f59e0b" />
-          <path d="M48 24l232 232 80-80z" fill="#00e3fd" />
+          <path d="M48 24l232 232 80-80z" fill="#00b8d4" />
           <path d="M48 488l232-232 80 80z" fill="#ff6c95" />
           <path d="M360 176l80 80-80 80 64-40c24-15 24-65 0-80z" fill="#f97316" />
         </svg>
       )}
       <span className="text-left">
-        <span className="block text-[10px] text-muted-foreground">{isApple ? "Download on the" : "Get it on"}</span>
+        <span className="block text-[10px] text-body">{isApple ? "Download on the" : "Get it on"}</span>
         <span className="block text-sm font-bold text-heading">{isApple ? "App Store" : "Google Play"}</span>
       </span>
     </a>
@@ -617,11 +903,14 @@ function StoreButton({ kind }: { kind: "play" | "apple" }) {
 function FooterCol({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <div>
-      <h4 className="text-xs font-bold uppercase tracking-wider text-heading">{title}</h4>
-      <ul className="mt-4 space-y-2.5">
+      <h2 className="text-xs font-bold uppercase tracking-wider text-heading">{title}</h2>
+      <ul className="mt-3">
         {links.map((l) => (
           <li key={l.label}>
-            <Link href={l.href} className={`rounded text-sm text-body transition-colors hover:text-primary ${FOCUS}`}>
+            <Link
+              href={l.href}
+              className="inline-flex min-h-11 items-center rounded text-sm text-body transition-colors duration-200 hover:text-primary"
+            >
               {l.label}
             </Link>
           </li>
@@ -630,25 +919,3 @@ function FooterCol({ title, links }: { title: string; links: { label: string; hr
     </div>
   );
 }
-
-const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
-.v4-kinetic { font-family: 'Space Grotesk', var(--font-display, 'Plus Jakarta Sans'), sans-serif; }
-.v4-mask { display: block; overflow: hidden; }
-.v4-mask-inline { display: inline-block; overflow: hidden; vertical-align: bottom; }
-@keyframes v4-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
-@keyframes v4-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes v4-pulse { 0%,100% { opacity: .5; } 50% { opacity: .95; } }
-.v4-float { animation: v4-float 7s ease-in-out infinite; }
-.v4-bob { animation: v4-bob 3.2s ease-in-out infinite; }
-.v4-pulse { animation: v4-pulse 4s ease-in-out infinite; }
-@media (min-width: 400px) { .xs\\:inline { display: inline; } .xs\\:hidden { display: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .v4-float, .v4-bob, .v4-pulse { animation: none !important; }
-  .v4-steps-track { flex-direction: column !important; height: auto !important; transform: none !important; }
-  .v4-steps-section { height: auto !important; overflow: visible !important; }
-  .v4-step-panel { width: 100% !important; height: auto !important; }
-  .v4-reviews-track { flex-wrap: wrap !important; transform: none !important; justify-content: center; }
-  .v4-reviews-viewport { overflow: visible !important; }
-}
-`;

@@ -1,7 +1,4 @@
-"use client";
-
-import { useEffect, useState, type ReactNode } from "react";
-import { useReducedMotion } from "motion/react";
+import type { ReactNode } from "react";
 import {
   Flame,
   Trophy,
@@ -15,16 +12,19 @@ import {
   Volume2,
   Check,
   X,
+  Crown,
 } from "lucide-react";
 import { StreakCard } from "@/components/badges/StreakCard";
 import { DUMMY_AVATARS as AVATARS } from "@/lib/dummyAvatars";
 
 // PlatformInsights — a marketing carousel that previews the REAL in-app
 // experience (profile, XP & levels, streaks, leaderboard, activity, badges,
-// Jumble Words, Pronunciation Agent) with dummy data. Each card mirrors the
+// Jumble Words, Pronunciation Coach) with dummy data. Each card mirrors the
 // layout/colours of its production counterpart and carries a one-line
-// description. Runs as an infinite, auto-scrolling Embla loop (pauses on hover,
-// honours reduced-motion). Nothing here is wired to live data.
+// description. Runs as an infinite CSS marquee (compositor-only transform,
+// pauses on hover/focus); with reduced motion it becomes a plain, manually
+// scrollable row. A Server Component: all of it is plain HTML (only the reused
+// StreakCard is a client island). Nothing here is wired to live data.
 
 type Slide = { key: string; title: string; desc: string; width?: "wide"; render: () => ReactNode };
 
@@ -37,38 +37,23 @@ const SLIDES: Slide[] = [
   { key: "week", title: "This week", desc: "Your daily progress this week.", width: "wide", render: () => <ThisWeekBody /> },
   { key: "badges", title: "Badges", desc: "Collect badges as you hit milestones.", render: () => <BadgesBody /> },
   { key: "jumble", title: "Jumble Words", desc: "Rebuild sentences with smart hints.", render: () => <JumbleBody /> },
-  { key: "pronunciation", title: "Pronunciation Agent", desc: "Speak and get instant feedback.", render: () => <PronunciationBody /> },
+  { key: "pronunciation", title: "Pronunciation Coach", desc: "Speak and get instant feedback.", render: () => <PronunciationBody /> },
 ];
 
 export default function PlatformInsights() {
-  const reduced = useReducedMotion();
-
-  // Reduced motion: a plain, manually-scrollable row — no auto-animation.
-  if (reduced) {
-    return (
-      <div className="flex overflow-x-auto pb-2">
-        {SLIDES.map((s) => (
-          <InsightCard key={s.key} slide={s} />
-        ))}
-      </div>
-    );
-  }
-
   // Continuous, seamless horizontal marquee. The set is rendered twice and the
   // track translates exactly -50% on a linear loop, so it slides forever without
   // a jump. Spacing lives on each card's right margin (not flex gap) so the
-  // half-width offset lands precisely on a card boundary. Pauses on hover.
+  // half-width offset lands precisely on a card boundary. Reduced motion is pure
+  // CSS: the animation stops, the copy is hidden and the row scrolls by hand.
   return (
-    <div className="group relative overflow-hidden">
+    <div className="insights-marquee group relative">
       <style>{MARQUEE_CSS}</style>
-      <div className="insights-marquee-track flex w-max group-hover:[animation-play-state:paused]">
+      <div className="insights-marquee-track flex w-max group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused]">
         {[...SLIDES, ...SLIDES].map((s, i) => (
           <InsightCard key={`${s.key}-${i}`} slide={s} ariaHidden={i >= SLIDES.length} />
         ))}
       </div>
-      {/* Edge fades so cards melt in/out instead of hard-clipping. */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#18181c] to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#18181c] to-transparent" />
     </div>
   );
 }
@@ -76,8 +61,8 @@ export default function PlatformInsights() {
 function InsightCard({ slide, ariaHidden }: { slide: Slide; ariaHidden?: boolean }) {
   const w = slide.width === "wide" ? "w-[440px] sm:w-[520px]" : "w-[280px] sm:w-[320px]";
   return (
-    <div aria-hidden={ariaHidden} className={`mr-4 shrink-0 ${w}`}>
-      <div className="flex h-[440px] flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-surface-1 p-6">
+    <div aria-hidden={ariaHidden} className={`insights-card mr-4 shrink-0 ${w}`}>
+      <div className="lp-glass flex h-[440px] flex-col overflow-hidden rounded-3xl p-6">
         <h3 className="text-base font-bold text-heading">{slide.title}</h3>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{slide.desc}</p>
         <div className="mt-4 min-h-0 flex-1">{slide.render()}</div>
@@ -91,12 +76,20 @@ const MARQUEE_CSS = `
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+.insights-marquee {
+  overflow: hidden;
+  /* Edges fade out via a mask (theme-agnostic — no colour overlay). */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+}
 .insights-marquee-track {
-  animation: insights-marquee 44s linear infinite;
+  animation: insights-marquee 48s linear infinite;
   will-change: transform;
 }
 @media (prefers-reduced-motion: reduce) {
-  .insights-marquee-track { animation: none; }
+  .insights-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .insights-marquee-track { animation: none; will-change: auto; }
+  .insights-card[aria-hidden="true"] { display: none; }
 }
 `;
 
@@ -152,7 +145,7 @@ function XpBody() {
     <div className="flex h-full flex-col">
       <div className="flex flex-col items-center gap-1 py-2">
         <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Score</div>
-        <div className="bg-gradient-to-r from-[#f59e0b] to-[#f97316] bg-clip-text text-3xl font-bold tabular-nums text-transparent">
+        <div className="text-gradient text-3xl font-bold tabular-nums">
           12,480 XP
         </div>
         <div className="inline-flex items-center gap-1 text-xs font-semibold text-cyan">
@@ -249,7 +242,10 @@ function PodiumCol({ rank, name, xp, avatar }: { rank: 1 | 2 | 3; name: string; 
     <div className="flex w-[56px] flex-col items-center justify-end">
       <div className="relative mb-2 flex flex-col items-center">
         {rank === 1 && (
-          <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-2xl leading-none">👑</span>
+          <Crown
+            className="absolute -top-6 left-1/2 h-5 w-5 -translate-x-1/2 fill-current text-amber-500"
+            aria-hidden="true"
+          />
         )}
         <span
           className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 ${c.border}`}
@@ -286,7 +282,8 @@ function LbRow({ rank, name, xp, me, avatar }: { rank: number; name: string; xp:
 }
 
 // ── Activity heatmap (mirrors ActivityHeatmap) ──────────────────────────────
-const HEAT = ["#262b35", "#7c4a15", "#b45309", "#d97706", "#f59e0b"];
+// Theme-aware heatmap ramp (amber on dark, blue on light) from globals.css.
+const HEAT = ["var(--heat-0)", "var(--heat-1)", "var(--heat-2)", "var(--heat-3)", "var(--heat-4)"];
 const HEAT_WEEKS = 13;
 function heatLevel(i: number): number {
   const v = (i * 31 + (i % 7) * 13) % 11;
@@ -297,30 +294,10 @@ function heatLevel(i: number): number {
   return 4;
 }
 
-// Weighted random level (more empty/low days, like a real heatmap).
-function randLevel(): number {
-  const r = Math.random();
-  if (r < 0.42) return 0;
-  if (r < 0.64) return 1;
-  if (r < 0.8) return 2;
-  if (r < 0.92) return 3;
-  return 4;
-}
-
 function ActivityBody() {
-  // Start deterministic so SSR and the first client render match (no hydration
-  // drift), then shuffle to a fresh random pattern after mount so the heatmap
-  // looks different on each visit. The setState runs inside a rAF callback (not
-  // synchronously in the effect body) to stay clear of the set-state-in-effect rule.
-  const [levels, setLevels] = useState<number[]>(() =>
-    Array.from({ length: HEAT_WEEKS * 7 }, (_, i) => heatLevel(i)),
-  );
-  useEffect(() => {
-    const id = requestAnimationFrame(() =>
-      setLevels(Array.from({ length: HEAT_WEEKS * 7 }, () => randLevel())),
-    );
-    return () => cancelAnimationFrame(id);
-  }, []);
+  // Deterministic pattern: this is a Server Component (the whole marquee ships
+  // as plain HTML, no hydration), so no per-visit randomising.
+  const levels = Array.from({ length: HEAT_WEEKS * 7 }, (_, i) => heatLevel(i));
   const total = levels.reduce((a, l) => a + l * 2, 0);
 
   return (
@@ -370,15 +347,15 @@ function ThisWeekBody() {
   return (
     <div className="flex h-full flex-col gap-3">
       {/* Per-game stacked bars */}
-      <div className="flex flex-1 gap-1.5 rounded-[18px] bg-[#111316] p-3">
+      <div className="flex flex-1 gap-1.5 rounded-[18px] bg-surface-2/70 p-3">
         {WEEK_DATA.map((d) => {
           const total = d.jumble + d.pron + d.ai;
           const done = total > 0;
           return (
             <div key={d.day} className="flex flex-1 flex-col items-center gap-2">
-              <div className={`flex flex-col items-center gap-1.5 rounded-full px-1.5 py-1.5 ${done ? "bg-white/[0.06]" : ""}`}>
-                <span className={`text-[10px] font-bold ${done ? "text-white" : "text-[#4a4d58]"}`}>{d.day}</span>
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full ${done ? "bg-green-800 text-white" : "bg-[#2a2d36] text-transparent"}`}>
+              <div className={`flex flex-col items-center gap-1.5 rounded-full px-1.5 py-1.5 ${done ? "bg-heading/[0.06]" : ""}`}>
+                <span className={`text-[10px] font-bold ${done ? "text-heading" : "text-muted-foreground"}`}>{d.day}</span>
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full ${done ? "bg-green-700 text-white" : "bg-surface-3 text-transparent"}`}>
                   <Check className="h-3 w-3" strokeWidth={3.5} />
                 </span>
               </div>
@@ -395,7 +372,7 @@ function ThisWeekBody() {
                     })}
                   </div>
                 ) : (
-                  <div className="mb-1 h-[3px] w-[80%] rounded-full bg-[#1e2028]" />
+                  <div className="mb-1 h-[3px] w-[80%] rounded-full bg-surface-3" />
                 )}
               </div>
             </div>
@@ -450,7 +427,7 @@ function JumbleBody() {
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap gap-1.5">
         {JUMBLE_TILES.map((t, i) => (
-          <span key={i} className="rounded-lg border border-white/10 bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-heading">
+          <span key={i} className="rounded-lg border border-border bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-heading">
             {t}
           </span>
         ))}
@@ -479,13 +456,13 @@ function MiniRing({ pct }: { pct: number }) {
   return (
     <div className="relative h-16 w-16 shrink-0">
       <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90">
-        <circle cx="32" cy="32" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+        <circle cx="32" cy="32" r={r} fill="none" style={{ stroke: "var(--surface-3)" }} strokeWidth="6" />
         <circle
           cx="32"
           cy="32"
           r={r}
           fill="none"
-          stroke="#f59e0b"
+          style={{ stroke: "var(--primary-2)" }}
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -508,10 +485,10 @@ const PRON_WORDS: { w: string; status: "ok" | "bad" | "meh" }[] = [
 function PronunciationBody() {
   const chip = (s: "ok" | "bad" | "meh") =>
     s === "ok"
-      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
       : s === "bad"
-        ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
-        : "border-amber-500/40 bg-amber-500/10 text-amber-300";
+        ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300"
+        : "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300";
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3">

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T18:24:35.259Z",
+  "generatedAt": "2026-09-22T18:30:34.793Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -602,6 +602,14 @@
       "title": "A busy Gemini model must not fail the learner (or cool down keys)",
       "type": "decision",
       "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-041",
+      "title": "Landing page redesign (glass, lighter, scroll-swipe kept)",
+      "type": "decision",
+      "date": "2026-09-23",
       "status": "active",
       "path": "docs/memory/DECISIONS.md"
     },
@@ -1444,6 +1452,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-041",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -1681,6 +1694,11 @@
     {
       "source": "memory/status",
       "target": "D-040",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-041",
       "kind": "cites"
     },
     {

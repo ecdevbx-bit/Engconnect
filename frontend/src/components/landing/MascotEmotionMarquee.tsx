@@ -1,16 +1,18 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useState } from "react";
 
+import { cn } from "@/lib/utils";
 import { PixelMascot } from "@/components/v3/PixelMascot";
+import { LazyMount } from "./LazyMount";
 import type { MascotEmotion } from "@/lib/emotion";
 
-// Infinite, center-focused emotion showcase. The whole MascotEmotion range is
-// scrolled past a fixed centre: the middle mascot is crisp, and each step out
-// (left/right) gets progressively blurred, smaller, and dimmer — underlining
-// how much the coach reads and reacts to how the learner feels.
+// Emotion spotlight — one big K.AI mascot that cycles through its whole
+// emotional range, with a chip per emotion the visitor can tap to pick one.
+// (It used to be an Embla marquee of 14 mascots, each its own <canvas> with a
+// per-frame blur/scale pass; a single canvas carries the same idea at a
+// fraction of the cost.) Auto-cycling stops as soon as someone picks a chip,
+// and never starts for prefers-reduced-motion.
 
 const EMOTIONS: { emotion: MascotEmotion; label: string; caption: string }[] = [
   { emotion: "greeting", label: "Greeting", caption: "Welcomes you back" },
@@ -29,83 +31,102 @@ const EMOTIONS: { emotion: MascotEmotion; label: string; caption: string }[] = [
   { emotion: "idle", label: "Present", caption: "Always here for you" },
 ];
 
-export function MascotEmotionMarquee() {
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "center", containScroll: false },
-    [Autoplay({ delay: 1900, stopOnInteraction: false })],
-  );
+const CYCLE_MS = 2200;
 
-  // Recompute per-slide focus (blur / scale / opacity) from each slide's
-  // distance to the viewport centre. Runs on every scroll frame so the focus
-  // glides smoothly as slides pass through the middle.
-  const applyFocus = useCallback(() => {
-    if (!emblaApi) return;
-    const root = emblaApi.rootNode().getBoundingClientRect();
-    const center = root.left + root.width / 2;
-    const half = root.width / 2 || 1;
+/**
+ * @param bare  Render only the interactive panel (the page supplies its own
+ *              heading) — used by the landing, which server-renders the copy.
+ */
+export function MascotEmotionMarquee({ bare = false }: { bare?: boolean }) {
+  const [index, setIndex] = useState(0);
+  const [manual, setManual] = useState(false);
+  const [reduced, setReduced] = useState(false);
 
-    for (const node of emblaApi.slideNodes()) {
-      const inner = node.firstElementChild as HTMLElement | null;
-      if (!inner) continue;
-      const rect = node.getBoundingClientRect();
-      const nodeCenter = rect.left + rect.width / 2;
-      // 0 at the centre → 1 near the edges.
-      const t = Math.min(1, Math.abs(nodeCenter - center) / (half * 0.9));
-      inner.style.filter = `blur(${(t * t * 8).toFixed(2)}px)`;
-      inner.style.transform = `scale(${(1 - t * 0.34).toFixed(3)})`;
-      inner.style.opacity = (1 - t * 0.72).toFixed(3);
-      node.style.zIndex = String(Math.round(100 - t * 100));
-    }
-  }, [emblaApi]);
+  // Read the motion preference after mount (in a callback, not the effect
+  // body) so SSR and the first client render match.
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mq.matches);
+    const id = requestAnimationFrame(sync);
+    mq.addEventListener("change", sync);
+    return () => {
+      cancelAnimationFrame(id);
+      mq.removeEventListener("change", sync);
+    };
+  }, []);
 
   useEffect(() => {
-    if (!emblaApi) return;
-    applyFocus();
-    emblaApi.on("scroll", applyFocus).on("reInit", applyFocus);
-    return () => {
-      emblaApi.off("scroll", applyFocus).off("reInit", applyFocus);
-    };
-  }, [emblaApi, applyFocus]);
+    if (manual || reduced) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % EMOTIONS.length), CYCLE_MS);
+    return () => clearInterval(id);
+  }, [manual, reduced]);
+
+  const current = EMOTIONS[index];
+
+  const panel = (
+    <div
+      data-lp-card
+      className="c-box grid items-center gap-6 rounded-[28px] p-5 sm:p-7 md:grid-cols-[260px_1fr] md:gap-10"
+    >
+      {/* Spotlight */}
+      <div className="flex flex-col items-center text-center">
+        <div className="grid aspect-square w-full max-w-[200px] place-items-center rounded-[28px] bg-surface-2/70">
+          {/* Only the <canvas> (a rAF loop) is lazy: it runs while near the
+              viewport. The labels and chips below are ordinary HTML. */}
+          <LazyMount className="grid h-full w-full place-items-center" unmountOnExit>
+            <PixelMascot emotion={current.emotion} size={150} paused={reduced} />
+          </LazyMount>
+        </div>
+        <p className="mt-4 text-lg font-bold text-heading">{current.label}</p>
+        <p className="min-h-[1.5rem] text-sm text-muted-foreground">{current.caption}</p>
+      </div>
+
+      {/* Emotion picker */}
+      <div>
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Tap a feeling
+        </p>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="K.AI's emotions">
+          {EMOTIONS.map((e, i) => {
+            const on = i === index;
+            return (
+              <button
+                key={e.emotion}
+                type="button"
+                aria-pressed={on}
+                onClick={() => {
+                  setManual(true);
+                  setIndex(i);
+                }}
+                className={cn(
+                  "min-h-11 cursor-pointer rounded-full border px-4 text-sm font-semibold transition-colors duration-200",
+                  on
+                    ? "border-transparent bg-primary text-primary-foreground"
+                    : "border-border bg-surface-2/70 text-body hover:bg-surface-3 hover:text-heading",
+                )}
+              >
+                {e.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  if (bare) return panel;
 
   return (
-    <section className="overflow-hidden py-20 md:py-28">
+    <section className="py-20 md:py-28">
       <div className="mx-auto mb-12 max-w-[1280px] px-5 text-center md:px-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-          Made to care
-        </p>
-        <h2 className="mt-3 text-3xl font-extrabold text-heading md:text-5xl">
-          An AI that feels it with you
-        </h2>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Made to care</p>
+        <h2 className="mt-3 text-3xl font-extrabold text-heading md:text-5xl">An AI that feels it with you</h2>
         <p className="mx-auto mt-3 max-w-2xl text-body md:text-lg">
-          Your coach reads the moment and reacts — celebrating wins, steadying
-          nerves, and staying right beside you through every slip.
+          Your coach reads the moment and reacts — celebrating wins, steadying nerves, and staying
+          right beside you through every slip.
         </p>
       </div>
-
-      {/* Edge fade so the blurred tails dissolve into the page. */}
-      <div className="relative">
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex touch-pan-y items-center py-6">
-            {EMOTIONS.map((e) => (
-              <div
-                key={e.emotion}
-                className="relative flex-[0_0_64%] sm:flex-[0_0_40%] md:flex-[0_0_20%]"
-              >
-                <div className="mx-2 flex flex-col items-center will-change-transform md:mx-3">
-                  <div className="grid aspect-square w-full max-w-[180px] place-items-center rounded-[28px] c-box">
-                    <PixelMascot emotion={e.emotion} size={132} />
-                  </div>
-                  <p className="mt-4 text-base font-bold text-heading">{e.label}</p>
-                  <p className="text-sm text-muted-foreground">{e.caption}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent md:w-40" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent md:w-40" />
-      </div>
+      <div className="mx-auto max-w-5xl px-5 md:px-8">{panel}</div>
     </section>
   );
 }

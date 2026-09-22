@@ -351,3 +351,19 @@
   that was the "unauthorized" seen on a long-open tab; and silence detection (server `speechStats`,
   browser auto-stop) is now relative to the clip's own noise floor (max(absolute, 3× noise)) so quiet
   laptop mics aren't reported as "we couldn't hear you".
+
+## D-041 · Landing page redesign (glass, lighter, scroll-swipe kept) — 2026-09-23
+- Owner: glassmorphism, "optimize the UI to be faster … I don't want it heavy", "I liked the previous
+  landing page animation where it swipes on scrolling", "remove 'built for India's ambitious learners'
+  … it is too generic — take inspiration from Land-book".
+- `components/ShowcaseV4.tsx` rebuilt around the product itself: editorial hero with live-caption glass
+  card, "every mistake comes back as a fix" section, real feature panels (pronunciation respelling,
+  jumble, AI Partner minutes), mixed-language strip, the kept **scroll-swipe** (`landing/ScrollSwipe.tsx`,
+  GSAP ScrollTrigger ≈ 30 KB gz) for the three drills and the reviews, setup/voices, pricing, footer.
+  Generic marketing lines removed; the existing 4.9 / 1,00,000+ figures are the owner's own claims.
+- Weight: demos load only near the viewport and unmount when far away (`landing/LazyMount.tsx`,
+  `LazyDemos.tsx`); shared styles in `landing/landingStyles.ts`; no new dependencies.
+- Copy follows D-039: "Just talk … K.AI answers when you pause", "Hands-free", no tap-to-talk.
+- Sign-up now states agreement to the Terms of Service and Privacy Policy (both pages already existed
+  and are linked in the landing footer).
+- Checked at 375 px and 1280 px, dark scheme: one `<h1>`, no horizontal scroll, 44 px tap targets.
