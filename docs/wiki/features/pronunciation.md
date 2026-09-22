@@ -1,0 +1,57 @@
+---
+title: Pronunciation Coach
+type: feature
+tags: [trainer, pronunciation, gemini, r2]
+links: [features/word-bank, features/progress-and-rewards, features/premium, architecture/gemini-key-pool, architecture/storage-r2, architecture/api]
+updated: 2026-09-22
+---
+
+# Pronunciation Coach
+
+Learners read a sentence aloud and get **word-by-word feedback** on what was clear and what wasn't.
+
+## What the learner experiences (`/dashboard/pronunciation`)
+Four steps, shown in a side stepper:
+1. **Listen** — the sentence appears; a play button reads it in an Indian-English device voice
+   (browser speech synthesis — no server audio).
+2. **Speak** — countdown (default 5 s, admin-set), then recording starts automatically and stops
+   after the band's limit (default easy 6 s / medium 8 s / hard 12 s) or on Stop. Learner can
+   replay, **Retry** (nothing uploaded) or **Submit**.
+3. **Feedback** — accuracy ring + headline:
+   ≥90 **Excellent** · ≥80 **Great job** · ≥55 **Solid effort** · ≥40 **Getting there** · else
+   **Keep going**. Each word is green (correct), red (mispronounced) or amber (unclear); tap for
+   *expected / heard / match % / confidence / tip*. "+XP", level-up, badges; ≥80 % celebrates.
+   With the Word Bank flag on, words can be dragged into the wallet ([[features/word-bank]]).
+4. **Improve** — "Words to revisit" (tap to hear slowly) + tip cards → **Next sentence**.
+"Sentence X of 12" is a client-side counter. The side panel shows attempts and best % (last 50).
+
+## How scoring works (`frontend/src/server/gemini/scoring.ts`)
+1. Browser converts the recording to **16 kHz mono WAV** (`src/audio/toWav.ts`) — Gemini accepts
+   WAV reliably; Safari's mp4 and Chrome's webm are normalised away.
+2. `POST /api/pronunciation/attempts` (multipart). Server sniffs the real format from bytes.
+3. **Gemini `gemini-3.1-flash-lite`** hears the audio + the expected sentence and returns strict
+   JSON: transcript, one verdict per expected word (CORRECT/INCORRECT/UNCLEAR + heard + confidence
+   + short tip), a feedback message and 1–3 tips. The prompt says: *do not penalise an Indian
+   accent, only sounds that change or blur the word* (v/w, th, stress, dropped syllables).
+4. Server recomputes **similarity** (Levenshtein) and **accuracy = correct ÷ expected words**, so
+   numbers are deterministic. Uses the key pool's `text` lane with fail-over
+   ([[architecture/gemini-key-pool]]).
+5. Verified 2026-09-22: learner said "Yesterday I go to the market and buy vegetables" for
+   "…I went… bought…" → exactly `went` and `bought` marked INCORRECT.
+
+## Rules
+- Phrase choice: per-learner cursor per band; moves past a phrase once it's scored, so "Next
+  sentence" is always new (`sessionOffset` from the client is informational only).
+- XP = round(base × accuracy), base easy **20** / medium **30** / hard **40**; once per phrase
+  per IST day. Combo continues at ≥ 80 %, else resets. XP tier: HIGH ≥80, MID ≥55, else NEEDS_REVIEW.
+- Free quota: **3 scored attempts per band per day** → `DAILY_QUOTA_REACHED` on `GET /phrases`.
+- Recording kept in **R2** (`pronunciation/<user>/<attempt>.wav`) after the response is sent
+  ([[architecture/storage-r2]]); skipped if R2 isn't configured.
+
+## Content
+47 seeded phrases: 20 easy, 15 medium (Indian-English traps: v/w, th, silent letters, stress),
+12 hard. Editable at `/v3/admin/problems` (category Pronunciation).
+
+## API
+`GET /api/pronunciation/phrases?difficulty=&sessionOffset=` · `POST /api/pronunciation/attempts`
+· `GET /api/pronunciation/attempts?limit=` — see [[architecture/api]].

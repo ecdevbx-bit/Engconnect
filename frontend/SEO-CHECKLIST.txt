@@ -1,0 +1,111 @@
+================================================================================
+ENGLISH CONNECTION — SEO CHECKLIST  (englishconnection.in)
+Goal: rank for "english connection" (and brand + app queries)
+Last updated: 22 June 2026
+================================================================================
+
+--------------------------------------------------------------------------------
+0. REALITY CHECK (what Google shows today)
+--------------------------------------------------------------------------------
+- "english connection" is a CROWDED, branded term. The top results are an
+  established brand: "English Connection by Kanchan" (Kanchan Keshari) — a large
+  YouTube channel + Android app (com.appx.english_connection, ~7k ratings) +
+  domains englishconnection.online / englishconnection.classx.co.in.
+- Other entities also rank: englishconnection.org, englishconnect.org (faith
+  based), englishconnection.co.uk, englishconnection.es, Pearson English Connect.
+- OUR domain englishconnection.in did NOT appear in results = likely NOT INDEXED
+  yet (new domain, no authority, no Search Console submission).
+
+=> Near-term realistic goal: get INDEXED and own "englishconnection.in" + brand+
+   modifier queries ("english connection app", "english connection AI speaking").
+   Beating the incumbent for the bare head term takes months of content + links.
+
+--------------------------------------------------------------------------------
+1. ALREADY DONE IN CODE (ships on next deploy)
+--------------------------------------------------------------------------------
+[x] Root metadata upgraded (src/app/layout.tsx): metadataBase, title template,
+    description, keywords, Open Graph, Twitter card, canonical, robots,
+    Google verification hook.
+[x] robots.txt          -> src/app/robots.ts  (allows public pages; blocks
+    /dashboard, /showcase, auth + preview routes; links the sitemap)
+[x] sitemap.xml         -> src/app/sitemap.ts (/, /about, /updates, /privacy, /terms)
+[x] JSON-LD structured data on the homepage (Organization + WebSite +
+    MobileApplication) -> src/app/page.tsx
+[x] Per-page titles + canonicals on /about /updates /privacy /terms
+[x] Real content pages exist (About, Updates, Privacy, Terms)
+
+--------------------------------------------------------------------------------
+2. THINGS YOU MUST ADD (code/assets — quick)
+--------------------------------------------------------------------------------
+[ ] Add an Open Graph image: public/og.png  (1200 x 630 PNG, brand + tagline).
+    (Metadata already points to /og.png — until it exists, social cards have no image.)
+[ ] Set env var on the host (Vercel/host dashboard):
+        NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION = <token from Search Console>
+[ ] (Optional) Add 192x192 and 512x512 PNG icons to /public for the PWA/manifest.
+[ ] Once you have social/app-store profiles, paste them into the JSON-LD
+    "sameAs" array in src/app/page.tsx (strengthens brand knowledge graph).
+
+--------------------------------------------------------------------------------
+3. GOOGLE SEARCH CONSOLE — STEP BY STEP  (the main list you asked for)
+--------------------------------------------------------------------------------
+[ ] 1. Go to https://search.google.com/search-console and add a property.
+       Prefer a DOMAIN property: "englishconnection.in"
+       (covers http/https + all subdomains). Verify via DNS TXT record at your
+       domain registrar. (Alternative: URL-prefix property
+       "https://englishconnection.in" verified with the meta tag from step 2 of
+       section 2 above.)
+
+[ ] 2. After verifying, submit the sitemap:
+       Sitemaps  ->  enter:  sitemap.xml   ->  Submit
+       (full URL: https://englishconnection.in/sitemap.xml)
+
+[ ] 3. URL Inspection: paste https://englishconnection.in/  ->  "Request Indexing".
+       Repeat for: /about, /updates, /privacy, /terms
+
+[ ] 4. Settings -> robots.txt report: confirm Google fetched
+       https://englishconnection.in/robots.txt with no errors.
+
+[ ] 5. Indexing -> Pages report: confirm the 5 public URLs move to
+       "Indexed". Fix anything listed under "Not indexed".
+
+[ ] 6. Experience / Core Web Vitals + Mobile Usability: check for issues.
+
+[ ] 7. Performance report: after ~1-2 weeks, watch impressions/clicks for
+       "english connection", "englishconnection.in", "english connection app".
+
+[ ] 8. (Recommended) Set the preferred domain / confirm www vs non-www
+       redirects so only ONE version is indexed (e.g. www -> non-www).
+
+--------------------------------------------------------------------------------
+4. ALSO DO (other engines + maps)
+--------------------------------------------------------------------------------
+[ ] Bing Webmaster Tools (https://www.bing.com/webmasters) — verify + submit the
+    same sitemap. You can import directly from Google Search Console.
+[ ] Google Business Profile (if there's a business/brand presence) — name it
+    "English Connection", link englishconnection.in.
+
+--------------------------------------------------------------------------------
+5. OFF-PAGE / CONTENT (what actually moves rankings over time)
+--------------------------------------------------------------------------------
+[ ] Backlinks: get englishconnection.in linked from app-store listings,
+    social bios, education directories, press, partner sites, blogs.
+[ ] Social profiles (YouTube/Instagram/LinkedIn/X/Facebook) all linking the site
+    and using the exact name "English Connection" (consistency = brand entity).
+[ ] App store listings (Play + App Store) that link back to englishconnection.in.
+[ ] Content/blog targeting long-tail intent (e.g. "how to speak English
+    confidently", "English speaking practice app", "pronunciation practice
+    online") — each as its own indexable page; add them to sitemap.ts.
+[ ] Encourage real reviews/ratings; add AggregateRating to the JSON-LD when you
+    have legitimate numbers.
+[ ] Keep the homepage H1 + title + first paragraph clearly stating
+    "English Connection" + what it does (already the case on the landing).
+
+--------------------------------------------------------------------------------
+6. NOTES
+--------------------------------------------------------------------------------
+- The signed-in app (/dashboard) and design previews (/showcase/*) are blocked in
+  robots.txt on purpose — they're gated or duplicate content and would only
+  dilute the index.
+- Indexing is not instant: expect days-to-weeks after submission, and weeks-to
+  -months to climb for the competitive head term.
+================================================================================

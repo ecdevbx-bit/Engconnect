@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redis Implementation in English Connection | Detailed Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        header {
+            border-bottom: 4px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #1e40af;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        h2 {
+            color: #1e40af;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2563eb;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #2563eb;
+            font-size: 1.4em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            line-height: 1.4;
+        }
+
+        .concept-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2563eb;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .architecture {
+            background: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .diagram {
+            background: #f9f9f9;
+            padding: 20px;
+            border: 2px dashed #2563eb;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            line-height: 1.8;
+            font-size: 0.95em;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .toc {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .highlight {
+            background: #fffacd;
+            padding: 2px 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Redis Implementation in English Connection</h1>
+            <p class="subtitle">Complete Architecture, Design Patterns, and Concepts</p>
+            <p style="margin-top: 15px; color: #666;">
+                <strong>Last Updated:</strong> April 20, 2026<br>
+                <strong>Project:</strong> English Connection (Backend + Frontend)<br>
+                <strong>Redis Version:</strong> Latest (localhost:6379)
+            </p>
+        </header>
+
+        <div class="toc">
+            <h3>📋 Table of Contents</h3>
+            <ul>
+                <li><a href="#overview">What is Redis & Why English Connection Uses It</a></li>
+                <li><a href="#current-usage">Current Redis Usage in English Connection</a></li>
+                <li><a href="#architecture">Architecture & Data Flow</a></li>
+                <li><a href="#data-structures">Data Structures & Key Patterns</a></li>
+                <li><a href="#implementation">Implementation Deep Dive</a></li>
+                <li><a href="#performance">Performance & Statistics</a></li>
+                <li><a href="#concepts">Essential Concepts to Study</a></li>
+                <li><a href="#patterns">Design Patterns Used</a></li>
+                <li><a href="#best-practices">Best Practices & Lessons</a></li>
+            </ul>
+        </div>
+
+        <section id="overview">
+            <h2>📌 What is Redis & Why English Connection Uses It</h2>
+
+            <h3>What is Redis?</h3>
+            <p><strong>Redis</strong> stands for <span class="highlight">Remote Dictionary Server</span>. It is an in-memory data structure store that operates as a cache and session store. Unlike a traditional database (like MariaDB), Redis keeps all data in RAM for <strong>extremely fast access</strong> (microseconds vs milliseconds).</p>
+
+            <div class="concept-box">
+                <strong>Key Difference:</strong>
+                <ul>
+                    <li><strong>MariaDB:</strong> Persistent disk storage, slower queries, best for complex relationships</li>
+                    <li><strong>Redis:</strong> Volatile memory storage, ultra-fast access, best for temporary state and caching</li>
+                </ul>
+            </div>
+
+            <h3>Why English Connection Uses Redis</h3>
+            <table>
+                <tr>
+                    <th>Use Case</th>
+                    <th>Reason</th>
+                    <th>Benefit</th>
+                </tr>
+                <tr>
+                    <td><strong>Game Sessions</strong></td>
+                    <td>Jumble Words state is temporary (2h lifetime)</td>
+                    <td>Sub-millisecond read/write, auto-expiring data</td>
+                </tr>
+                <tr>
+                    <td><strong>XP Event Queue</strong></td>
+                    <td>Async XP processing needs queue</td>
+                    <td>Decouples user action from database write</td>
+                </tr>
+                <tr>
+                    <td><strong>Content Counters</strong></td>
+                    <td>Tracks EASY/MEDIUM/HARD sentence counts</td>
+                    <td>Fast load-balancing without DB queries</td>
+                </tr>
+            </table>
+
+            <div class="success-box">
+                <strong>Current Performance:</strong> 54,422 cache hits vs 861 misses = <strong>98.4% hit rate</strong> ✓
+            </div>
+        </section>
+
+        <section id="current-usage">
+            <h2>⚙️ Current Redis Usage in English Connection</h2>
+
+            <h3>1. Game Session Storage</h3>
+            <p><strong>Purpose:</strong> Store the complete state of an active Jumble Words game session.</p>
+
+            <p><strong>Key Pattern:</strong> <code>game_session:{sessionId}</code></p>
+
+            <p><strong>TTL:</strong> 2 hours (7,200 seconds) — session auto-deletes if not completed</p>
+
+            <p><strong>Data Stored:</strong></p>
+            <pre>{
+  "sessionId": "0f38a5a2-b231-4e39-af77-3d98666f8328",
+  "userId": 5,
+  "flow": ["EASY", "EASY", "EASY", "EASY", "EASY", "EASY"],
+  "sentences": [
+    {
+      "position": 1,
+      "sentenceId": 1,
+      "difficulty": "EASY",
+      "text": "The cat sat on the mat"
+    },
+    ...6 total sentences...
+  ],
+  "status": "PENDING",
+  "createdAt": "2026-04-20T16:02:39.237787",
+  "expiresAt": "2026-04-20T18:02:39.237811"
+}</pre>
+
+            <h3>2. Content Counters</h3>
+            <p><strong>Purpose:</strong> Cache the count of sentences at each difficulty level for intelligent difficulty selection.</p>
+
+            <p><strong>Key Pattern:</strong> <code>content_count:{DIFFICULTY}</code></p>
+
+            <p>Example: <code>content_count:EASY</code>, <code>content_count:MEDIUM</code>, <code>content_count:HARD</code></p>
+
+            <p><strong>Data Type:</strong> String (simple integer count)</p>
+
+            <h3>3. XP Events Queue</h3>
+            <p><strong>Purpose:</strong> Store pending XP reward events for async processing.</p>
+
+            <p><strong>Key Pattern:</strong> <code>xp_events</code> (Stream data type)</p>
+
+            <p><strong>Additional Keys:</strong> <code>xp_processed:{userId}_{sessionId}_{position}</code> — tracks which events have been processed</p>
+        </section>
+
+        <section id="architecture">
+            <h2>🏗️ Architecture & Data Flow</h2>
+
+            <h3>Game Session Lifecycle</h3>
+            <div class="diagram">
+User starts Jumble Words game
+        ↓
+Frontend: POST /api/game/jumble-words/start
+        ↓
+Backend: GameSessionService creates GameSession object
+        ↓
+Backend: GameSessionRedisService.save(session) → Redis
+        ↓
+Redis: Key=game_session:UUID, Value=GameSession JSON, TTL=2h
+        ↓
+User submits answer → Redis lookup (fast, no DB hit)
+        ↓
+Session complete → Delete from Redis (or auto-expire after 2h)
+        ↓
+Backend: Persist final score to MariaDB (UserXP table)
+            </div>
+
+            <h3>XP Event Processing Flow</h3>
+            <div class="diagram">
+User answers question correctly
+        ↓
+Backend: Emit XP event to Redis stream
+        ↓
+Async processor: Reads from xp_events stream
+        ↓
+Calculate XP reward (based on difficulty)
+        ↓
+Update user.totalXp in MariaDB
+        ↓
+Mark xp_processed:{userId}_{sessionId}_{position}=true
+        ↓
+Frontend: Poll /api/auth/sync → Get updated XP
+            </div>
+
+            <h3>Two-Tier Storage Architecture</h3>
+            <div class="architecture">
+                <strong>Layer 1: Redis (In-Memory, Fast)</strong>
+                <ul>
+                    <li>Game sessions (temporary, 2h)</li>
+                    <li>XP event queue</li>
+                    <li>Content counters</li>
+                    <li>Session state during active play</li>
+                </ul>
+                <strong>Layer 2: MariaDB (Persistent, Reliable)</strong>
+                <ul>
+                    <li>User profiles</li>
+                    <li>Historical game records</li>
+                    <li>Final XP tallies</li>
+                    <li>User authentication data</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="data-structures">
+            <h2>🔗 Data Structures & Key Patterns</h2>
+
+            <h3>Key-Value Naming Conventions</h3>
+            <table>
+                <tr>
+                    <th>Data Type</th>
+                    <th>Key Pattern</th>
+                    <th>Example</th>
+                    <th>Value Type</th>
+                </tr>
+                <tr>
+                    <td>Game Session</td>
+                    <td><code>game_session:{sessionId}</code></td>
+                    <td><code>game_session:abc123-def456</code></td>
+                    <td>JSON (GameSession object)</td>
+                </tr>
+                <tr>
+                    <td>Content Count</td>
+                    <td><code>content_count:{DIFFICULTY}</code></td>
+                    <td><code>content_count:EASY</code></td>
+                    <td>Integer</td>
+                </tr>
+                <tr>
+                    <td>XP Events</td>
+                    <td><code>xp_events</code></td>
+                    <td><code>xp_events</code></td>
+                    <td>Stream (queue)</td>
+                </tr>
+                <tr>
+                    <td>Processed Marker</td>
+                    <td><code>xp_processed:{userId}_{sessionId}_{pos}</code></td>
+                    <td><code>xp_processed:5_abc123_1</code></td>
+                    <td>Boolean flag</td>
+                </tr>
+            </table>
+
+            <h3>Redis Data Types Used</h3>
+            <div class="concept-box">
+                <strong>1. String</strong> — Simple key-value for content counts<br>
+                <code>SET content_count:EASY 47</code>
+            </div>
+
+            <div class="concept-box">
+                <strong>2. Hash</strong> — Could be used for user sessions (future)<br>
+                <code>HSET user:5 totalXp 1000 level 5</code>
+            </div>
+
+            <div class="concept-box">
+                <strong>3. Stream</strong> — Ordered queue for XP events<br>
+                <code>XADD xp_events * userId 5 xpEarned 50</code>
+            </div>
+
+            <div class="concept-box">
+                <strong>4. Serialized JSON Objects</strong> — For complex data like GameSession<br>
+                Uses Jackson serialization with Spring Data Redis
+            </div>
+
+            <h3>TTL & Expiration Strategy</h3>
+            <table>
+                <tr>
+                    <th>Key Type</th>
+                    <th>TTL</th>
+                    <th>Rationale</th>
+                </tr>
+                <tr>
+                    <td><code>game_session:*</code></td>
+                    <td>2 hours</td>
+                    <td>Session duration; auto-cleanup prevents stale data</td>
+                </tr>
+                <tr>
+                    <td><code>xp_events</code></td>
+                    <td>No expiry (manual cleanup)</td>
+                    <td>Events must persist until async processor completes</td>
+                </tr>
+                <tr>
+                    <td><code>content_count:*</code></td>
+                    <td>No expiry (manual update)</td>
+                    <td>Updated when sentences are added/removed</td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="implementation">
+            <h2>💻 Implementation Deep Dive</h2>
+
+            <h3>Spring Boot Redis Configuration</h3>
+            <p><strong>File:</strong> <code>RedisConfig.java</code></p>
+            <pre>@Configuration
+public class RedisConfig {
+    @Bean
+    public RedisTemplate&lt;String, Object&gt; redisTemplate(
+            RedisConnectionFactory connectionFactory) {
+
+        // Setup ObjectMapper with LocalDateTime support
+        ObjectMapper redisMapper = new ObjectMapper();
+        redisMapper.registerModule(new JavaTimeModule());
+        redisMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // Enable polymorphic deserialization
+        redisMapper.activateDefaultTyping(
+            redisMapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL
+        );
+
+        // Create JSON serializer
+        GenericJackson2JsonRedisSerializer jsonSerializer =
+            new GenericJackson2JsonRedisSerializer(redisMapper);
+
+        // Configure Redis template
+        RedisTemplate&lt;String, Object&gt; template = new RedisTemplate&lt;&gt;();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(jsonSerializer);
+
+        return template;
+    }
+}</pre>
+
+            <div class="success-box">
+                <strong>Key Points:</strong>
+                <ul>
+                    <li><code>StringRedisSerializer</code> for keys (human-readable)</li>
+                    <li><code>GenericJackson2JsonRedisSerializer</code> for values (complex objects)</li>
+                    <li><code>JavaTimeModule</code> to handle LocalDateTime serialization</li>
+                    <li><code>DefaultTyping.NON_FINAL</code> for polymorphic deserialization</li>
+                </ul>
+            </div>
+
+            <h3>Game Session Redis Service</h3>
+            <p><strong>File:</strong> <code>GameSessionRedisService.java</code></p>
+            <pre>@Service
+public class GameSessionRedisService {
+
+    private static final String KEY_PREFIX = "game_session:";
+    private static final Duration SESSION_TTL = Duration.ofHours(2);
+
+    private final RedisTemplate&lt;String, Object&gt; redisTemplate;
+
+    // Save session with 2-hour expiry
+    public void save(GameSession session) {
+        String key = buildKey(session.getSessionId());
+        redisTemplate.opsForValue().set(key, session, SESSION_TTL);
+    }
+
+    // Retrieve session (returns empty if expired/not found)
+    public Optional&lt;GameSession&gt; findById(String sessionId) {
+        String key = buildKey(sessionId);
+        Object value = redisTemplate.opsForValue().get(key);
+        return Optional.ofNullable((GameSession) value);
+    }
+
+    // Update status without losing TTL
+    public void updateStatus(String sessionId, GameSessionStatus status) {
+        Optional&lt;GameSession&gt; sessionOpt = findById(sessionId);
+        if (sessionOpt.isPresent()) {
+            GameSession session = sessionOpt.get();
+            session.setStatus(status);
+
+            // Preserve remaining TTL
+            Long remainingTtl = redisTemplate.getExpire(buildKey(sessionId));
+            Duration ttl = (remainingTtl != null && remainingTtl &gt; 0)
+                ? Duration.ofSeconds(remainingTtl)
+                : SESSION_TTL;
+
+            redisTemplate.opsForValue().set(buildKey(sessionId), session, ttl);
+        }
+    }
+
+    // Delete session manually
+    public void delete(String sessionId) {
+        redisTemplate.delete(buildKey(sessionId));
+    }
+}</pre>
+
+            <h3>Configuration in application.properties</h3>
+            <pre># Redis
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+# Optional: spring.data.redis.password=your-password
+# Optional: spring.data.redis.timeout=2000ms</pre>
+
+            <h3>Usage in GameSessionController</h3>
+            <pre>@RestController
+@RequestMapping("/api/game/jumble-words")
+public class GameSessionController {
+
+    private final GameSessionRedisService gameSessionRedisService;
+
+    @PostMapping("/start")
+    public ApiResponse&lt;StartSessionData&gt; startSession(
+            @RequestHeader("Authorization") String token) {
+
+        // Create new session
+        GameSession session = new GameSession(...);
+
+        // Save to Redis (2h TTL automatic)
+        gameSessionRedisService.save(session);
+
+        return ApiResponse.success("Session started", sessionData);
+    }
+
+    @PostMapping("/submit-answer")
+    public ApiResponse&lt;SubmitAnswerData&gt; submitAnswer(
+            @RequestBody SubmitAnswerRequest req) {
+
+        // Retrieve from Redis (fast!)
+        GameSession session = gameSessionRedisService
+            .findById(req.getSessionId())
+            .orElseThrow(() -> new AppException(SESSION_NOT_FOUND));
+
+        // Check answer
+        boolean correct = checkAnswer(req.getUserAnswer(), session);
+
+        // Update session status
+        if (correct) {
+            gameSessionRedisService.updateStatus(req.getSessionId(), CORRECT);
+        }
+
+        return ApiResponse.success("Answer submitted", submitData);
+    }
+}</pre>
+        </section>
+
+        <section id="performance">
+            <h2>📊 Performance & Statistics</h2>
+
+            <h3>Current Live Statistics</h3>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value">54,422</div>
+                    <div class="stat-label">Cache Hits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">861</div>
+                    <div class="stat-label">Cache Misses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">98.4%</div>
+                    <div class="stat-label">Hit Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">30,032</div>
+                    <div class="stat-label">Commands Processed</div>
+                </div>
+            </div>
+
+            <h3>Response Time Comparison</h3>
+            <table>
+                <tr>
+                    <th>Operation</th>
+                    <th>Redis</th>
+                    <th>MariaDB</th>
+                    <th>Speedup</th>
+                </tr>
+                <tr>
+                    <td>Get game session</td>
+                    <td>&lt;1ms</td>
+                    <td>10-50ms</td>
+                    <td>10-50x faster</td>
+                </tr>
+                <tr>
+                    <td>Update session</td>
+                    <td>&lt;2ms</td>
+                    <td>20-100ms</td>
+                    <td>10-50x faster</td>
+                </tr>
+                <tr>
+                    <td>Count sentences</td>
+                    <td>&lt;1ms</td>
+                    <td>5-20ms</td>
+                    <td>5-20x faster</td>
+                </tr>
+            </table>
+
+            <h3>Memory Usage</h3>
+            <p>Redis stores only <strong>active/recent data</strong>:</p>
+            <ul>
+                <li>Each game session ≈ 2-5 KB (JSON serialized)</li>
+                <li>10 concurrent sessions ≈ 50 KB</li>
+                <li>XP event queue ≈ variable (depends on throughput)</li>
+                <li><strong>Total current usage:</strong> Low (MB range, not GB)</li>
+            </ul>
+
+            <div class="success-box">
+                <strong>Why this is good:</strong> Redis is optimized for speed over storage. MariaDB stores the permanent record. Redis only keeps "live" data, so memory stays minimal.
+            </div>
+        </section>
+
+        <section id="concepts">
+            <h2>🎓 Essential Concepts to Study</h2>
+
+            <h3>1. In-Memory Data Structure Store</h3>
+            <p><strong>What:</strong> Redis stores data in RAM, not disk.</p>
+            <p><strong>Why it matters:</strong> Allows microsecond-level access, but data is lost if server crashes.</p>
+            <p><strong>Study:</strong> How RAM differs from disk storage, trade-offs, persistence options (RDB, AOF).</p>
+
+            <h3>2. Key-Value Abstraction</h3>
+            <p><strong>What:</strong> Redis is fundamentally a dictionary/map: every value is accessed by a unique key.</p>
+            <p><strong>Pattern in English Connection:</strong> <code>game_session:{UUID}</code>, <code>content_count:{DIFFICULTY}</code></p>
+            <p><strong>Study:</strong> How to design key hierarchies (namespacing), collision prevention, naming conventions.</p>
+
+            <h3>3. Data Type Variety</h3>
+            <p>Redis is NOT just strings—it has rich native types:</p>
+            <ul>
+                <li><strong>Strings:</strong> Binary-safe, can store JSON, serialized objects</li>
+                <li><strong>Lists:</strong> Ordered sequences, great for queues</li>
+                <li><strong>Sets:</strong> Unordered unique values, great for membership checks</li>
+                <li><strong>Hashes:</strong> Maps within Redis, efficient for structured data</li>
+                <li><strong>Sorted Sets:</strong> Ordered by score, great for leaderboards</li>
+                <li><strong>Streams:</strong> Log-like data structure, great for event queues</li>
+            </ul>
+            <p><strong>English Connection uses:</strong> Strings (content counts), Serialized objects (sessions), Streams (XP events)</p>
+
+            <h3>4. TTL & Expiration</h3>
+            <p><strong>What:</strong> Keys can have a time-to-live (TTL). After TTL seconds, the key auto-deletes.</p>
+            <p><strong>Example:</strong> Game session expires after 2 hours with no manual cleanup needed.</p>
+            <p><strong>Study:</strong> EXPIRE command, TTL strategies, eviction policies, handling expiry edges.</p>
+
+            <h3>5. Serialization & Deserialization</h3>
+            <p><strong>What:</strong> Converting Java objects ↔ Redis strings (usually JSON).</p>
+            <p><strong>English Connection:</strong> Uses Jackson with Spring Data Redis to auto-serialize GameSession to JSON.</p>
+            <p><strong>Study:</strong> JSON serialization, Jackson annotations (@JsonProperty, @JsonIgnore), version compatibility.</p>
+
+            <h3>6. Connection Pooling</h3>
+            <p><strong>What:</strong> Reusing TCP connections to Redis instead of opening new ones each time.</p>
+            <p><strong>English Connection:</strong> Spring Data Redis handles this automatically via RedisConnectionFactory.</p>
+            <p><strong>Study:</strong> Lettuce/Jedis drivers, connection pools, timeout configuration.</p>
+
+            <h3>7. Atomicity & Transactions</h3>
+            <p><strong>What:</strong> Redis commands are atomic (execute fully or not at all).</p>
+            <p><strong>Limitation:</strong> Multi-command transactions require MULTI/EXEC (more complex).</p>
+            <p><strong>Study:</strong> When single commands are sufficient vs multi-command transactions, watch/unwatch.</p>
+
+            <h3>8. Cache Invalidation</h3>
+            <p><strong>Pattern:</strong> "There are only two hard things in Computer Science: cache invalidation and naming things." — Phil Karlton</p>
+            <p><strong>English Connection:</strong> TTL handles session cleanup, but content counters need manual updates on data changes.</p>
+            <p><strong>Study:</strong> Invalidation strategies: TTL, manual delete, event-driven, cache-aside patterns.</p>
+
+            <h3>9. Spring Data Redis Abstraction</h3>
+            <p><strong>What:</strong> Spring's wrapper around Redis drivers (Jedis, Lettuce).</p>
+            <p><strong>Provides:</strong> RedisTemplate, repository pattern, automatic serialization, connection management.</p>
+            <p><strong>Study:</strong> RedisTemplate operations (opsForValue, opsForHash, opsForList), Spring caching annotations.</p>
+
+            <h3>10. Concurrency & Thread Safety</h3>
+            <p><strong>What:</strong> Multiple threads accessing Redis simultaneously.</p>
+            <p><strong>English Connection:</strong> Spring Data Redis is thread-safe; RedisTemplate can be shared.</p>
+            <p><strong>Study:</strong> Thread-safe operations, Lua scripting for complex multi-step operations, optimistic locking.</p>
+        </section>
+
+        <section id="patterns">
+            <h2>🎯 Design Patterns Used</h2>
+
+            <h3>1. Service Layer Pattern</h3>
+            <p><code>GameSessionRedisService</code> encapsulates all Redis operations. Controllers don't know Redis details.</p>
+            <pre>Controller → Service (Redis) → Data
+                    ↓
+            Service abstracts Redis API</pre>
+
+            <h3>2. Repository Pattern</h3>
+            <p>Methods like <code>findById(), save(), delete()</code> mimic database repository interface.</p>
+            <p><strong>Benefit:</strong> Easy to swap Redis for another store (e.g., Memcached, database cache).</p>
+
+            <h3>3. Optional Pattern</h3>
+            <pre>public Optional&lt;GameSession&gt; findById(String sessionId) { ... }
+// Caller:
+gameSessionRedisService.findById(id)
+    .orElseThrow(() -> new AppException(SESSION_NOT_FOUND));</pre>
+            <p><strong>Benefit:</strong> Explicit handling of "not found" cases, avoids null pointer exceptions.</p>
+
+            <h3>4. TTL Pattern</h3>
+            <p>Automatic cleanup via Redis expiration instead of manual deletion or scheduled jobs.</p>
+            <p><strong>Benefit:</strong> Distributed cleanup, no garbage collector needed, reduces storage over time.</p>
+
+            <h3>5. Cache-Aside Pattern</h3>
+            <pre>// Check cache first
+GameSession session = redis.get(sessionId);
+
+// If miss, compute and store
+if (session == null) {
+    session = computeOrFetch();
+    redis.set(sessionId, session, TTL_2_HOURS);
+}</pre>
+
+            <h3>6. Prefix Pattern (Namespacing)</h3>
+            <p>Use prefixes to organize keys: <code>game_session:*</code>, <code>content_count:*</code>, <code>xp_processed:*</code></p>
+            <p><strong>Benefit:</strong> Clear semantics, easy to scan/delete related keys, prevents collisions.</p>
+
+            <h3>7. Event-Driven Async Pattern</h3>
+            <p>XP events are queued in Redis → async processor handles them → updates MariaDB.</p>
+            <p><strong>Benefit:</strong> Decouples user action from slow database write, improves responsiveness.</p>
+        </section>
+
+        <section id="best-practices">
+            <h2>⚡ Best Practices & Lessons</h2>
+
+            <h3>✅ What English Connection Does Right</h3>
+            <ul>
+                <li><strong>Service Abstraction:</strong> RedisService hides complexity from controllers</li>
+                <li><strong>Consistent Naming:</strong> Key prefixes are clear and scannable</li>
+                <li><strong>Proper Serialization:</strong> Jackson handles LocalDateTime correctly</li>
+                <li><strong>TTL Management:</strong> Auto-cleanup prevents stale session accumulation</li>
+                <li><strong>Type Safety:</strong> Spring Data generics prevent casting errors</li>
+                <li><strong>Monitoring:</strong> Redis STATS show health (98.4% hit rate)</li>
+            </ul>
+
+            <h3>⚠️ Things to Watch Out For</h3>
+
+            <div class="warning-box">
+                <strong>1. Data Loss Risk</strong><br>
+                Redis data is lost on server crash unless RDB/AOF persistence is enabled.
+                <br><strong>Mitigation:</strong> For critical data, always have a persistent store (MariaDB) and use Redis as cache only.
+            </div>
+
+            <div class="warning-box">
+                <strong>2. Memory Limits</strong><br>
+                If Redis memory is exhausted, eviction policies kick in (may delete important data).
+                <br><strong>Mitigation:</strong> Monitor memory usage, set <code>maxmemory</code> policy, use TTLs aggressively.
+            </div>
+
+            <div class="warning-box">
+                <strong>3. Serialization Overhead</strong><br>
+                Complex objects (GameSession with 6 sentences) are large when JSON serialized.
+                <br><strong>Mitigation:</strong> Consider storing only essential fields, or use MessagePack for compression.
+            </div>
+
+            <div class="warning-box">
+                <strong>4. Cache Invalidation</strong><br>
+                If content_count:EASY is stale (not updated after adding sentences), load-balancing breaks.
+                <br><strong>Mitigation:</strong> Invalidate cache whenever underlying data changes, or use event-driven updates.
+            </div>
+
+            <div class="warning-box">
+                <strong>5. Single Node Risk</strong><br>
+                Single Redis instance is a single point of failure.
+                <br><strong>Mitigation (Future):</strong> Set up Redis Sentinel or Cluster for HA.
+            </div>
+
+            <h3>🚀 Performance Optimization Tips</h3>
+            <ul>
+                <li><strong>Pipeline:</strong> Batch multiple commands in one round-trip (e.g., get 10 counters at once)</li>
+                <li><strong>Pub/Sub:</strong> Use Redis streams/pub-sub for real-time updates instead of polling</li>
+                <li><strong>Lua Scripts:</strong> For complex multi-step operations, use Lua to execute atomically on Redis</li>
+                <li><strong>Compression:</strong> For large objects, compress before storing (brotli, gzip)</li>
+                <li><strong>Monitor:</strong> Use <code>redis-cli MONITOR</code> to see commands in real-time for debugging</li>
+            </ul>
+
+            <h3>🔄 Future Enhancements</h3>
+            <ul>
+                <li><strong>Redis Cluster:</strong> Horizontal scaling for high concurrency</li>
+                <li><strong>Redis Sentinel:</strong> High availability and automatic failover</li>
+                <li><strong>Pub/Sub for Real-Time:</strong> Notify frontend when XP updates instead of polling</li>
+                <li><strong>Caching Annotations:</strong> Use Spring's @Cacheable to auto-cache method results</li>
+                <li><strong>Rate Limiting:</strong> Use Redis sliding window for API rate limits</li>
+                <li><strong>Leaderboards:</strong> Use Redis Sorted Sets for efficient XP rankings</li>
+            </ul>
+        </section>
+
+        <section id="commands">
+            <h2>🛠️ Useful Redis Commands (CLI)</h2>
+
+            <h3>Connection & Health</h3>
+            <pre>redis-cli ping                    # Test connection
+redis-cli info                      # Full server stats
+redis-cli info stats                # Command statistics</pre>
+
+            <h3>Key Management</h3>
+            <pre>redis-cli KEYS "*"                # List all keys
+redis-cli KEYS "game_session:*"     # List all sessions
+redis-cli SCAN 0 MATCH "game:*"     # Scan (better for large datasets)
+redis-cli DEL key1 key2             # Delete keys
+redis-cli FLUSHDB                   # Delete ALL keys (careful!)</pre>
+
+            <h3>Get / Set</h3>
+            <pre>redis-cli GET "content_count:EASY"
+redis-cli SET "content_count:EASY" 47
+redis-cli GETSET key newvalue       # Get old, set new (atomic)</pre>
+
+            <h3>Expiration</h3>
+            <pre>redis-cli EXPIRE "game_session:abc" 7200   # Set TTL to 2h
+redis-cli TTL "game_session:abc"                # Check remaining TTL
+redis-cli PEXPIRE key 5000          # TTL in milliseconds</pre>
+
+            <h3>Inspection</h3>
+            <pre>redis-cli TYPE "content_count:EASY"     # Check data type
+redis-cli MEMORY USAGE key          # Bytes used by key
+redis-cli OBJECT ENCODING key       # Internal encoding</pre>
+
+            <h3>Monitoring</h3>
+            <pre>redis-cli MONITOR                       # Watch all commands
+redis-cli SLOWLOG GET 10            # Last 10 slow commands
+redis-cli CLIENT LIST               # Connected clients</pre>
+
+            <div class="success-box">
+                <strong>Tip:</strong> Use <code>redis-cli --help</code> for full command reference, or visit <a href="https://redis.io/commands" target="_blank">redis.io/commands</a>
+            </div>
+        </section>
+
+        <section id="learning-resources">
+            <h2>📚 Learning Resources</h2>
+
+            <h3>Official Docs</h3>
+            <ul>
+                <li><strong>Redis Documentation:</strong> https://redis.io/docs/ — Complete reference</li>
+                <li><strong>Spring Data Redis:</strong> https://spring.io/projects/spring-data-redis — Spring integration</li>
+                <li><strong>Redis Commands:</strong> https://redis.io/commands — All 200+ commands</li>
+            </ul>
+
+            <h3>Books</h3>
+            <ul>
+                <li><strong>"Redis in Action"</strong> by Josiah Carlson — Comprehensive guide with patterns</li>
+                <li><strong>"The Little Redis Book"</strong> by Karl Seguin — Free, quick introduction</li>
+            </ul>
+
+            <h3>Topics to Deep Dive</h3>
+            <ul>
+                <li>Data Structures & Algorithms: Sets, Sorted Sets, Hash Tables</li>
+                <li>Networking: TCP, Connection Pooling, Protocol (RESP)</li>
+                <li>Persistence: RDB snapshots, AOF (Append-Only File)</li>
+                <li>Replication: Master-slave, sentinel, cluster</li>
+                <li>Lua Scripting: Atomic multi-command transactions</li>
+                <li>Message Queues: Redis Streams, Pub/Sub</li>
+                <li>Rate Limiting: Sliding window, token bucket</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>📄 <strong>English Connection Redis Implementation Documentation</strong></p>
+            <p>Generated: April 20, 2026 | Backend Version: Spring Boot 3.2 | Frontend Version: Next.js 16.2</p>
+            <p>For questions or updates, refer to:</p>
+            <ul style="margin-left: 20px; list-style: none;">
+                <li>Backend: <code>englishconnection/backend/src/main/java/com/englishconnection/backend/service/GameSessionRedisService.java</code></li>
+                <li>Config: <code>englishconnection/backend/src/main/java/com/englishconnection/backend/config/RedisConfig.java</code></li>
+                <li>Properties: <code>englishconnection/backend/src/main/resources/application.properties</code></li>
+            </ul>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumble Words Session Flow - Detailed Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .flow-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            line-height: 1.8;
+        }
+
+        .level-selector {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .level-btn:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .level-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .weight-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .weight-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .weight-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .weight-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .rolls-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .roll-box {
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .roll-box.easy {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .roll-box.medium {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .roll-box.hard {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .roll-number {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .roll-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .roll-result {
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 8px;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .roll-box.easy .roll-result {
+            color: #10b981;
+        }
+
+        .roll-box.medium .roll-result {
+            color: #f59e0b;
+        }
+
+        .roll-box.hard .roll-result {
+            color: #ef4444;
+        }
+
+        .flow-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .sentences-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .sentences-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .sentences-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .sentences-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .badge-easy {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-hard {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .cursor-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .cursor-box {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .cursor-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .cursor-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .calculation {
+            background: #f0f2ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.8;
+            border-left: 4px solid #667eea;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 1.5em;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .final-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .final-result h3 {
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .json-result {
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .weight-display {
+                grid-template-columns: 1fr;
+            }
+
+            .cursor-info {
+                grid-template-columns: 1fr;
+            }
+
+            .sentences-table {
+                font-size: 0.9em;
+            }
+
+            .sentences-table td, .sentences-table th {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .description-text {
+            color: #666;
+            line-height: 1.8;
+            margin: 15px 0;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Jumble Words Session Flow - Complete Visualization</h1>
+
+        <!-- STEP 1: User Level Selection -->
+        <div class="flow-section">
+            <div class="section-title">
+                <span class="step-number">1</span>
+                User Starts Session & Gets Level from Database
+            </div>
+
+            <p class="description-text">
+                When an authenticated user clicks "Play Jumble Words", the frontend sends their <span class="highlight">idToken</span> to the backend. The backend queries the <span class="highlight">ecUsers</span> DynamoDB table to find the user's current level.
+            </p>
+
+            <div class="info-box">
+                <strong>Database Query:</strong><br>
+                Table: <code>ecUsers</code><br>
+                Key: <code>sub: "user_id_xyz"</code><br>
+                <br>
+                <strong>Result Retrieved:</strong><br>
+                currentLevel: <strong id="selectedLevel">4</strong>
+            </div>
+
+            <p class="description-text">Select a user level to see how it affects the session flow:</p>
+            <div class="level-selector">
+                <button class="level-btn" onclick="setLevel(1)">Level 1</button>
+                <button class="level-btn" onclick="setLevel(2)">Level 2</button>
+                <button class="level-btn active" onclick="setLevel(4)">Level 4</button>
+                <button class="level-btn" onclick="setLevel(5)">Level 5</button>
+                <button class="level-btn" onclick="setLevel(7)">Level 7</button>
+                <button class="level-btn" onclick="setLevel(10)">Level 10</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Get Weights -->
+        <div class="flow-section">
+            <div class="section-title">
+                <span class="step-number">2</span>
+                Determine Difficulty Weights Based on Level
+            </div>
+
+            <p class="description-text">
+                The backend has a lookup table called <span class="highlight">DIFFICULTY_WEIGHTS</span> that maps level ranges to difficulty percentages. Based on the user's level, we get the weights for easy, medium, and hard sentences.
+            </p>
+
+            <div class="info-box">
+                <strong>Level Range Mapping:</strong><br>
+                • Levels 1-2 → 100% easy, 0% medium, 0% hard<br>
+                • Levels 3-5 → 50% easy, 40% medium, 10% hard<br>
+                • Levels 6-7 → 30% easy, 40% medium, 30% hard<br>
+                • Levels 8-10 → 10% easy, 40% medium, 50% hard
+            </div>
+
+            <p class="description-text"><strong id="levelRangeText">For Level 4 (Range 3-5):</strong></p>
+            <div class="weight-display">
+                <div class="weight-item">
+                    <div class="weight-label">Easy</div>
+                    <div class="weight-value" id="easyWeight">50</div>
+                    <div class="weight-label">%</div>
+                </div>
+                <div class="weight-item">
+                    <div class="weight-label">Medium</div>
+                    <div class="weight-value" id="mediumWeight">40</div>
+                    <div class="weight-label">%</div>
+                </div>
+                <div class="weight-item">
+                    <div class="weight-label">Hard</div>
+                    <div class="weight-value" id="hardWeight">10</div>
+                    <div class="weight-label">%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Generate Flow -->
+        <div class="flow-section">
+            <div class="section-title">
+                <span class="step-number">3</span>
+                Generate Random Difficulty Flow (6 Sentences)
+            </div>
+
+            <p class="description-text">
+                The backend loops <span class="highlight">6 times</span> (SESSION_SIZE = 6). For each slot, it generates a random number between 0-100 and compares it against the weights to determine if that sentence should be easy, medium, or hard.
+            </p>
+
+            <div class="info-box">
+                <strong>Algorithm:</strong><br>
+                <code>roll = Math.random() * 100</code><br>
+                <code>if (roll < 50) → EASY</code><br>
+                <code>if (roll < 50 + 40) → MEDIUM</code><br>
+                <code>if (roll < 50 + 40 + 10) → HARD</code>
+            </div>
+
+            <p class="description-text"><strong>Rolling the dice for each slot:</strong></p>
+            <div class="rolls-container" id="rollsContainer">
+                <!-- Dynamically generated -->
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <div class="flow-result" id="flowResult">
+                Flow: ["easy", "medium", "easy", "medium", "easy", "hard"]
+            </div>
+        </div>
+
+        <!-- STEP 4: Get Cursor Positions -->
+        <div class="flow-section">
+            <div class="section-title">
+                <span class="step-number">4</span>
+                Get Cursor Positions from Activity History
+            </div>
+
+            <p class="description-text">
+                To ensure users don't see the same sentence twice, the backend queries the <span class="highlight">ecActivityHistory</span> table to get how many sentences of each difficulty have been shown to this user in total across all previous sessions.
+            </p>
+
+            <div class="info-box">
+                <strong>Database Query:</strong><br>
+                Table: <code>ecActivityHistory</code><br>
+                Query: Latest record for this user<br>
+                <br>
+                <strong>Cursor Positions Retrieved:</strong><br>
+                • easyTotal: 15 (15 easy sentences already shown)<br>
+                • mediumTotal: 8 (8 medium sentences already shown)<br>
+                • hardTotal: 2 (2 hard sentences already shown)
+            </div>
+
+            <div class="cursor-info">
+                <div class="cursor-box">
+                    <div class="cursor-label">Easy Cursor</div>
+                    <div class="cursor-value">15</div>
+                    <div style="font-size: 0.9em; color: #999;">sentences shown</div>
+                </div>
+                <div class="cursor-box">
+                    <div class="cursor-label">Medium Cursor</div>
+                    <div class="cursor-value">8</div>
+                    <div style="font-size: 0.9em; color: #999;">sentences shown</div>
+                </div>
+                <div class="cursor-box">
+                    <div class="cursor-label">Hard Cursor</div>
+                    <div class="cursor-value">2</div>
+                    <div style="font-size: 0.9em; color: #999;">sentences shown</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5: Fetch Sentences -->
+        <div class="flow-section">
+            <div class="section-title">
+                <span class="step-number">5</span>
+                Fetch Sentences Sequentially for Each Slot
+            </div>
+
+            <p class="description-text">
+                For each difficulty in the flow, calculate the next sequential sentence ID using the formula: <span class="highlight">nextId = (cursorPosition + offset) % maxCount + 1</span>. Then fetch that sentence from the <span class="highlight">ecContentBank</span> table.
+            </p>
+
+            <div class="info-box">
+                <strong>Content Bank Sizes:</strong><br>
+                • Easy sentences: 99 total<br>
+                • Medium sentences: 60 total<br>
+                • Hard sentences: 30 total<br>
+                <br>
+                <strong>Note:</strong> The modulo (%) operation ensures we wrap around to the beginning when we reach the max, so users eventually cycle through all sentences.
+            </div>
+
+            <table class="sentences-table">
+                <thead>
+                    <tr>
+                        <th>Slot</th>
+                        <th>Difficulty</th>
+                        <th>Calculation</th>
+                        <th>ID</th>
+                        <th>Sentence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1</strong></td>
+                        <td><span class="difficulty-badge badge-easy">EASY</span></td>
+                        <td><code>(15 + 0) % 99 + 1</code></td>
+                        <td><strong>17</strong></td>
+                        <td>"The cat sat on the mat"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2</strong></td>
+                        <td><span class="difficulty-badge badge-medium">MEDIUM</span></td>
+                        <td><code>(8 + 0) % 60 + 1</code></td>
+                        <td><strong>9</strong></td>
+                        <td>"She quickly ran through the forest"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3</strong></td>
+                        <td><span class="difficulty-badge badge-easy">EASY</span></td>
+                        <td><code>(15 + 1) % 99 + 1</code></td>
+                        <td><strong>18</strong></td>
+                        <td>"I like to read interesting books"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>4</strong></td>
+                        <td><span class="difficulty-badge badge-medium">MEDIUM</span></td>
+                        <td><code>(8 + 1) % 60 + 1</code></td>
+                        <td><strong>10</strong></td>
+                        <td>"Yesterday was quite rainy"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>5</strong></td>
+                        <td><span class="difficulty-badge badge-easy">EASY</span></td>
+                        <td><code>(15 + 2) % 99 + 1</code></td>
+                        <td><strong>19</strong></td>
+                        <td>"Dogs are very loyal animals"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>6</strong></td>
+                        <td><span class="difficulty-badge badge-hard">HARD</span></td>
+                        <td><code>(2 + 0) % 30 + 1</code></td>
+                        <td><strong>3</strong></td>
+                        <td>"Implementing scalable distributed systems"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FINAL RESULT -->
+        <div class="flow-section">
+            <div class="section-title">
+                <span class="step-number">6</span>
+                Return Response to Frontend
+            </div>
+
+            <p class="description-text">
+                The backend sends both the <span class="highlight">flow</span> array and the <span class="highlight">sentences</span> array to the frontend. The frontend then uses this data to render the game session.
+            </p>
+
+            <div class="final-result">
+                <h3>API Response: POST /game/jumble-words/start</h3>
+                <div class="json-result" id="jsonResult">
+{
+  "flow": ["easy", "medium", "easy", "medium", "easy", "hard"],
+  "sentences": [
+    { "id": 17, "difficulty": "easy", "text": "The cat sat on the mat" },
+    { "id": 9, "difficulty": "medium", "text": "She quickly ran through..." },
+    { "id": 18, "difficulty": "easy", "text": "I like to read books" },
+    { "id": 10, "difficulty": "medium", "text": "Yesterday was rainy" },
+    { "id": 19, "difficulty": "easy", "text": "Dogs are loyal animals" },
+    { "id": 3, "difficulty": "hard", "text": "Implementing scalable..." }
+  ]
+}
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="flow-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="section-title" style="border-bottom-color: rgba(255,255,255,0.3); color: white;">
+                <span class="step-number" style="background: white; color: #667eea;">✓</span>
+                Complete Flow Summary
+            </div>
+
+            <p class="description-text" style="color: rgba(255,255,255,0.95);">
+                <strong>1.</strong> Get user's level from <code>ecUsers</code><br>
+                <strong>2.</strong> Look up weights based on level range<br>
+                <strong>3.</strong> Generate 6 random difficulties using weighted distribution<br>
+                <strong>4.</strong> Get cursor positions from <code>ecActivityHistory</code><br>
+                <strong>5.</strong> For each difficulty, calculate sequential ID and fetch from <code>ecContentBank</code><br>
+                <strong>6.</strong> Return flow array and sentences array to frontend<br>
+                <strong>7.</strong> Frontend renders the game with these sentences
+            </p>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.3);">
+                <p style="color: rgba(255,255,255,0.95); font-size: 1.1em;">
+                    <strong>Why this design?</strong><br>
+                    ✓ User sees content matched to their skill level<br>
+                    ✓ No repeated sentences across sessions<br>
+                    ✓ Difficulty distribution adapts as user progresses<br>
+                    ✓ Scalable: wrapping ensures infinite content rotation
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weights = {
+            '1': [100, 0, 0],
+            '2': [100, 0, 0],
+            '3': [50, 40, 10],
+            '4': [50, 40, 10],
+            '5': [50, 40, 10],
+            '6': [30, 40, 30],
+            '7': [30, 40, 30],
+            '8': [10, 40, 50],
+            '9': [10, 40, 50],
+            '10': [10, 40, 50]
+        };
+
+        const levelRanges = {
+            '1': '1-2',
+            '2': '1-2',
+            '3': '3-5',
+            '4': '3-5',
+            '5': '3-5',
+            '6': '6-7',
+            '7': '6-7',
+            '8': '8-10',
+            '9': '8-10',
+            '10': '8-10'
+        };
+
+        function setLevel(level) {
+            document.querySelectorAll('.level-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('selectedLevel').textContent = level;
+
+            const [e, m, h] = weights[level];
+            document.getElementById('easyWeight').textContent = e;
+            document.getElementById('mediumWeight').textContent = m;
+            document.getElementById('hardWeight').textContent = h;
+
+            document.getElementById('levelRangeText').textContent =
+                `For Level ${level} (Range ${levelRanges[level]}):`;
+
+            generateRolls(e, m, h);
+        }
+
+        function generateRolls(eW, mW, hW) {
+            const rolls = [];
+            const difficulties = ['easy', 'medium', 'hard'];
+
+            for (let i = 0; i < 6; i++) {
+                const roll = Math.random() * 100;
+                let result;
+
+                if (roll < eW) {
+                    result = 'easy';
+                } else if (roll < eW + mW) {
+                    result = 'medium';
+                } else {
+                    result = 'hard';
+                }
+
+                rolls.push({ number: i + 1, value: roll.toFixed(2), result });
+            }
+
+            const container = document.getElementById('rollsContainer');
+            container.innerHTML = rolls.map(roll => `
+                <div class="roll-box ${roll.result}">
+                    <div class="roll-number">Slot ${roll.number}</div>
+                    <div class="roll-value">${roll.value}</div>
+                    <div class="roll-result">${roll.result.toUpperCase()}</div>
+                </div>
+            `).join('');
+
+            const flowArray = rolls.map(r => `"${r.result}"`).join(', ');
+            document.getElementById('flowResult').innerHTML =
+                `Flow: [${flowArray}]`;
+        }
+
+        // Initialize
+        setLevel(4);
+    </script>
+</body>
+</html>

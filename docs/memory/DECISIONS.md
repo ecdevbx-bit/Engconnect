@@ -1,0 +1,178 @@
+# Decision Log (project memory)
+
+> **Why this file exists:** long AI-assisted sessions get their context compacted.
+> Anything important that is *not obvious from the code* is written here so it
+> survives. The root `CLAUDE.md` imports this file, so every agent session loads it.
+>
+> **Rules for editing:** append-only. Never rewrite history. To reverse a decision,
+> add a new entry that says `Supersedes D-xxx` and mark the old one
+> `**Status: superseded by D-yyy**`. Keep each entry short: what we decided, why, and
+> what it affects. Dates are absolute (YYYY-MM-DD).
+
+---
+
+## D-001 · Repo layout: one git repo at `ENG/` — 2026-09-22
+- `frontend/` = the Next.js 16 app (UI **and** the API route handlers).
+- `supabase/` = database migrations + seed (the source of truth for the schema).
+- `docs/memory/` = this log + `STATUS.md`. `docs/wiki/` = product wiki.
+- `credentials.txt` at the root is **git-ignored** (and so is every `.env*`). Never commit secrets.
+
+## D-002 · Backend = Supabase (Postgres + Auth) + Next.js route handlers — 2026-09-22
+- The frontend was written for an old Go backend at `NEXT_PUBLIC_API_URL` (`/api/*`,
+  `{success,message,data}` envelopes). We **re-implement that same contract** as Next.js
+  route handlers inside `frontend/src/app/api/**`, backed by Supabase Postgres.
+- Why not Supabase Edge Functions: no Docker on the dev machine (can't run them locally),
+  extra deploy step, and keeping the old contract means almost no UI code changes.
+- Business logic that must be atomic (XP awards, key leasing) lives in **Postgres
+  functions**; route handlers stay thin. The server talks to Postgres with the
+  **secret (service-role) key**; the browser never gets it.
+- `NEXT_PUBLIC_API_URL` is set to the app's own origin, so `v3Fetch` hits our handlers.
+
+## D-003 · Auth: keep NextAuth Google sign-in, swap the token exchange to Supabase — 2026-09-22
+**Status: superseded by D-008 (same day).**
+- NextAuth still runs the Google OAuth flow (UI unchanged). In the `jwt` callback we call
+  `supabase.auth.signInWithIdToken({ provider: 'google', token })` instead of the old
+  `/api/auth/google`. Supabase creates/links the user in `auth.users`; a trigger creates
+  `public.profiles`. Refresh uses `supabase.auth.refreshSession`.
+- `session.user.accessToken` is now a **Supabase JWT**; API handlers verify it.
+- Requires: Google provider enabled in Supabase with the same Google OAuth client ID.
+
+## D-004 · AI Partner = Gemini Live, browser ↔ Google directly via ephemeral tokens — 2026-09-22
+- We do **not** keep the old chat-WebSocket/Deepgram/TTS pipeline. The browser opens a
+  WebSocket straight to Gemini Live (`BidiGenerateContentConstrained`) using a
+  short-lived **ephemeral token** minted by our server. Audio in: 16 kHz PCM16 mono.
+  Audio out: 24 kHz PCM16 mono. Gemini's own `inputAudioTranscription` /
+  `outputAudioTranscription` give us live captions (no separate STT service).
+- The system prompt (tutor persona, ported from `ENGAI/src/services/tutorPrompt.js`) is
+  locked **inside the token's constraints** server-side, so the browser can't change it.
+- Model: `gemini-3.1-flash-live-preview` (owner's choice for the demo). Google now lists
+  it as *legacy preview* and recommends `gemini-3.8-live` (stable). Model is a setting
+  (`GEMINI_LIVE_MODEL` env / admin), so switching is config-only.
+
+## D-005 · Gemini quotas are per **Google Cloud project**, not per key — 2026-09-22
+- Google docs: "Rate limits are applied per project, not per API key." Daily quotas reset
+  at **midnight Pacific**. Five keys from the *same* project = the capacity of one key.
+- ⇒ Each pool key must come from a **different project** (ideally different accounts).
+
+## D-006 · Key pool design (rotation, cooldown, admin page) — 2026-09-22
+- Keys live in `public.gemini_api_keys` (RLS on, no policies ⇒ service-role only). Can be
+  seeded from env `GEMINI_API_KEYS` (comma-separated) or added on the admin Keys page.
+- One live session = one **lease** (`gemini_key_leases`), kept alive by heartbeats and
+  auto-expiring if the tab dies. Leasing picks the least-loaded `active` key under its
+  `max_concurrent` (default 3), serialized by an advisory lock.
+- Failures move a key out of rotation: daily quota → `exhausted` until next Pacific
+  midnight; per-minute → `cooldown` with 1→2→4…30 min back-off; concurrency → 45 s;
+  bad key → `invalid` (needs admin). Keys return to rotation automatically.
+- If every key is out, the API answers `AI_CAPACITY_EXHAUSTED` and the UI says so.
+- Future hardening before a paid plan: move raw keys into Supabase Vault.
+
+## D-007 · AI Partner keeps its UI; only the plumbing under it changes — 2026-09-22
+- Kept as-is: `V3AIPartner.tsx` render tree, `ChatBubble`, `SpeechProgressCard`, `VoiceAgent`,
+  `PcmPlayer` (already 24 kHz PCM16 — exactly Gemini's output), tour element ids (`#aip-tour-*`).
+- Replaced: `useV3ChatSession` (old `/ws/chat`) + Deepgram/WebSpeech capture → one
+  `useGeminiLiveSession` hook with the same return shape, so the component barely changes.
+- **Tap-to-talk stays** (manual `activityStart`/`activityEnd`, Gemini auto-VAD off). Why:
+  learners pause mid-sentence to think; auto-VAD would cut them off and answer too early.
+- Server keeps authority over what it can: session create checks time caps and returns
+  rewards; the browser posts `progress` heartbeats (speaking seconds) and the server clamps
+  them to wall-clock time before awarding XP; the ephemeral token expires at the learner's
+  remaining allowance, so the cap is enforced even if the client misbehaves.
+- Old WS close codes 4001 (superseded) / 4002 (time cap) are mapped to the same UI states.
+
+## D-008 · Auth = Supabase Auth ONLY (Google + email/password); NextAuth removed — 2026-09-22
+- Supersedes D-003. Owner asked for email+password + email-sending limits on top of Google;
+  Supabase Auth has all of it built in (OAuth, confirmation/reset emails, rate limits), so a
+  second auth layer (NextAuth) is pure cost.
+- `@supabase/ssr` cookie sessions. A drop-in `useSession()` in `src/lib/session.tsx` keeps the
+  old NextAuth shape (`data.user.accessToken`, `status`, `update`) so ~29 components only
+  change an import. Server components use `auth()` from `src/auth.ts` (same name as before).
+- Google redirect URI to register in Google Cloud: `https://<ref>.supabase.co/auth/v1/callback`.
+- Emails use token_hash links → `/auth/confirm` (server-side verifyOtp), not implicit tokens.
+- Email sending: Supabase's built-in SMTP is test-only (a few mails/hour). Production needs
+  custom SMTP (Resend/Brevo) — then `rate_limit_email_sent` + our own per-email/per-IP limits.
+
+## D-009 · Single active session uses the Supabase JWT `session_id` claim — 2026-09-22
+- A login (OAuth callback, email confirm, password sign-in → `POST /api/session/start`) writes
+  the JWT's `session_id` into `profiles.active_session_id`. `requireUser` rejects any other
+  session_id with `SESSION_SUPERSEDED` (UI then signs out → `/login?reason=signed_in_elsewhere`).
+- Not done on `SIGNED_IN` auth events: Supabase fires those on tab refocus too, which would let
+  an old device steal the session back.
+
+## D-010 · /pro invite link grants Pro only to NEWLY created accounts — 2026-09-22
+**Status: superseded by D-021 (same day).**
+- The old code comments disagreed with the /pro page copy. Chose the safer rule (backend
+  comment): a sign-up that starts at /pro and creates the account gets Pro; existing accounts
+  are not topped up. Change in `server/domain/premium.ts::grantProInviteIfEligible` if needed.
+
+## D-011 · Gemini key tiers: free first, paid only as last resort — 2026-09-22
+- Owner supplied 7 free keys + 1 paid key ("only use if free are exhausted").
+- `gemini_api_keys.tier` ('free'|'paid'); the lease query orders `tier = 'paid'` LAST, so the paid
+  key is used only when no free key can take the request. Env: `GEMINI_API_KEYS` (free) and
+  `GEMINI_PAID_API_KEYS` (paid).
+- 2026-09-22 probe: all 8 keys valid; each lists `gemini-3.1-flash-live-preview` and
+  `gemini-3.1-flash-lite`. Whether they're in different Google projects is unknown (D-005).
+
+## D-012 · Gemini Live wire details (verified by live probes, 2026-09-22) — 2026-09-22
+- Token: `authTokens.create` with `httpOptions.apiVersion = "v1alpha"` (SDK says v1alpha only),
+  `uses: 1`, `lockAdditionalFields: []` (locks every field we set). `sessionResumption` is NOT
+  set in constraints so the client can pass its resume handle.
+- Socket: `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=<token.name>`;
+  client setup = `{ setup: { model: "models/<model>", sessionResumption: {handle?} } }`.
+- Verified: setupComplete → audio (24 kHz PCM) + outputTranscription + resumption handle;
+  tap-to-talk (`activityStart` → `audio/pcm;rate=N` chunks → `activityEnd`) gives exact
+  inputTranscription and a spoken correction. Native-audio text parts are reasoning → hidden.
+
+## D-013 · Never name columns after PostgREST reserved words — 2026-09-22
+- `order` broke filtering (`?order=eq.5` is parsed as ORDER BY). Renamed `problems.order` →
+  `sort_order` and `daily_usage.count` → `used` before first apply. The API still returns
+  `order` to the frontend. Avoid: order, select, limit, offset, count, and, or, not, columns.
+
+## D-014 · Pronunciation scoring — 2026-09-22
+- Browser converts every recording to 16 kHz mono WAV (`src/audio/toWav.ts`): Gemini
+  officially accepts WAV not WebM, and Safari records mp4.
+- `gemini-3.1-flash-lite` judges each expected word (CORRECT/INCORRECT/UNCLEAR, accent is NOT
+  penalised); the server recomputes similarity/accuracy deterministically. Verified on a probe:
+  "I go … buy" for "I went … bought" → exactly those 2 words INCORRECT.
+- XP = round(base × accuracy), base 20/30/40; once per phrase per IST day; combo continues ≥ 80 %.
+- Recordings stored in R2 at `pronunciation/<userId>/<attemptId>.wav` when R2 is configured.
+
+## D-015 · Default game economics & free-tier limits (admin-editable) — 2026-09-22
+- Jumble XP easy/medium/hard = 10/15/25; progressive by variant 10/15/25 + set bonus 10.
+  XP per sentence once per IST day. Round = 6 sentences. Wrong answer resets combo.
+- Free quotas: Jumble 18 solved/difficulty/day, Pronunciation 3 attempts/difficulty/day
+  (`app_settings.quotas`; 0 = unlimited). Pro = unlimited.
+- AI Partner: free 20 min/week (Mon IST), Pro 60 min/day (IST). Talk-time XP: first +10 XP
+  after 15 s of speaking, then +30 XP per extra minute (= the "+150 XP / 5 min" promise).
+  Talk-time credit ≤ wall-clock and ≤ 2 s per recognised word + 10 s (anti-farming).
+
+## D-016 · Tooling: no Doppler; env via .env.local / Vercel; pnpm 11 via npx — 2026-09-22
+- `doppler` isn't installed → scripts become plain `next dev/build/start`.
+- Local pnpm is 10.x but package.json pins pnpm@11.0.8 → run `npx -y pnpm@11.0.8 <cmd>`.
+  On Vercel set `ENABLE_EXPERIMENTAL_COREPACK=1` so it honours `packageManager`.
+
+## D-017 · Migrations are applied with `supabase/apply-migrations.mjs` — 2026-09-22
+- Uses the Management API (`/v1/projects/<ref>/database/query`) with a personal access token
+  (sbp_…), one transaction per file, recorded in `supabase_migrations.schema_migrations`
+  exactly like the CLI. All 8 initial migrations applied 2026-09-22.
+
+## D-018 · No self-HTTP on the server; API base is same-origin — 2026-09-22
+- Admin server actions dispatch to the in-process router (`backendFetch`) instead of fetching
+  their own public URL (avoids Vercel deployment-protection 401s and a network hop).
+- Client code defaults `NEXT_PUBLIC_API_URL` to "" ⇒ relative `/api/...` on every deployment.
+
+## D-019 · Project knowledge = Karpathy "LLM Wiki" pattern — 2026-09-22
+- `docs/wiki/` is a compiled, interlinked markdown wiki maintained by the agent:
+  `index.md` (catalog), `log.md` (append-only), topic pages with `[[wikilinks]]` and
+  frontmatter (`type`, `tags`, `links`) so a graph memory can be built from it later.
+- Root `CLAUDE.md` is the schema: read memory + index first, update wiki + log after work.
+
+## D-020 · Our own email-send limits on top of Supabase's — 2026-09-22
+- `/api/account/{signup,resend,reset}` go through `auth_email_allow()`: max 3 emails per address
+  and 10 per IP (sha256-hashed) per hour; over-limit → `429 EMAIL_RATE_LIMITED`. Answers are
+  identical whether or not the account exists (no email enumeration). Constants in
+  `frontend/src/server/routes/account.ts` (LIMITS).
+
+## D-021 · /pro link grants Pro to new AND existing accounts (once each) — 2026-09-22
+- Supersedes D-010. The live /pro page explicitly promises existing accounts ("Already have an
+  account? Use this same button…"), so the backend now honours that. Guard rails: admin on/off,
+  end date, max redemptions, and `pro_invite_signups` (one grant per account).

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Connection — DynamoDB → SQL Migration Guide</title>
+  <style>
+    :root {
+      --cream: #faf8f4;
+      --paper: #f4f0e8;
+      --warm: #ede8dc;
+      --ink: #1a1612;
+      --ink2: #3d3830;
+      --ink3: #7a7266;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --emerald: #059669;
+      --emerald-light: #d1fae5;
+      --amber: #f59e0b;
+      --amber-light: #fef3c7;
+      --rose: #e11d48;
+      --rose-light: #ffe4e6;
+      --purple: #7c3aed;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 40px 20px 80px;
+    }
+
+    .page { max-width: 860px; margin: 0 auto; }
+
+    /* Header */
+    .header { margin-bottom: 40px; }
+    .badge {
+      display: inline-block;
+      background: var(--blue-light);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--ink3); font-size: 15px; max-width: 560px; }
+
+    /* TOC */
+    .toc {
+      background: var(--paper);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 2px 12px rgba(26,22,18,.07);
+    }
+    .toc-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ink3);
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
+    .toc ol { padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+    .toc a { color: var(--blue); text-decoration: none; font-size: 13px; font-weight: 600; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Section */
+    .section { margin-bottom: 36px; }
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--warm);
+    }
+    .section-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    h2 { font-size: 18px; font-weight: 800; color: var(--ink); margin-bottom: 2px; }
+    .source-file {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--ink3);
+      background: var(--warm);
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .endpoint-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--ink3);
+      font-family: monospace;
+      margin-bottom: 4px;
+      margin-top: 14px;
+    }
+    .endpoint {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .method {
+      font-family: monospace;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: .04em;
+    }
+    .method.get  { background: var(--emerald-light); color: var(--emerald); }
+    .method.post { background: var(--blue-light);    color: var(--blue); }
+    .method.put  { background: var(--amber-light);   color: #92400e; }
+    .method.del  { background: var(--rose-light);    color: var(--rose); }
+
+    .endpoint-path {
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink2);
+    }
+
+    /* SQL block */
+    .sql-block {
+      background: #1e1b16;
+      color: #e8e2d6;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+      margin-bottom: 10px;
+    }
+    .kw { color: #7dd3fc; font-weight: 700; }   /* SQL keywords */
+    .fn { color: #86efac; }                      /* functions */
+    .str{ color: #fde68a; }                      /* strings/params */
+    .cm { color: #6b7280; font-style: italic; }  /* comments */
+    .tb { color: #f9a8d4; }                      /* table names */
+    .col{ color: #c4b5fd; }                      /* column names */
+
+    /* Note callout */
+    .note {
+      display: flex;
+      gap: 10px;
+      background: var(--amber-light);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 10px 10px 0;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--ink2);
+      margin-top: 8px;
+    }
+    .note-icon { flex-shrink: 0; font-size: 15px; }
+
+    /* Schema card */
+    .schema-card {
+      background: var(--paper);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 10px rgba(26,22,18,.06);
+    }
+    .schema-title { font-weight: 700; font-size: 13px; color: var(--ink); margin-bottom: 8px; font-family: monospace; }
+    .schema-fields { display: flex; flex-wrap: wrap; gap: 6px; }
+    .field-chip {
+      background: var(--warm);
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--ink2);
+    }
+    .field-chip.pk { background: var(--blue-light); color: var(--blue); }
+    .field-chip.fk { background: var(--purple-light, #ede9fe); color: var(--purple); }
+
+    .divider { height: 1px; background: var(--warm); margin: 24px 0; }
+
+    footer {
+      margin-top: 48px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--ink3);
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">Developer Docs</div>
+    <h1>DynamoDB → MariaDB/SQL<br>Migration Reference</h1>
+    <p class="subtitle">
+      Maps every frontend API call to its equivalent Spring Boot controller endpoint
+      and the SQL query that should back it. For the backend developer implementing
+      the MariaDB layer.
+    </p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#schema">Proposed Table Schema</a></li>
+      <li><a href="#auth">Auth — Sync &amp; Register</a></li>
+      <li><a href="#user">User Profile</a></li>
+      <li><a href="#activity">Activity History</a></li>
+      <li><a href="#jumble">Game: Jumble Words</a></li>
+      <li><a href="#pronoun">Game: Pronunciation Coach</a></li>
+      <li><a href="#notes">Implementation Notes</a></li>
+    </ol>
+  </div>
+
+
+  <!-- 0. Schema -->
+  <div class="section" id="schema">
+    <div class="section-header">
+      <div class="section-num">0</div>
+      <div>
+        <h2>Proposed Table Schema</h2>
+        <p style="color:var(--ink3);font-size:13px;">Replaces DynamoDB single-table design with normalized MariaDB tables.</p>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-title">TABLE: users</div>
+      <div class="schema-fields">
+        <span class="field-chip pk">id BIGINT PK</span>
+        <span class="field-chip">firebase_uid VARCHAR(128) UNIQUE NOT NULL</span>
+        <span class="field-chip">email VARCHAR(255) UNIQUE NOT NULL</span>
+        <span class="field-chip">name VARCHAR(255)</span>
+        <span class="field-chip">location VARCHAR(255)</span>
+        <span class="field-chip">hobbies TEXT</span>
+        <span class="field-chip">goals TEXT</span>
+        <span class="field-chip">current_status ENUM('school','college','working')</span>
+        <span class="field-chip">native_lang VARCHAR(100)</span>
+        <span class="field-chip">english_reason TEXT</span>
+        <span class="field-chip">phone VARCHAR(15)</span>
+        <span class="field-chip">total_xp INT DEFAULT 0</span>
+        <span class="field-chip">current_level TINYINT DEFAULT 1</span>
+        <span class="field-chip">role ENUM('STUDENT','ADMIN') DEFAULT 'STUDENT'</span>
+        <span class="field-chip">is_email_verified BOOLEAN DEFAULT FALSE</span>
+        <span class="field-chip">created_at DATETIME DEFAULT NOW()</span>
+        <span class="field-chip">updated_at DATETIME DEFAULT NOW() ON UPDATE NOW()</span>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-title">TABLE: activities</div>
+      <div class="schema-fields">
+        <span class="field-chip pk">id BIGINT PK AUTO_INCREMENT</span>
+        <span class="field-chip fk">user_id BIGINT FK → users.id</span>
+        <span class="field-chip">activity_type ENUM('jumble-words','pronoun-coach','ai-partner')</span>
+        <span class="field-chip">xp_earned INT NOT NULL</span>
+        <span class="field-chip">easy_count TINYINT DEFAULT 0</span>
+        <span class="field-chip">medium_count TINYINT DEFAULT 0</span>
+        <span class="field-chip">hard_count TINYINT DEFAULT 0</span>
+        <span class="field-chip">completed_count TINYINT DEFAULT 0</span>
+        <span class="field-chip">total_count TINYINT DEFAULT 0</span>
+        <span class="field-chip">activity_data JSON</span>
+        <span class="field-chip">created_at DATETIME DEFAULT NOW()</span>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-title">TABLE: sentences</div>
+      <div class="schema-fields">
+        <span class="field-chip pk">id INT PK AUTO_INCREMENT</span>
+        <span class="field-chip">text TEXT NOT NULL</span>
+        <span class="field-chip">difficulty ENUM('easy','medium','hard') NOT NULL</span>
+        <span class="field-chip">type ENUM('jumble','pronunciation') DEFAULT 'jumble'</span>
+        <span class="field-chip">is_active BOOLEAN DEFAULT TRUE</span>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-title">TABLE: user_sentence_cursors <span style="font-weight:400;color:var(--ink3)">(replaces DynamoDB sequential cursor)</span></div>
+      <div class="schema-fields">
+        <span class="field-chip pk">id BIGINT PK AUTO_INCREMENT</span>
+        <span class="field-chip fk">user_id BIGINT FK → users.id</span>
+        <span class="field-chip fk">sentence_id INT FK → sentences.id</span>
+        <span class="field-chip">played_at DATETIME DEFAULT NOW()</span>
+        <span class="field-chip" style="background:var(--blue-light);color:var(--blue)">UNIQUE KEY (user_id, sentence_id)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- 1. Auth -->
+  <div class="section" id="auth">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <h2>Auth — Sync &amp; Register</h2>
+        <p style="color:var(--ink3);font-size:13px;">Called automatically after Firebase login via <code>syncWithBackend()</code> in <code>src/lib/auth.ts</code>.</p>
+      </div>
+    </div>
+
+    <div class="source-file">src/lib/auth.ts → syncWithBackend()</div>
+
+    <div class="endpoint-label">Endpoint</div>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/auth/sync</span>
+    </div>
+
+    <div class="sql-block"><span class="cm">-- On first login: create user row from Firebase JWT claims</span>
+<span class="kw">INSERT INTO</span> <span class="tb">users</span> (<span class="col">firebase_uid</span>, <span class="col">email</span>, <span class="col">name</span>, <span class="col">is_email_verified</span>, <span class="col">role</span>)
+<span class="kw">VALUES</span> (<span class="str">:firebaseUid</span>, <span class="str">:email</span>, <span class="str">:name</span>, <span class="str">:emailVerified</span>, <span class="str">'STUDENT'</span>)
+<span class="kw">ON DUPLICATE KEY UPDATE</span>
+  <span class="col">name</span> = <span class="kw">COALESCE</span>(<span class="col">name</span>, <span class="kw">VALUES</span>(<span class="col">name</span>)),
+  <span class="col">is_email_verified</span> = <span class="str">:emailVerified</span>;
+
+<span class="cm">-- Same-email relink: user deleted Firebase account and re-registered</span>
+<span class="kw">UPDATE</span> <span class="tb">users</span>
+<span class="kw">SET</span> <span class="col">firebase_uid</span> = <span class="str">:newFirebaseUid</span>, <span class="col">is_email_verified</span> = <span class="str">:emailVerified</span>
+<span class="kw">WHERE</span> <span class="col">email</span> = <span class="str">:email</span> <span class="kw">AND</span> <span class="col">firebase_uid</span> != <span class="str">:newFirebaseUid</span>;</div>
+
+    <div class="note">
+      <span class="note-icon">⚠️</span>
+      <span>The <code>FirebaseTokenFilter</code> already handles this. The Spring Boot <code>UserService.getOrCreateUser()</code> method contains the relink logic — no additional migration needed for auth itself.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- 2. User Profile -->
+  <div class="section" id="user">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <h2>User Profile</h2>
+        <p style="color:var(--ink3);font-size:13px;">Used by <code>useBackendUser()</code> hook, profile page, and AppNavbar.</p>
+      </div>
+    </div>
+
+    <div class="source-file">src/hooks/useBackendUser.ts</div>
+    <div class="source-file">src/app/app/profile/page.tsx</div>
+    <div class="source-file">src/components/profile/ProfileForm.tsx</div>
+
+    <div class="endpoint-label">Get current user</div>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/user/me</span>
+    </div>
+    <div class="sql-block"><span class="kw">SELECT</span>
+  <span class="col">u.id</span>, <span class="col">u.firebase_uid</span> <span class="kw">AS</span> <span class="col">sub</span>, <span class="col">u.email</span>, <span class="col">u.name</span>,
+  <span class="col">u.location</span>, <span class="col">u.hobbies</span>, <span class="col">u.goals</span>,
+  <span class="col">u.current_status</span> <span class="kw">AS</span> <span class="col">currentStatus</span>,
+  <span class="col">u.native_lang</span> <span class="kw">AS</span> <span class="col">nativeLang</span>,
+  <span class="col">u.english_reason</span> <span class="kw">AS</span> <span class="col">englishReason</span>,
+  <span class="col">u.phone</span>, <span class="col">u.total_xp</span> <span class="kw">AS</span> <span class="col">totalXp</span>,
+  <span class="col">u.current_level</span> <span class="kw">AS</span> <span class="col">currentLevel</span>,
+  <span class="col">u.created_at</span> <span class="kw">AS</span> <span class="col">createdAt</span>
+<span class="kw">FROM</span> <span class="tb">users</span> u
+<span class="kw">WHERE</span> <span class="col">u.firebase_uid</span> = <span class="str">:firebaseUid</span>  <span class="cm">-- from JWT subject claim</span>
+<span class="kw">LIMIT</span> 1;</div>
+
+    <div class="endpoint-label">Update profile</div>
+    <div class="endpoint">
+      <span class="method put">PUT</span>
+      <span class="endpoint-path">/api/user/me</span>
+    </div>
+    <div class="sql-block"><span class="kw">UPDATE</span> <span class="tb">users</span>
+<span class="kw">SET</span>
+  <span class="col">name</span>           = <span class="str">:name</span>,
+  <span class="col">location</span>       = <span class="str">:location</span>,
+  <span class="col">hobbies</span>        = <span class="str">:hobbies</span>,
+  <span class="col">goals</span>          = <span class="str">:goals</span>,
+  <span class="col">current_status</span> = <span class="str">:currentStatus</span>,
+  <span class="col">native_lang</span>    = <span class="str">:nativeLang</span>,
+  <span class="col">english_reason</span> = <span class="str">:englishReason</span>,
+  <span class="col">phone</span>          = <span class="str">:phone</span>,
+  <span class="col">updated_at</span>     = <span class="fn">NOW()</span>
+<span class="kw">WHERE</span> <span class="col">firebase_uid</span> = <span class="str">:firebaseUid</span>;</div>
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- 3. Activity -->
+  <div class="section" id="activity">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <h2>Activity History</h2>
+        <p style="color:var(--ink3);font-size:13px;">Paginated list of completed game sessions. Replaces DynamoDB scan with LIMIT/OFFSET.</p>
+      </div>
+    </div>
+
+    <div class="source-file">src/app/app/activity/page.tsx</div>
+    <div class="source-file">src/components/app/AppNavbar.tsx (preview)</div>
+
+    <div class="endpoint-label">List activities (paginated)</div>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/user/activity?limit=10&amp;lastKey=&lt;offset&gt;</span>
+    </div>
+    <div class="sql-block"><span class="cm">-- Page 1 (no lastKey)</span>
+<span class="kw">SELECT</span>
+  <span class="col">a.id</span>, <span class="col">a.activity_type</span> <span class="kw">AS</span> <span class="col">activityType</span>,
+  <span class="col">a.xp_earned</span> <span class="kw">AS</span> <span class="col">xpEarned</span>,
+  <span class="col">a.easy_count</span> <span class="kw">AS</span> <span class="col">easyCount</span>,
+  <span class="col">a.medium_count</span> <span class="kw">AS</span> <span class="col">mediumCount</span>,
+  <span class="col">a.hard_count</span> <span class="kw">AS</span> <span class="col">hardCount</span>,
+  <span class="col">a.completed_count</span> <span class="kw">AS</span> <span class="col">completedCount</span>,
+  <span class="col">a.total_count</span> <span class="kw">AS</span> <span class="col">totalCount</span>,
+  <span class="col">a.activity_data</span> <span class="kw">AS</span> <span class="col">activityData</span>,
+  <span class="col">a.created_at</span> <span class="kw">AS</span> <span class="col">timestamp</span>
+<span class="kw">FROM</span> <span class="tb">activities</span> a
+<span class="kw">JOIN</span> <span class="tb">users</span> u <span class="kw">ON</span> <span class="col">u.id</span> = <span class="col">a.user_id</span>
+<span class="kw">WHERE</span> <span class="col">u.firebase_uid</span> = <span class="str">:firebaseUid</span>
+<span class="kw">ORDER BY</span> <span class="col">a.created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="str">:limit</span> <span class="kw">OFFSET</span> <span class="str">:offset</span>;
+
+<span class="cm">-- Response also includes nextKey = offset + limit (or null if fewer rows returned than limit)</span></div>
+
+    <div class="note">
+      <span class="note-icon">💡</span>
+      <span>DynamoDB used <code>LastEvaluatedKey</code> for pagination. Replace with integer <code>offset</code>. The frontend sends <code>lastKey</code> as a string — parse it as an integer on the backend.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- 4. Jumble Words -->
+  <div class="section" id="jumble">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <h2>Game: Jumble Words</h2>
+        <p style="color:var(--ink3);font-size:13px;">Two-step flow: start session → play → complete session. Replaces DynamoDB sequential cursor with <code>user_sentence_cursors</code>.</p>
+      </div>
+    </div>
+
+    <div class="source-file">src/components/game/AuthedJumbleWordsPlayground.tsx</div>
+    <div class="source-file">src/app/app/game/jumble-words/page.tsx</div>
+
+    <!-- Start -->
+    <div class="endpoint-label">Start session — fetch sentences</div>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/game/jumble-words/start</span>
+    </div>
+    <div class="sql-block"><span class="cm">-- Step 1: Determine user level to build session flow</span>
+<span class="kw">SELECT</span> <span class="col">current_level</span> <span class="kw">FROM</span> <span class="tb">users</span> <span class="kw">WHERE</span> <span class="col">firebase_uid</span> = <span class="str">:firebaseUid</span>;
+
+<span class="cm">-- Step 2: Pick 6 sentences not yet seen by this user (respects sequential cursor)</span>
+<span class="kw">SELECT</span> <span class="col">s.id</span>, <span class="col">s.text</span>, <span class="col">s.difficulty</span>
+<span class="kw">FROM</span> <span class="tb">sentences</span> s
+<span class="kw">LEFT JOIN</span> <span class="tb">user_sentence_cursors</span> c
+  <span class="kw">ON</span> <span class="col">c.sentence_id</span> = <span class="col">s.id</span> <span class="kw">AND</span> <span class="col">c.user_id</span> = <span class="str">:userId</span>
+<span class="kw">WHERE</span> <span class="col">s.type</span> = <span class="str">'jumble'</span>
+  <span class="kw">AND</span> <span class="col">s.is_active</span> = <span class="kw">TRUE</span>
+  <span class="kw">AND</span> <span class="col">c.id</span> <span class="kw">IS NULL</span>          <span class="cm">-- not yet played</span>
+  <span class="kw">AND</span> <span class="col">s.difficulty</span> <span class="kw">IN</span> (<span class="str">:d1</span>, <span class="str">:d2</span>, ...)  <span class="cm">-- from server-generated flow</span>
+<span class="kw">ORDER BY</span> <span class="fn">RAND</span>()            <span class="cm">-- or deterministic ordering</span>
+<span class="kw">LIMIT</span> 6;
+
+<span class="cm">-- If fewer than 6 unseen sentences remain, reset cursor for this user:</span>
+<span class="kw">DELETE FROM</span> <span class="tb">user_sentence_cursors</span> <span class="kw">WHERE</span> <span class="col">user_id</span> = <span class="str">:userId</span>;</div>
+
+    <!-- Complete -->
+    <div class="endpoint-label">Complete session — save results + award XP</div>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/game/jumble-words/complete</span>
+    </div>
+    <div class="sql-block"><span class="cm">-- Step 1: Record which sentences were played (advance cursor)</span>
+<span class="kw">INSERT IGNORE INTO</span> <span class="tb">user_sentence_cursors</span> (<span class="col">user_id</span>, <span class="col">sentence_id</span>, <span class="col">played_at</span>)
+<span class="kw">VALUES</span> (<span class="str">:userId</span>, <span class="str">:sentenceId1</span>, <span class="fn">NOW()</span>),
+       (<span class="str">:userId</span>, <span class="str">:sentenceId2</span>, <span class="fn">NOW()</span>), ...;
+
+<span class="cm">-- Step 2: Credit XP and recalculate level</span>
+<span class="kw">UPDATE</span> <span class="tb">users</span>
+<span class="kw">SET</span>
+  <span class="col">total_xp</span>      = <span class="col">total_xp</span> + <span class="str">:totalXpEarned</span>,
+  <span class="col">current_level</span> = <span class="fn">calculateLevel</span>(<span class="col">total_xp</span> + <span class="str">:totalXpEarned</span>),
+  <span class="col">updated_at</span>    = <span class="fn">NOW()</span>
+<span class="kw">WHERE</span> <span class="col">firebase_uid</span> = <span class="str">:firebaseUid</span>;
+
+<span class="cm">-- Step 3: Write activity record</span>
+<span class="kw">INSERT INTO</span> <span class="tb">activities</span>
+  (<span class="col">user_id</span>, <span class="col">activity_type</span>, <span class="col">xp_earned</span>, <span class="col">easy_count</span>, <span class="col">medium_count</span>, <span class="col">hard_count</span>, <span class="col">completed_count</span>, <span class="col">total_count</span>, <span class="col">activity_data</span>)
+<span class="kw">VALUES</span>
+  (<span class="str">:userId</span>, <span class="str">'jumble-words'</span>, <span class="str">:totalXpEarned</span>, <span class="str">:easyCount</span>, <span class="str">:mediumCount</span>, <span class="str">:hardCount</span>, <span class="str">:correctCount</span>, 6, <span class="str">:resultsJson</span>);
+
+<span class="cm">-- Step 4: Return updated totals to frontend</span>
+<span class="kw">SELECT</span> <span class="col">total_xp</span> <span class="kw">AS</span> <span class="col">newTotalXp</span>, <span class="col">current_level</span> <span class="kw">AS</span> <span class="col">newLevel</span>
+<span class="kw">FROM</span> <span class="tb">users</span> <span class="kw">WHERE</span> <span class="col">firebase_uid</span> = <span class="str">:firebaseUid</span>;</div>
+
+    <div class="note">
+      <span class="note-icon">💡</span>
+      <span>
+        DynamoDB used a <code>cursor</code> attribute on the user item that stored the last-seen sentence ID.
+        SQL equivalent: the <code>user_sentence_cursors</code> join table. A sentence is "seen" once its row
+        exists in that table for that user. Reset = <code>DELETE FROM user_sentence_cursors WHERE user_id = ?</code>.
+      </span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- 5. Pronunciation Coach -->
+  <div class="section" id="pronoun">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div>
+        <h2>Game: Pronunciation Coach</h2>
+        <p style="color:var(--ink3);font-size:13px;">3-sentence session. Audio uploaded as multipart form; pipeline returns word-level analysis.</p>
+      </div>
+    </div>
+
+    <div class="source-file">src/app/app/game/pronoun-coach/page.tsx</div>
+
+    <div class="endpoint-label">Start session</div>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/game/pronoun-coach/start</span>
+    </div>
+    <div class="sql-block"><span class="kw">SELECT</span> <span class="col">s.id</span>, <span class="col">s.text</span>, <span class="col">s.difficulty</span>
+<span class="kw">FROM</span> <span class="tb">sentences</span> s
+<span class="kw">LEFT JOIN</span> <span class="tb">user_sentence_cursors</span> c
+  <span class="kw">ON</span> <span class="col">c.sentence_id</span> = <span class="col">s.id</span> <span class="kw">AND</span> <span class="col">c.user_id</span> = <span class="str">:userId</span>
+<span class="kw">WHERE</span> <span class="col">s.type</span> = <span class="str">'pronunciation'</span>
+  <span class="kw">AND</span> <span class="col">s.difficulty</span> = <span class="str">:difficulty</span>
+  <span class="kw">AND</span> <span class="col">c.id</span> <span class="kw">IS NULL</span>
+<span class="kw">ORDER BY</span> <span class="fn">RAND</span>()
+<span class="kw">LIMIT</span> 3;</div>
+
+    <div class="endpoint-label">Submit audio + complete session</div>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/game/pronoun-coach/complete</span>
+    </div>
+    <div class="sql-block"><span class="cm">-- XP formula: base(difficulty) × accuracy_ratio</span>
+<span class="cm">-- easy=20, medium=30, hard=40 × (correct_words / total_words)</span>
+<span class="kw">UPDATE</span> <span class="tb">users</span>
+<span class="kw">SET</span>
+  <span class="col">total_xp</span>      = <span class="col">total_xp</span> + <span class="str">:totalXpEarned</span>,
+  <span class="col">current_level</span> = <span class="fn">calculateLevel</span>(<span class="col">total_xp</span> + <span class="str">:totalXpEarned</span>),
+  <span class="col">updated_at</span>    = <span class="fn">NOW()</span>
+<span class="kw">WHERE</span> <span class="col">firebase_uid</span> = <span class="str">:firebaseUid</span>;
+
+<span class="kw">INSERT INTO</span> <span class="tb">activities</span>
+  (<span class="col">user_id</span>, <span class="col">activity_type</span>, <span class="col">xp_earned</span>, <span class="col">total_count</span>, <span class="col">activity_data</span>)
+<span class="kw">VALUES</span>
+  (<span class="str">:userId</span>, <span class="str">'pronoun-coach'</span>, <span class="str">:totalXpEarned</span>, 3, <span class="str">:pronunciationResultsJson</span>);</div>
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- 6. Notes -->
+  <div class="section" id="notes">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div>
+        <h2>Implementation Notes</h2>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div class="note" style="background:var(--blue-light);border-left-color:var(--blue);">
+        <span class="note-icon">🔑</span>
+        <span>
+          <strong>Auth token:</strong> Every protected endpoint receives a Firebase ID JWT in
+          <code>Authorization: Bearer &lt;token&gt;</code>. The existing <code>FirebaseTokenFilter</code>
+          verifies it and sets the <code>firebase_uid</code> in the security context.
+          Use that UID to look up <code>users.id</code> for all queries.
+        </span>
+      </div>
+
+      <div class="note" style="background:var(--emerald-light);border-left-color:var(--emerald);">
+        <span class="note-icon">📐</span>
+        <span>
+          <strong>Level calculation:</strong> Frontend uses
+          <code>LEVEL_THRESHOLDS = [0, 0, 100, 250, 500, 850, 1300, 1900, 2700, 3700, 5000]</code>
+          (index = level). Backend should implement the same thresholds in a helper — return the level
+          whose threshold is ≤ total_xp, checking from highest to lowest.
+        </span>
+      </div>
+
+      <div class="note" style="background:var(--rose-light);border-left-color:var(--rose);">
+        <span class="note-icon">🚫</span>
+        <span>
+          <strong>Public routes:</strong> <code>/game/jumble-words</code> and
+          <code>/game/pronoun-coach</code> are unauthenticated — they use local sentence data with
+          no backend calls. Only <code>/app/game/*</code> routes call the backend.
+        </span>
+      </div>
+
+      <div class="note">
+        <span class="note-icon">📦</span>
+        <span>
+          <strong>Response shape frontend expects from <code>/api/user/me</code>:</strong>
+          <code>{ user: { sub, name, email, location, hobbies, goals, phone, currentStatus,
+          englishReason, nativeLang, totalXp, currentLevel, createdAt } }</code>
+        </span>
+      </div>
+
+      <div class="note">
+        <span class="note-icon">📦</span>
+        <span>
+          <strong>Response shape frontend expects from <code>/api/game/jumble-words/complete</code>:</strong>
+          <code>{ newTotalXp: number, newLevel: number }</code>
+        </span>
+      </div>
+
+      <div class="note">
+        <span class="note-icon">📦</span>
+        <span>
+          <strong>Response shape frontend expects from <code>/api/user/activity</code>:</strong>
+          <code>{ activities: ActivityRecord[], nextKey: string | null }</code> where
+          <code>nextKey</code> is a string-encoded integer offset (or null if no more pages).
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    English Connection · frontend-v2 · DynamoDB → MariaDB migration reference · Developer use only
+  </footer>
+
+</div>
+</body>
+</html>
