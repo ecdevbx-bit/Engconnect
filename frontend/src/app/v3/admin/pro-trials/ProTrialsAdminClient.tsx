@@ -37,7 +37,10 @@ export default function ProTrialsAdminClient({ initial }: { initial: ProTrialLis
   const [settings, setSettings] = useState<ProTrialSettings>(initial.settings);
   const [msg, setMsg] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "cancelled">("all");
+  // Open on the queue that needs a decision.
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "cancelled">(() =>
+    initial.applications.some((a) => a.status === "pending") ? "pending" : "all",
+  );
   const [pending, startTransition] = useTransition();
 
   const run = (fn: () => Promise<ActionResult>) =>
@@ -182,7 +185,7 @@ export default function ProTrialsAdminClient({ initial }: { initial: ProTrialLis
                       ) : null}
                     </p>
                   </div>
-                  <div className="flex shrink-0 gap-2">
+                  <div className="flex shrink-0 flex-wrap gap-2">
                     {app.status !== "approved" && (
                       <button
                         onClick={() => run(() => approveTrialAction(app.sub))}
@@ -191,6 +194,17 @@ export default function ProTrialsAdminClient({ initial }: { initial: ProTrialLis
                         className="inline-flex items-center gap-1.5 rounded-full bg-[#3f9d2c] px-4 py-2 text-sm font-bold text-white transition hover:brightness-105 disabled:opacity-50"
                       >
                         <Check className="h-4 w-4" /> Approve
+                      </button>
+                    )}
+                    {/* "Don't approve": a pending application is declined (status
+                        cancelled — the learner can apply again later). */}
+                    {app.status === "pending" && (
+                      <button
+                        onClick={() => run(() => cancelTrialAction(app.sub))}
+                        disabled={pending}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-red-500/40 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-500/10 disabled:opacity-50 dark:text-red-400"
+                      >
+                        <Ban className="h-4 w-4" /> Don&apos;t approve
                       </button>
                     )}
                     {app.status === "approved" && (

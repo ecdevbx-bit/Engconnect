@@ -92,6 +92,38 @@ const PHRASES: Record<string, Phrases> = {
   },
 };
 
+// Languages without hand-written phrases still get the 70/30 Roman-script
+// blend; K.AI picks natural fillers itself.
+function phrasesFor(lang: string): Phrases {
+  return (
+    PHRASES[lang] ?? {
+      okay: "okay",
+      understood: "got it",
+      address: "you / [name]",
+      filler: "right? / okay?",
+      praise: "Excellent! Well done!",
+      correctIntro: "One small correction",
+      tryAgain: "Now try saying that correctly.",
+      ratioRule: `70% English + 30% ${lang} (${lang} written in ROMAN script only). ZERO ${lang} native script.`,
+    }
+  );
+}
+
+// Role-play modes (from ENGAI). Keys match AI_PARTNER_SCENARIOS ids.
+const SCENARIO_RULES: Record<string, string> = {
+  "General Conversation": "Warm, natural everyday conversation about the learner's life, work, hobbies and plans.",
+  "Job Interview":
+    "Act as a supportive but realistic interviewer for the learner's field. Ask one interview question at a time (HR, strengths, situational). Coach answers with the STAR method and better professional phrasing.",
+  "IELTS Speaking":
+    "Act as an IELTS speaking examiner: Part 1 short personal questions, then a Part 2 cue card (1 minute to think, up to 2 minutes to speak), then Part 3 discussion. After each answer give a quick band-style tip on fluency, vocabulary, grammar or pronunciation.",
+  "Travel & Daily Life":
+    "Role-play everyday situations: airport check-in, hotel front desk, ordering at a café, shopping, asking directions, doctor's visit. You play the other person; set the scene in one line first.",
+  "Office & Workplace":
+    "Role-play workplace English: team meetings, phone calls with a client, asking a manager for leave, small talk with colleagues, explaining a problem politely.",
+  "Grammar Workout":
+    "Run a focused grammar practice: pick the learner's weak area (tenses, articles, prepositions, question forms), give one short sentence to fix or build, check it, explain the rule in one line, repeat.",
+};
+
 export type LearnerContext = {
   name: string;
   location: string;
@@ -128,10 +160,11 @@ const REASON_LABEL: Record<string, string> = {
 };
 
 // `sessionLanguage` is what the learner picked on the start card:
-// "English" (English only) or their native language (native + English mix).
-export function buildSystemPrompt(ctx: LearnerContext, sessionLanguage: string): string {
-  const codeMix = sessionLanguage !== "English" && !!PHRASES[sessionLanguage];
-  const ph = PHRASES[codeMix ? sessionLanguage : "English"];
+// "English" (English only) or any listed language (that language + English).
+// `scenario` is one of AI_PARTNER_SCENARIOS (role-play mode).
+export function buildSystemPrompt(ctx: LearnerContext, sessionLanguage: string, scenario = "General Conversation"): string {
+  const codeMix = sessionLanguage !== "English";
+  const ph = phrasesFor(codeMix ? sessionLanguage : "English");
   const native = ctx.nativeLang || "Hindi";
   const name = ctx.name.trim();
   const firstName = name.split(/\s+/)[0] ?? "";
@@ -189,6 +222,10 @@ ${profileLines.join("\n")}
 ${firstName ? `Address them as ${firstName} now and then (not every turn).` : "You don't know their name yet — ask for it warmly in your greeting and use it afterwards."}
 ${memory}
 
+SESSION MODE: ${scenario}
+${SCENARIO_RULES[scenario] ?? SCENARIO_RULES["General Conversation"]}
+Stay in this mode unless the learner asks to switch; keep corrections running throughout.
+
 HOW THIS CONVERSATION WORKS
 * The learner taps a mic button, speaks, then taps again. Each of their turns is a complete thought — reply to it.
 * They may pause, restart or mix languages mid-sentence. That's normal; don't comment on it.
@@ -218,14 +255,18 @@ SPOKEN FORMAT — STRICT
 * Your name is written "K.AI" and SAID as one word, "kaa-ee" (like Hindi "काई"). Never spell out the letters.`;
 }
 
-export function buildKickoff(ctx: LearnerContext, sessionLanguage: string): string {
+export function buildKickoff(ctx: LearnerContext, sessionLanguage: string, scenario = "General Conversation"): string {
   const firstName = ctx.name.trim().split(/\s+/)[0] ?? "";
   const lang = sessionLanguage === "English" ? "English only" : `${sessionLanguage} + English blend`;
   const returning = (ctx.memory?.sessions ?? 0) > 0;
+  const mode =
+    scenario === "General Conversation"
+      ? "then ask one easy question to get them talking"
+      : `then say you'll practise "${scenario}" together and start it with the first question or scene`;
   if (!firstName) {
-    return `[Session start — ${lang}] Greet the learner warmly in under 2 short sentences, introduce yourself as K.AI ("kaa-ee"), and ask their name and what they'd like to practise today.`;
+    return `[Session start — ${lang}, mode: ${scenario}] Greet the learner warmly in under 2 short sentences, introduce yourself as K.AI ("kaa-ee"), ask their name, ${mode}.`;
   }
-  return `[Session start — ${lang}] Greet ${firstName} by name in under 2 short sentences${
-    returning ? ", say it's good to see them again, and pick up on something from last time" : ", say you're glad they're here"
-  }, then ask one easy question to get them talking.`;
+  return `[Session start — ${lang}, mode: ${scenario}] Greet ${firstName} by name in under 2 short sentences${
+    returning ? ", say it's good to see them again" : ", say you're glad they're here"
+  }, ${mode}.`;
 }

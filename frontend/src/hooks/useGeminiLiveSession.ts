@@ -116,12 +116,20 @@ function looksLikeKeyProblem(reason: string): boolean {
 
 export type GeminiCapture = CaptureResult & { getLastVoiceAt: () => number };
 
+export type GeminiLiveOptions = UseV3ChatSessionOptions & {
+  // Session setup picked on the start card (see lib/aiPartnerOptions.ts).
+  scenario?: string;
+  voice?: string;
+};
+
 export function useGeminiLiveSession({
   enabled,
   accessToken,
   nativeLanguage,
   level,
-}: UseV3ChatSessionOptions): UseV3ChatSessionResult & { capture: GeminiCapture; isAiSpeaking: boolean } {
+  scenario,
+  voice,
+}: GeminiLiveOptions): UseV3ChatSessionResult & { capture: GeminiCapture; isAiSpeaking: boolean } {
   const dispatch = useAppDispatch();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -514,7 +522,7 @@ export function useGeminiLiveSession({
       try {
         const res = await v3Fetch<CreateResponse>("/chat/sessions", accessToken, {
           method: "POST",
-          body: { language: nativeLanguage, level },
+          body: { language: nativeLanguage, level, scenario, voice },
         });
         if (cancelled) return;
         // Fresh conversation: clear anything left from a previous session.

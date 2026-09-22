@@ -187,3 +187,42 @@
   CLIENT page handling `#access_token`, `?token_hash` and `?code`. Branded token_hash templates are
   applied automatically by `supabase/configure-auth.mjs` once SMTP env vars are given.
 - Production URL: https://engconnect-beta.vercel.app (Vercel project `engconnect`, team `engconnect`).
+
+## D-023 · Admin is ec.devbx@gmail.com — 2026-09-22
+- Owner asked to change the admin. `ADMIN_EMAILS=ec.devbx@gmail.com` in `frontend/.env.local` and in
+  Vercel (all environments). Replaces bharatrix.dev@gmail.com. Comma-separate to add more.
+
+## D-024 · Google sign-in enabled in Supabase — 2026-09-22
+- Google OAuth client (ID `75134788131-d6lh0…apps.googleusercontent.com`, secret in `credentials.txt`)
+  configured via `supabase/configure-auth.mjs`; redirect URI registered by the owner:
+  `https://uycpxwajvhcigyhvepci.supabase.co/auth/v1/callback`. The login card auto-enables the Google
+  button by reading Supabase's public `/auth/v1/settings`.
+
+## D-025 · Auth email via Resend SMTP (no verified domain yet) — 2026-09-22
+- Supabase SMTP → `smtp.resend.com:465`, user `resend`, pass = Resend API key (in `credentials.txt`),
+  sender `onboarding@resend.dev`, `rate_limit_email_sent = 30`/hour (was 2). Custom SMTP unlocked the
+  branded token_hash templates (confirmation, recovery, email change) → `/auth/confirm`.
+- ⚠️ The Resend account has NO verified domain: Resend only delivers to the account owner's own
+  address until a domain is verified. To go live: add a domain in Resend (DNS records), then re-run
+  `configure-auth.mjs` with `SMTP_FROM=noreply@<domain>`.
+
+## D-026 · AI Partner session setup: language × level × mode × voice (ENGAI-style) — 2026-09-22
+- Owner: "AI partner can talk with any language … like ENGAI … change the voice from the menu".
+- Options live in `frontend/src/lib/aiPartnerOptions.ts` (shared by UI + server): 14 languages
+  (English-only or X + English 70/30 Roman script: Hindi, Bengali, Marathi, Gujarati, Punjabi, Tamil,
+  Telugu, Kannada, Malayalam, Odia, Assamese, Urdu, Nepali), 3 levels, 6 practice modes (casual,
+  job interview, IELTS/TOEFL, travel, office, grammar — role-play rules from ENGAI), 18 voices.
+- All 18 voices verified live on gemini-3.1-flash-live-preview (2026-09-22); unknown names are
+  rejected by Google (close 1007) so the server validates against the list and falls back to Aoede.
+- Chosen on the start card (`SessionSetup.tsx`), remembered per device (localStorage), sent to
+  `POST /chat/sessions`, baked into the locked token (voice + prompt), stored on `chat_sessions`
+  (`scenario` column added) so reconnects keep them. "Change setup" in-session starts a new one.
+
+## D-027 · The 7 free Gemini keys are from different Google Cloud projects — 2026-09-22
+- Owner confirmed. So each key adds its own quota (resolves the D-005 caveat).
+
+## D-028 · Graph memory = generated from the wiki (`docs/wiki/graph.json`) — 2026-09-22
+- `node docs/wiki/build-graph.mjs` parses every wiki page's frontmatter + `[[links]]` and every
+  `D-0xx` in DECISIONS.md → nodes (pages, decisions) and edges (page→page links, page→decision
+  references, decision→decision supersedes). Writes `graph.json` (machine-readable) and
+  `meta/graph.md` (Mermaid map + adjacency + broken-link lint). Re-run after editing the wiki.

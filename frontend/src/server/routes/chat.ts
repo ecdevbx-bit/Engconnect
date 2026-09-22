@@ -8,6 +8,13 @@ import { grantLiveSession, LIVE_LEASE_TTL_SECONDS, type LiveGrant } from "../gem
 import { compileSessionMemory } from "../gemini/memory";
 import { buildKickoff, buildSystemPrompt, type LearnerContext } from "../gemini/tutorPrompt";
 import { isAdminEmail, requireUser, type AuthedUser } from "../guards";
+import {
+  DEFAULT_AI_PARTNER_VOICE,
+  isKnownLanguage,
+  isKnownLevel,
+  isKnownScenario,
+  isKnownVoice,
+} from "@/lib/aiPartnerOptions";
 import { ApiFailure, fail, ok, readJson } from "../http";
 import type { Router } from "../router";
 import { getSettings, type AIPartnerRewards } from "../settings";
@@ -30,6 +37,8 @@ type SessionRow = {
   user_id: string;
   language: string;
   level: string;
+  voice: string;
+  scenario: string;
   status: string;
   lease_id: string | null;
   started_at: string;
@@ -298,17 +307,22 @@ export function registerChatRoutes(r: Router) {
       );
     }
 
-    const language = typeof body.language === "string" && body.language.trim() ? body.language.trim().slice(0, 30) : "English";
-    const level = typeof body.level === "string" ? body.level.trim().slice(0, 30) : "";
+    // Learner-chosen options, validated against the shared allow-lists.
+    const pick = (v: unknown, ok: (x: string) => boolean, fallback: string) =>
+      typeof v === "string" && ok(v.trim()) ? v.trim() : fallback;
+    const language = pick(body.language, isKnownLanguage, "English");
+    const level = pick(body.level, isKnownLevel, "Intermediate");
+    const scenario = pick(body.scenario, isKnownScenario, "General Conversation");
+    const voice = pick(body.voice, isKnownVoice, DEFAULT_AI_PARTNER_VOICE);
     const ctx = await learnerContext(profile, level);
-    const systemPrompt = buildSystemPrompt(ctx, language);
+    const systemPrompt = buildSystemPrompt(ctx, language, scenario);
     const budget = usage.cap > 0 ? usage.remaining : rewards.sessionSeconds;
 
-    const grant = await grantLiveSession({ userId: u.id, systemPrompt, sessionSeconds: budget });
+    const grant = await grantLiveSession({ userId: u.id, systemPrompt, sessionSeconds: budget, voice });
     const session = must(
       await db()
         .from("chat_sessions")
-        .insert({ user_id: u.id, language, level, model: grant.model, lease_id: grant.leaseId, voice: "" })
+        .insert({ user_id: u.id, language, level, scenario, voice, model: grant.model, lease_id: grant.leaseId })
         .select("id")
         .single(),
       "create chat session",
@@ -321,10 +335,12 @@ export function registerChatRoutes(r: Router) {
       sessionID: session.id,
       language,
       level,
+      scenario,
+      voice,
       rewards,
       aiUsedSeconds: usage.used,
       aiCapSeconds: usage.cap,
-      live: livePayload(grant, buildKickoff(ctx, language)),
+      live: livePayload(grant, buildKickoff(ctx, language, scenario)),
     });
   });
 
@@ -372,9 +388,10 @@ export function registerChatRoutes(r: Router) {
 
     const grant = await grantLiveSession({
       userId: u.id,
-      systemPrompt: buildSystemPrompt(await learnerContext(profile, s.level), s.language),
+      systemPrompt: buildSystemPrompt(await learnerContext(profile, s.level), s.language, s.scenario),
       sessionSeconds: left,
       exclude,
+      voice: isKnownVoice(s.voice) ? s.voice : DEFAULT_AI_PARTNER_VOICE,
     });
     await db().from("chat_sessions").update({ lease_id: grant.leaseId, model: grant.model }).eq("id", s.id);
     return ok({ live: livePayload(grant) });

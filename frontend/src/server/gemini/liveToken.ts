@@ -38,7 +38,7 @@ function wsUrlFor(apiVersion: string, token: string): string {
   );
 }
 
-async function mint(lease: Lease, systemPrompt: string, expiresAt: Date): Promise<LiveGrant> {
+async function mint(lease: Lease, systemPrompt: string, expiresAt: Date, voice: string): Promise<LiveGrant> {
   const apiVersion = env.geminiLiveApiVersion();
   const model = env.geminiLiveModel();
   const ai = new GoogleGenAI({ apiKey: lease.apiKey, httpOptions: { apiVersion } });
@@ -52,7 +52,7 @@ async function mint(lease: Lease, systemPrompt: string, expiresAt: Date): Promis
         config: {
           responseModalities: [Modality.AUDIO],
           systemInstruction: systemPrompt,
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: env.geminiLiveVoice() } } },
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice || env.geminiLiveVoice() } } },
           // Live captions for both sides — replaces Deepgram / Web Speech.
           inputAudioTranscription: {},
           outputAudioTranscription: {},
@@ -87,6 +87,8 @@ export async function grantLiveSession(args: {
   systemPrompt: string;
   sessionSeconds: number;
   exclude?: string[];
+  // prebuilt voice, validated by the caller against AI_PARTNER_VOICES
+  voice?: string;
 }): Promise<LiveGrant & { keyId: string }> {
   const tried = [...(args.exclude ?? [])];
   // Token outlives the session budget slightly; Google caps tokens at 20 h.
@@ -97,7 +99,7 @@ export async function grantLiveSession(args: {
     if (!lease) break;
     tried.push(lease.keyId);
     try {
-      const grant = await mint(lease, args.systemPrompt, expiresAt);
+      const grant = await mint(lease, args.systemPrompt, expiresAt, args.voice ?? "");
       return { ...grant, keyId: lease.keyId };
     } catch (err) {
       lastError = errorMessage(err);

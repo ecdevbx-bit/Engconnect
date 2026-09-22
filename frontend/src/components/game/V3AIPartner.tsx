@@ -38,6 +38,13 @@ import { PixelMascot } from "@/components/v3/PixelMascot";
 import { SolveCelebration } from "@/components/v3/SolveCelebration";
 
 import { SpeechProgressCard } from "./aiPartner/SpeechProgressCard";
+import SessionSetup, {
+  defaultSetup,
+  loadSavedSetup,
+  saveSetup,
+  setupSummary,
+  type SessionSetupValue,
+} from "./aiPartner/SessionSetup";
 import {
   useV3PushToTalk,
   PUSH_TO_TALK_DEFAULT_MAX_MS,
@@ -143,20 +150,18 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
   // The user's profile native language (source of truth for the per-
   // session picker default). Falls back to English when not yet set.
   const profileLang = nativeLanguage ?? session?.user?.nativeLang ?? "English";
-  const profileLangIsEnglish = profileLang === "English";
 
-  // Per-session language choice: either the user's native language or
-  // English. Defaults to native. Reset whenever the profile lang
-  // changes (e.g. user just edited it in Profile and came back).
-  const [sessionLangChoice, setSessionLangChoice] = useState<"native" | "english">(
-    "native",
-  );
-  // The actual string we pass downstream. When profile lang IS English,
-  // both choices resolve to "English" — the picker is hidden anyway.
-  const lang =
-    sessionLangChoice === "english" || profileLangIsEnglish ? "English" : profileLang;
-  // Display label: the native option speaks native + English (mirrors the
-  // picker button); the English option speaks English only.
+  // Session setup (language K.AI mixes with English, level, practice mode,
+  // voice) — like ENGAI's controls. Until the learner changes something the
+  // defaults follow their profile language; their last choice is remembered
+  // on this device. Baked into the Gemini token at session start.
+  const [savedSetup, setSavedSetup] = useState<SessionSetupValue | null>(() => loadSavedSetup());
+  const setup = savedSetup ?? defaultSetup(profileLang);
+  const updateSetup = (v: SessionSetupValue) => {
+    setSavedSetup(v);
+    saveSetup(v);
+  };
+  const lang = setup.language;
   const langLabel = lang === "English" ? "English" : `${lang} + English`;
 
   const [secondsLeft, setSecondsLeft] = useState(DEFAULT_TOTAL_SECONDS);
@@ -214,6 +219,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     enabled: started && !isSessionEnded,
     accessToken,
     nativeLanguage: lang,
+    level: setup.level,
+    scenario: setup.scenario,
+    voice: setup.voice,
   });
 
   const sendCapturedTranscript = useCallback(
@@ -607,58 +615,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
             </div>
           </div>
 
-          {/* Per-session language picker. Hidden — replaced by a
-              static message — when the user's profile native language
-              is already English, since "English vs English" is no
-              choice at all. */}
-          <div className="mt-4 rounded-xl border border-white/[0.06] bg-surface-2/40 px-4 py-3 text-left">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              Session language
-            </p>
-            {profileLangIsEnglish ? (
-              <p className="mt-2 text-[13px] leading-5 text-muted-foreground">
-                Your native language is English. To change this, go to your{" "}
-                <a href="/dashboard/profile" className="font-semibold text-heading underline-offset-2 hover:underline">
-                  profile
-                </a>
-                .
-              </p>
-            ) : (
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[12px] leading-5 text-muted-foreground">
-                  What should K.AI speak?
-                </p>
-                <div className="inline-flex gap-1 rounded-full bg-surface-3/60 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setSessionLangChoice("native")}
-                    aria-pressed={sessionLangChoice === "native"}
-                    className={cn(
-                      "h-8 rounded-full px-4 text-[12px] font-semibold transition-colors",
-                      sessionLangChoice === "native"
-                        ? "bg-gradient-to-br from-primary-1 to-primary-2 text-primary-foreground"
-                        : "text-muted-foreground hover:text-heading",
-                    )}
-                  >
-                    {profileLang} + English
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSessionLangChoice("english")}
-                    aria-pressed={sessionLangChoice === "english"}
-                    className={cn(
-                      "h-8 rounded-full px-4 text-[12px] font-semibold transition-colors",
-                      sessionLangChoice === "english"
-                        ? "bg-gradient-to-br from-primary-1 to-primary-2 text-primary-foreground"
-                        : "text-muted-foreground hover:text-heading",
-                    )}
-                  >
-                    English
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Session setup: language, level, practice mode, voice. */}
+          <SessionSetup value={setup} onChange={updateSetup} profileLang={profileLang} />
 
           {usage && usage.capSeconds > 0 && usage.remainingSeconds <= 0 ? (
             // Window spent — block the start and point free users to Pro.
@@ -730,6 +688,23 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
           <FaRobot className="h-4 w-4" />
         </span>
         <h1 className="text-2xl font-bold text-heading">AI Partner</h1>
+
+        {/* Current setup + a way back to the setup card (settings are baked
+            into this conversation, so changing them starts a new one). */}
+        <span className="hidden min-w-0 truncate rounded-full border border-white/[0.06] bg-surface-2/60 px-3 py-1 text-[11px] font-semibold text-muted-foreground lg:inline">
+          {setupSummary(setup)}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setEndedAck(false);
+            setStarted(false);
+          }}
+          title="Change language, mode or voice (starts a new conversation)"
+          className="rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+        >
+          Change setup
+        </button>
 
         <button
           id="aip-tour-help-btn"
