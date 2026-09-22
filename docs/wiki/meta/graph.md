@@ -9,7 +9,7 @@ updated: 2026-09-22
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(66 nodes · 217 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(66 nodes · 223 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -175,7 +175,8 @@ flowchart LR
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023 |
 | [[operations/deployment]] | D-022 |
-| [[operations/runbook]] | D-039 |
+| [[operations/runbook]] | D-039, D-038, D-040, D-009 |
+| [[overview]] | D-041 |
 
 ## Decisions (from docs/memory/DECISIONS.md)
 | Id | Decision | Status | Cited by |
@@ -188,7 +189,7 @@ flowchart LR
 | D-006 | Key pool design (rotation, cooldown, admin page) | active | — |
 | D-007 | AI Partner keeps its UI; only the plumbing under it changes | superseded → D-039 | — |
 | D-008 | Auth = Supabase Auth ONLY (Google + email/password); NextAuth removed | active | [[architecture/auth]] [[log]] |
-| D-009 | Single active session uses the Supabase JWT `session_id` claim | active | [[architecture/auth]] [[log]] |
+| D-009 | Single active session uses the Supabase JWT `session_id` claim | active | [[architecture/auth]] [[log]] [[operations/runbook]] [[memory/status]] |
 | D-010 | /pro invite link grants Pro only to NEWLY created accounts | superseded → D-021 | [[features/premium]] |
 | D-011 | Gemini key tiers: free first, paid only as last resort | active | [[architecture/gemini-key-pool]] [[log]] |
 | D-012 | Gemini Live wire details (verified by live probes, 2026-09-22) | active | — |
@@ -217,10 +218,10 @@ flowchart LR
 | D-035 | Pronunciation "how to say it": syllables + native-script respelling | active | [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-036 | Cloudflare R2 is not needed for pronunciation | active | [[architecture/storage-r2]] [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-037 | Lighter UI: app-only layer out of the root providers; new mobile tab bar | active | [[log]] [[memory/status]] |
-| D-038 | Pronunciation: never score silence, blind second listener, no listen-back | active | [[features/pronunciation]] [[log]] [[memory/status]] |
+| D-038 | Pronunciation: never score silence, blind second listener, no listen-back | active | [[features/pronunciation]] [[log]] [[operations/runbook]] [[memory/status]] |
 | D-039 | K.AI is hands-free (auto voice detection + interruptions, mute only) | active | [[architecture/gemini-live]] [[features/ai-partner]] [[log]] [[operations/runbook]] [[memory/status]] |
-| D-040 | A busy Gemini model must not fail the learner (or cool down keys) | active | [[architecture/gemini-key-pool]] [[log]] [[memory/status]] |
-| D-041 | Landing page redesign (glass, lighter, scroll-swipe kept) | active | [[log]] [[memory/status]] |
+| D-040 | A busy Gemini model must not fail the learner (or cool down keys) | active | [[architecture/gemini-key-pool]] [[log]] [[operations/runbook]] [[memory/status]] |
+| D-041 | Landing page redesign (glass, lighter, scroll-swipe kept) | active | [[log]] [[overview]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

@@ -32,6 +32,15 @@ on every screen for reporting problems ([[features/support]]).
    streaks, combos and badges ([[features/progress-and-rewards]]).
 4. Free learners have daily limits; **Pro** removes them ([[features/premium]]).
 
+## The landing page
+`frontend/src/components/ShowcaseV4.tsx` (rendered by `src/app/page.tsx` for logged-out visitors;
+signed-in users are redirected to the dashboard). Glass editorial design built around the product:
+live-caption hero, "every mistake comes back as a fix", pronunciation respelling, jumble, AI Partner
+minutes, mixed-language strip, the scroll-driven **swipe** section (`components/landing/ScrollSwipe.tsx`),
+setup/voices, progress, reviews, plans, CTA. Demos mount only near the viewport
+(`components/landing/LazyMount.tsx`, `LazyDemos.tsx`); shared styles in `landing/landingStyles.ts`.
+One short line per section — the owner asked twice for less text (D-041).
+
 ## Business model
 Free tier with daily limits → Pro (trial program, invite link, later Razorpay subscriptions).
 

@@ -32,6 +32,11 @@ Checks: `npx tsc --noEmit` · `npx -y pnpm@11.0.8 lint` · `npx -y pnpm@11.0.8 b
 | `node scripts/gemini-voice-probe.mjs [Voice…]` | Which prebuilt voices the Live model accepts |
 | `node scripts/ai-partner-probe.mjs [url] [Level] "[Mode]" [Language]` | Real AI Partner session via the API; prints K.AI's replies to two learner turns (checks the level/mode instruction files) |
 | `node scripts/pronunciation-probe.mjs [url] [NativeLang]` | Real pronunciation attempt (TTS clip with one wrong word); prints verdicts, syllables, native-script respellings, tips |
+| `node scripts/pronunciation-strictness.mjs [url]` | Silence / faint noise / wrong sentence / phonetic slips — proves the scorer isn't just echoing the expected sentence (D-038) |
+| `node scripts/ai-partner-handsfree-probe.mjs [url]` | Continuous audio with no activity markers + talking over K.AI — hands-free turns and barge-in (D-039) |
+| `node scripts/pro-flow-probe.mjs [url]` | Trial status/apply, payment plans, /pro link, entitlement, and what a second login does to the first session |
+| `node scripts/wait-deploy.mjs <sha>` | Waits for Vercel to finish deploying that commit |
+| `node scripts/tail-prod-logs.mjs` | Streams production runtime logs for 4 min — reproduce the bug while it runs (how the Gemini 503s were found) |
 | `node scripts/vercel-setup.mjs` | Creates/links the Vercel project, sets env vars, triggers a deploy |
 
 ## Gemini keys
@@ -41,6 +46,17 @@ Checks: `npx tsc --noEmit` · `npx -y pnpm@11.0.8 lint` · `npx -y pnpm@11.0.8 b
   need an admin to fix/replace. See [[architecture/gemini-key-pool]].
 - Check pool health: `node supabase/apply-migrations.mjs --sql "select label,lane,status,cooldown_until,open_leases,requests_today,errors_today from gemini_key_overview order by label,lane"`.
 
+## Before pushing (build the commit, not your desk)
+`npx tsc --noEmit` can hide a file you filtered out of the output, so build the **commit** in a
+throwaway worktree:
+```bash
+git worktree add -q --detach "$TEMP/eb" <sha> && cp frontend/.env.local "$TEMP/eb/frontend/"
+cd "$TEMP/eb/frontend" && npx -y pnpm@11.0.8 install --frozen-lockfile && npx -y pnpm@11.0.8 run build
+```
+Reuse that worktree for later commits (`git checkout --force --detach <sha>`) — the install is the
+slow part. Remove it with `cmd /c rd /s /q "\\?\<path>"`; `git worktree remove` trips on Windows
+long paths.
+
 ## Common problems
 | Symptom | Fix |
 |---|---|
@@ -49,3 +65,5 @@ Checks: `npx tsc --noEmit` · `npx -y pnpm@11.0.8 lint` · `npx -y pnpm@11.0.8 b
 | `AI_CAPACITY_EXHAUSTED` | every key busy/out of quota → check `/v3/admin/keys`; add keys from other Google projects |
 | Google sign-in fails | Google provider not enabled in Supabase or redirect URI mismatch ([[operations/credentials]]) |
 | Emails not arriving | built-in Supabase SMTP limit — configure custom SMTP |
+| `K.AI is busy right now` | Google 503 on the text model — transient, already retried + model fallback (D-040). Check `gemini_key_overview.last_error` |
+| Signed out when opening the app elsewhere | single-active-session by design (D-009) — the older device gets `SESSION_SUPERSEDED` |

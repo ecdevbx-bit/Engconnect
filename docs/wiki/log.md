@@ -120,3 +120,10 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 - Owner: "too much text, obscure". Every section reduced to one short line (hero, mistakes, coach
   tiles, how-it-works, setup, mascot, progress, plans, final CTA). Removed a testimonial that
   described pasting video links — not a feature of this app ([[features/premium]], D-041).
+
+## [2026-09-23] ops | Session 2 wrap-up
+- This session's probes kept in `scripts/`: pronunciation-strictness, ai-partner-handsfree-probe,
+  pro-flow-probe, wait-deploy, tail-prod-logs ([[operations/runbook]]).
+- Runbook now documents building the COMMIT in a throwaway worktree before pushing (a filtered `tsc`
+  hid a type error that only the clean build caught), plus the two new "common problems".
+- [[overview]] records where the landing page lives and how it's put together.

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T20:27:35.623Z",
+  "generatedAt": "2026-09-22T20:33:09.255Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -1333,6 +1333,11 @@
     },
     {
       "source": "log",
+      "target": "overview",
+      "kind": "links"
+    },
+    {
+      "source": "log",
       "target": "D-008",
       "kind": "cites"
     },
@@ -1567,6 +1572,21 @@
       "kind": "cites"
     },
     {
+      "source": "operations/runbook",
+      "target": "D-038",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "D-040",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "D-009",
+      "kind": "cites"
+    },
+    {
       "source": "overview",
       "target": "features/jumble-words",
       "kind": "links"
@@ -1615,6 +1635,11 @@
       "source": "overview",
       "target": "features/admin",
       "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "D-041",
+      "kind": "cites"
     },
     {
       "source": "meta/graph",
@@ -1678,6 +1703,11 @@
     },
     {
       "source": "memory/status",
+      "target": "D-038",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
       "target": "D-036",
       "kind": "cites"
     },
@@ -1688,7 +1718,7 @@
     },
     {
       "source": "memory/status",
-      "target": "D-038",
+      "target": "D-039",
       "kind": "cites"
     },
     {
@@ -1703,7 +1733,7 @@
     },
     {
       "source": "memory/status",
-      "target": "D-039",
+      "target": "D-009",
       "kind": "cites"
     }
   ],
