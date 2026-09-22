@@ -1,4 +1,5 @@
 import { getSessionId } from "./sessionId";
+import { freshAccessToken } from "./freshToken";
 import { handleSessionSuperseded, SESSION_SUPERSEDED_CODE } from "./sessionSupersede";
 
 const API_URL = (
@@ -105,18 +106,27 @@ export async function v3Fetch<T>(
   const method = init.method ?? "GET";
 
   const sid = getSessionId();
-  let res: Response;
-  try {
-    res = await fetch(url, {
+  const send = (token: string) =>
+    fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`,
+        Authorization: `Bearer ${token}`,
         ...(sid ? { "X-Session-Id": sid } : {}),
       },
       credentials: "include",
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
     });
+
+  let res: Response;
+  try {
+    res = await send(idToken);
+    // A page left open past the token's hour would fail with a bare
+    // "Unauthorized" — refresh the Supabase session once and try again.
+    if (res.status === 401) {
+      const fresh = await freshAccessToken(idToken);
+      if (fresh) res = await send(fresh);
+    }
   } catch (err) {
     throw new ApiError(
       "NETWORK",

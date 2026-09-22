@@ -332,3 +332,22 @@
   `V3AIPartner.tsx`: push-to-talk wrapper removed; one mute button (+ Space), status Listening/Speaking/Muted.
 - Verified 2026-09-22 against Gemini with continuous audio: K.AI answered by itself after the learner
   stopped. Real-mic/echo behaviour to be checked by the owner on phone + laptop speakers.
+
+## D-040 · A busy Gemini model must not fail the learner (or cool down keys) — 2026-09-22
+- Owner hit "something went wrong … internal error" on Pronunciation (free AND Pro). Cause found in
+  `gemini_key_overview`: every text-lane key had 4–5 errors today, all
+  `503 "This model is currently experiencing high demand"` from Google — and one key had been put in
+  **cooldown** for it. `classifyGeminiError` called 503 a plain "error", so `withTextKey` threw at once
+  (→ 500 INTERNAL) and the consecutive-error rule shrank the pool for a fault that wasn't ours.
+- `isModelBusy()` (503/500/"high demand"/"overloaded"/"unavailable"/"try again later"): the lease is
+  released as **ok** (key stays healthy), the call is retried after 400 ms × attempt, and if every
+  attempt is busy the API answers `503 AI_MODEL_BUSY` — "Google's AI is busy right now. Please try
+  again in a few seconds." instead of a generic internal error.
+- Pronunciation scoring also falls back across models when the configured one stays busy:
+  `gemini-3.1-flash-lite` → `gemini-3.5-flash-lite` → `gemini-2.5-flash-lite` → `gemini-2.5-flash`
+  (the model that actually scored is stored in `pronunciation_attempts.scorer`).
+- Two more robustness fixes in the same pass: a 401 from an expired access token now refreshes the
+  Supabase session once and retries (`lib/freshToken.ts`, used by `v3Fetch` and the attempt upload) —
+  that was the "unauthorized" seen on a long-open tab; and silence detection (server `speechStats`,
+  browser auto-stop) is now relative to the clip's own noise floor (max(absolute, 3× noise)) so quiet
+  laptop mics aren't reported as "we couldn't hear you".

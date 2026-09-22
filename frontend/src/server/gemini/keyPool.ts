@@ -109,6 +109,22 @@ export function classifyGeminiError(status: number | undefined, message: string)
   return "error";
 }
 
+// Google's "503 This model is currently experiencing high demand" (and friends)
+// says the MODEL is busy, not that the key is bad — counting those as key
+// errors would cool down healthy keys during a Gemini hiccup (seen 2026-09-22).
+export function isModelBusy(status: number | undefined, message: string): boolean {
+  const m = (message || "").toLowerCase();
+  return (
+    status === 503 ||
+    status === 500 ||
+    m.includes("high demand") ||
+    m.includes("overloaded") ||
+    m.includes("unavailable") ||
+    m.includes("try again later") ||
+    m.includes("internal error")
+  );
+}
+
 export function errorStatus(err: unknown): number | undefined {
   const e = err as { status?: number; code?: number; response?: { status?: number } };
   return e?.status ?? e?.response?.status ?? (typeof e?.code === "number" ? e.code : undefined);
@@ -127,8 +143,10 @@ export async function withTextKey<T>(
 ): Promise<{ result: T; keyLabel: string }> {
   const tried: string[] = [];
   let lastError = "";
+  let busy = false;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const lease = await leaseKey(userId, "text", 90, tried);
+    // A busy model is worth retrying on the same keys; a bad key is not.
+    const lease = await leaseKey(userId, "text", 90, busy ? [] : tried);
     if (!lease) break;
     tried.push(lease.keyId);
     try {
@@ -137,11 +155,26 @@ export async function withTextKey<T>(
       return { result, keyLabel: lease.keyLabel };
     } catch (err) {
       lastError = errorMessage(err);
+      if (isModelBusy(errorStatus(err), lastError)) {
+        // The key is fine — keep it in rotation and wait a moment.
+        busy = true;
+        await releaseLease(lease.leaseId, "ok");
+        console.warn(`[gemini] text model busy on ${lease.keyLabel}, retrying: ${lastError.slice(0, 120)}`);
+        await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+        continue;
+      }
       const outcome = classifyGeminiError(errorStatus(err), lastError);
       await releaseLease(lease.leaseId, outcome, lastError);
       // A non-key problem (bad input, model error) won't be fixed by another key.
       if (outcome === "error") throw err;
     }
+  }
+  if (busy) {
+    console.error("[gemini] text model busy on every attempt:", lastError.slice(0, 200));
+    throw fail.unavailable(
+      "Google's AI is busy right now. Please try again in a few seconds.",
+      "AI_MODEL_BUSY",
+    );
   }
   console.error("[gemini] text lane exhausted:", lastError || "no keys available");
   throw fail.unavailable(

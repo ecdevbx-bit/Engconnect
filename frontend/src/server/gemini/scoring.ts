@@ -5,6 +5,31 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { env } from "../env";
 import { withTextKey } from "./keyPool";
 
+// When the configured model is busy (Google 503s in bursts), score on one of
+// these instead rather than failing the learner's attempt.
+const FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-2.5-flash-lite", "gemini-2.5-flash"];
+
+async function withTextModel<T>(
+  userId: string,
+  primary: string,
+  run: (apiKey: string, model: string) => Promise<T>,
+): Promise<{ result: T; model: string }> {
+  const models = [primary, ...FALLBACK_MODELS.filter((m) => m !== primary)];
+  let lastError: unknown;
+  for (const model of models) {
+    try {
+      const { result } = await withTextKey(userId, (apiKey) => run(apiKey, model));
+      return { result, model };
+    } catch (err) {
+      const code = (err as { code?: string })?.code;
+      if (code !== "AI_MODEL_BUSY" && code !== "AI_CAPACITY_EXHAUSTED") throw err;
+      lastError = err;
+      console.warn(`[gemini] ${model} unavailable for scoring, trying the next model`);
+    }
+  }
+  throw lastError;
+}
+
 // Pronunciation scoring with Gemini audio understanding.
 //
 // Gemini listens to the recording and judges each EXPECTED word (it hears
@@ -134,8 +159,10 @@ function similarity(a: string, b: string): number {
 // ── Speech presence (16-bit PCM WAV) ────────────────────────────────
 // A silent or near-silent recording must never be scored: primed with the
 // expected sentence, the model "hears" it anyway (silence scored 100% in a
-// 2026-09-22 test). 20 ms frames above ~-38 dBFS count as voice.
-const SPEECH_RMS = 420;
+// 2026-09-22 test). Absolute floor (phone mics with AGC sit far above it) plus an adaptive one:
+// a frame counts as voice when it is also well above the clip's own noise floor.
+const SPEECH_RMS = 180;
+const SPEECH_OVER_NOISE = 3;
 const MIN_SPEECH_MS = 250;
 
 export function speechStats(buf: Buffer): { speechMs: number; hasSpeech: boolean } | null {
@@ -155,16 +182,20 @@ export function speechStats(buf: Buffer): { speechMs: number; hasSpeech: boolean
       if (bits !== 16) return null;
       const end = Math.min(buf.length, off + 8 + size);
       const frame = Math.max(1, Math.round(rate * 0.02)) * channels * 2;
-      let voiced = 0;
+      const levels: number[] = [];
       for (let p = off + 8; p + frame <= end; p += frame) {
         let sum = 0;
         for (let i = p; i < p + frame; i += 2) {
           const s = buf.readInt16LE(i);
           sum += s * s;
         }
-        if (Math.sqrt(sum / (frame / 2)) > SPEECH_RMS) voiced++;
+        levels.push(Math.sqrt(sum / (frame / 2)));
       }
-      const speechMs = voiced * 20;
+      if (!levels.length) return { speechMs: 0, hasSpeech: false };
+      const sorted = [...levels].sort((a, b) => a - b);
+      const noise = sorted[Math.floor(sorted.length * 0.2)]; // 20th percentile
+      const threshold = Math.max(SPEECH_RMS, noise * SPEECH_OVER_NOISE);
+      const speechMs = levels.filter((l) => l > threshold).length * 20;
       return { speechMs, hasSpeech: speechMs >= MIN_SPEECH_MS };
     }
     off += 8 + size + (size % 2);
@@ -240,10 +271,10 @@ export async function scorePronunciation(args: {
     .then((r) => r.result)
     .catch(() => null); // scoring still works if this listener fails
 
-  const { result: raw } = await withTextKey(args.userId, async (apiKey) => {
+  const { result: raw, model: scorer } = await withTextModel(args.userId, model, async (apiKey, pick) => {
     const ai = new GoogleGenAI({ apiKey });
     const res = await ai.models.generateContent({
-      model,
+      model: pick,
       contents: [
         {
           role: "user",
@@ -337,7 +368,7 @@ export async function scorePronunciation(args: {
     // praise words we just downgraded.
     message: (!downgraded && (raw.message ?? "").trim()) || defaultMessage(accuracy),
     tips: tips.length ? tips : defaultTips(words),
-    scorer: model,
+    scorer,
   };
 }
 

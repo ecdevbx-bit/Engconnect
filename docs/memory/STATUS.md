@@ -36,6 +36,10 @@
     32/32, silence/noise → NO_SPEECH on production.
   - PRO badge only for Pro members; "Unlock Pro" card on the mobile home for free users (03b5728,
     production smoke 32/32).
+  - **Gemini 503 "model busy" handled** (D-040): keys are no longer cooled down for Google's
+    overload, calls retry, scoring falls back to other models, and the learner sees "Google's AI is
+    busy, try again in a few seconds" instead of an internal error. Also: expired-token 401 →
+    refresh + retry; silence detection adapts to quiet mics.
   - **K.AI hands-free** like GPT voice mode (D-039): auto voice detection, interruptions, mute-only UI,
     echo gate. Owner verifies on a real phone/laptop (echo with speakers is the thing to watch).
 

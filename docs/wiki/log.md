@@ -103,3 +103,10 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 - No more tap-to-talk: mic streams continuously, Gemini's voice detection takes the turns (pause length
   per level), talking over K.AI interrupts it, echo gate stops K.AI interrupting itself, mute is the only
   control (D-039, [[features/ai-partner]], [[architecture/gemini-live]]).
+
+## [2026-09-22] fix | Gemini "model busy" 503s, token refresh, quiet mics
+- Pronunciation failed with a generic internal error whenever Google's text model was overloaded, and
+  the 503s were cooling down healthy keys. Now retried + model fallback + a clear message (D-040,
+  [[architecture/gemini-key-pool]], [[features/pronunciation]]).
+- Expired access token → refresh once and retry (the "unauthorized" on long-open tabs).
+- Silence detection is relative to the room's noise floor, so quiet mics still count as speech.

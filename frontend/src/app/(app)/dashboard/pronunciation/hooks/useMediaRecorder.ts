@@ -128,14 +128,20 @@ export function useMediaRecorder() {
       ctx.createMediaStreamSource(stream).connect(analyser);
       const samples = new Float32Array(analyser.fftSize);
       let silentMs = 0;
+      // Quiet laptop mics sit near the floor, so "voice" is measured against
+      // this room's own noise level (with a low absolute floor as a backstop).
+      let noise = 0.004;
       const timer = window.setInterval(() => {
         analyser.getFloatTimeDomainData(samples);
         let sum = 0;
         for (const x of samples) sum += x * x;
-        if (Math.sqrt(sum / samples.length) > 0.02) {
+        const rms = Math.sqrt(sum / samples.length);
+        const speaking = rms > Math.max(0.008, noise * 3);
+        if (speaking) {
           voicedMsRef.current += 100;
           silentMs = 0;
         } else {
+          noise = noise * 0.9 + rms * 0.1; // track the room while they're quiet
           silentMs += 100;
         }
         if (voicedMsRef.current >= 400 && silentMs >= 1300) setSpeechEnded(true);

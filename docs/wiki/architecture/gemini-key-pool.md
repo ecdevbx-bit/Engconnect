@@ -8,6 +8,11 @@ updated: 2026-09-22
 
 # Gemini key pool
 
+> **Model busy ≠ bad key** (D-040): Google answers `503 "This model is currently experiencing high
+> demand"` in bursts. Those releases count as **ok** (the key stays in rotation), the call is retried,
+> and a request that stays busy ends as `503 AI_MODEL_BUSY`. Pronunciation scoring additionally falls
+> back to other models. Without this, five bursts in a row put healthy keys into cooldown.
+
 We run on Gemini's **free tier** with several API keys and move between them automatically.
 
 ## Keys we hold (2026-09-22)

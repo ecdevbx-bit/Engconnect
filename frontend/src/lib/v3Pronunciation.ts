@@ -7,6 +7,7 @@
 //   GET  /api/pronunciation/attempts?limit=
 
 import { toWav16k } from "@/audio/toWav";
+import { freshAccessToken } from "./freshToken";
 
 import { DAILY_QUOTA_REACHED_CODE, triggerQuotaPrompt } from "./quotaPrompt";
 
@@ -164,11 +165,18 @@ export async function v3SubmitPronunciationAttempt(
   form.append("difficulty", args.difficulty);
   form.append("durationMs", String(args.durationMs));
 
-  const res = await fetch(`${API_URL}/api/pronunciation/attempts`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}` },
-    body: form,
-  });
+  const send = (token: string) =>
+    fetch(`${API_URL}/api/pronunciation/attempts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+  let res = await send(accessToken);
+  if (res.status === 401) {
+    // Token expired while the page was open — refresh once, then retry.
+    const fresh = await freshAccessToken(accessToken);
+    if (fresh) res = await send(fresh);
+  }
   const body = (await res.json()) as Envelope<PronunciationAttemptResult>;
   if (!res.ok || !body.success || !body.data) {
     throw envelopeError(body, "Failed to score attempt");
