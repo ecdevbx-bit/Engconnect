@@ -21,12 +21,14 @@
   AI Partner session with real Gemini token → security).
 - Docs: root CLAUDE.md (schema), wiki (18 pages), DECISIONS D-001…D-021, READMEs, .env.example.
 
-## In progress 🔧
-- Pushed to GitHub (commits 10a4ac8, 4388fa5). Vercel project `engconnect` created (root `frontend`,
-  12 env vars, explicit pnpm 11 install/build — D-022). First build failed on old pnpm (fixed);
-  second build running → https://engconnect-beta.vercel.app.
+## Live 🚀
+- **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (root `frontend`, 12 env vars,
+  explicit pnpm 11 install/build — D-022), auto-deploys on push to `main` (latest df3f306).
+- **Production smoke test 28/28** (same script as local; creates + deletes a throwaway user).
 - Supabase Auth configured (site URL, allow-list, password ≥ 8). Email templates can't be edited on
   free-tier SMTP → `/auth/confirm` is a client page that handles default-template links.
+- Not yet verified by a human: a real in-browser voice conversation (mic → K.AI) and a real
+  pronunciation recording upload — protocol/API verified by scripts only.
 
 ## Next ⏭️
 1. When the owner sends Google OAuth creds → enable Google provider via Management API.
