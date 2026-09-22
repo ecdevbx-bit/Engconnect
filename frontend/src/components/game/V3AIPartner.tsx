@@ -634,7 +634,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                   onClick={() => router.push("/v3/premium")}
                   className="mt-1 inline-flex items-center gap-2 rounded-full bg-[#3f9d2c] px-8 py-3 text-[14px] font-bold text-white shadow-lg transition hover:brightness-105 active:scale-[0.98]"
                 >
-                  Go Pro for 1 hour / day
+                  Go Pro for 20 min / day
                 </button>
               )}
             </div>
@@ -748,7 +748,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                       onClick={() => router.push("/v3/premium")}
                       className="rounded-full bg-[#3f9d2c] px-5 py-2.5 text-[14px] font-bold text-white transition hover:brightness-105 active:scale-[0.98]"
                     >
-                      Go Pro for 1 hour / day
+                      Go Pro for 20 min / day
                     </button>
                   )}
                   <button
@@ -954,7 +954,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                         </p>
                         <p className="text-[12px] text-muted-foreground">
                           Resets {usage?.pro === false ? "next week" : "tomorrow"}.
-                          {usage?.pro === false ? " Go Pro for 1 hour / day." : ""}
+                          {usage?.pro === false ? " Go Pro for 20 min / day." : ""}
                         </p>
                       </div>
                       {usage?.pro === false && (

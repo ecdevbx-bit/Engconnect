@@ -1,12 +1,17 @@
 import "server-only";
 
+import { LEVEL_INSTRUCTIONS, normalizeLevel } from "./instructions/levels";
+import { modeFor, seededPicker } from "./instructions/modes";
+
 // K.AI tutor persona. Ported from ENGAI/src/services/tutorPrompt.js (itself
 // from the production K.AI prompt) and adapted for Gemini Live:
 //   * built on the SERVER and locked into the ephemeral token, so the browser
 //     can't rewrite it;
 //   * fed by the learner's real profile + learner_memory instead of
 //     localStorage;
-//   * tuned for tap-to-talk turns and spoken (not written) replies.
+//   * tuned for tap-to-talk turns and spoken (not written) replies;
+//   * level behaviour and practice-mode rules/material live in the instruction
+//     files under ./instructions (levels.ts, modes.ts) — edit those, not this.
 
 type Phrases = {
   okay: string;
@@ -109,21 +114,6 @@ function phrasesFor(lang: string): Phrases {
   );
 }
 
-// Role-play modes (from ENGAI). Keys match AI_PARTNER_SCENARIOS ids.
-const SCENARIO_RULES: Record<string, string> = {
-  "General Conversation": "Warm, natural everyday conversation about the learner's life, work, hobbies and plans.",
-  "Job Interview":
-    "Act as a supportive but realistic interviewer for the learner's field. Ask one interview question at a time (HR, strengths, situational). Coach answers with the STAR method and better professional phrasing.",
-  "IELTS Speaking":
-    "Act as an IELTS speaking examiner: Part 1 short personal questions, then a Part 2 cue card (1 minute to think, up to 2 minutes to speak), then Part 3 discussion. After each answer give a quick band-style tip on fluency, vocabulary, grammar or pronunciation.",
-  "Travel & Daily Life":
-    "Role-play everyday situations: airport check-in, hotel front desk, ordering at a café, shopping, asking directions, doctor's visit. You play the other person; set the scene in one line first.",
-  "Office & Workplace":
-    "Role-play workplace English: team meetings, phone calls with a client, asking a manager for leave, small talk with colleagues, explaining a problem politely.",
-  "Grammar Workout":
-    "Run a focused grammar practice: pick the learner's weak area (tenses, articles, prepositions, question forms), give one short sentence to fix or build, check it, explain the rule in one line, repeat.",
-};
-
 export type LearnerContext = {
   name: string;
   location: string;
@@ -161,9 +151,19 @@ const REASON_LABEL: Record<string, string> = {
 
 // `sessionLanguage` is what the learner picked on the start card:
 // "English" (English only) or any listed language (that language + English).
-// `scenario` is one of AI_PARTNER_SCENARIOS (role-play mode).
-export function buildSystemPrompt(ctx: LearnerContext, sessionLanguage: string, scenario = "General Conversation"): string {
+// `scenario` is one of AI_PARTNER_SCENARIOS (role-play mode). `materialSeed`
+// picks today's material from the mode's bank (stored on the session so a
+// reconnect gets the same questions).
+export function buildSystemPrompt(
+  ctx: LearnerContext,
+  sessionLanguage: string,
+  scenario = "General Conversation",
+  materialSeed = 1,
+): string {
   const codeMix = sessionLanguage !== "English";
+  const levelId = normalizeLevel(ctx.level);
+  const lv = LEVEL_INSTRUCTIONS[levelId];
+  const mode = modeFor(scenario);
   const ph = phrasesFor(codeMix ? sessionLanguage : "English");
   const native = ctx.nativeLang || "Hindi";
   const name = ctx.name.trim();
@@ -179,7 +179,8 @@ export function buildSystemPrompt(ctx: LearnerContext, sessionLanguage: string, 
 * 70% English for the teaching, 30% ${sessionLanguage} for warmth and quick explanations.
 * When you WRITE ${sessionLanguage} words, use Roman letters only.
 * This ratio is private guidance. Never announce percentages. If the learner asks for English only, tell them they can pick "English" on the start screen next time.
-* Natural fillers: "${ph.filler}", "${ph.okay}", "${ph.understood}".`
+* Natural fillers: "${ph.filler}", "${ph.okay}", "${ph.understood}".
+${lv.blend(sessionLanguage)}`
     : `LANGUAGE
 * Speak ENTIRELY in clear, warm Indian English. No other language, not even single words.
 * Natural, conversational — a sharp mentor, not a textbook.`;
@@ -192,7 +193,7 @@ export function buildSystemPrompt(ctx: LearnerContext, sessionLanguage: string, 
     ctx.goals ? `Their goal in their words: ${ctx.goals}` : "",
     ctx.hobbies ? `Hobbies: ${ctx.hobbies}` : "",
     `Mother tongue: ${native}`,
-    ctx.level ? `Level: ${ctx.level}` : "",
+    `Level: ${levelId}`,
   ].filter(Boolean);
 
   let memory = "";
@@ -222,9 +223,19 @@ ${profileLines.join("\n")}
 ${firstName ? `Address them as ${firstName} now and then (not every turn).` : "You don't know their name yet — ask for it warmly in your greeting and use it afterwards."}
 ${memory}
 
+LEVEL: ${lv.title}
+Voice and pace:
+${lv.voice}
+Teaching:
+${lv.teaching}
+Correcting:
+${lv.correction}
+
 SESSION MODE: ${scenario}
-${SCENARIO_RULES[scenario] ?? SCENARIO_RULES["General Conversation"]}
-Stay in this mode unless the learner asks to switch; keep corrections running throughout.
+${mode.rules}
+TODAY'S MATERIAL (private — use it to run the session, never read the list out):
+${mode.material(seededPicker(materialSeed), levelId)}
+Stay in this mode unless the learner asks to switch; keep corrections running throughout, at the depth the level asks for.
 
 HOW THIS CONVERSATION WORKS
 * The learner taps a mic button, speaks, then taps again. Each of their turns is a complete thought — reply to it.
@@ -238,19 +249,14 @@ CORE PERSONALITY
 
 EACH REPLY
 1. React to what they said so they feel heard.
-2. If there was an error: "${correctExample}" — one line on WHY.
+2. If there was an error: "${correctExample}" — one line on WHY (at the level's depth).
 3. End with ONE short question or a tiny speaking task, so they talk next.
 
 TOPIC GUARD
 If they drift to politics, religion, medical/legal/financial advice or anything unsafe, redirect warmly once to an English-practice topic.
 
-ADAPT
-* Beginners: slower, simpler words, more repetition${codeMix ? `, more ${sessionLanguage}` : ""}.
-* Intermediate: push full sentences and past/future tenses.
-* Advanced: idioms, tone, interviews, storytelling.
-
 SPOKEN FORMAT — STRICT
-* 1–2 SHORT spoken sentences, under 35 words. The learner should do 80% of the talking.
+* Reply length: ${lv.replyLength} The learner should do 80% of the talking.
 * No lists, no markdown, no emojis — this is speech.
 * Your name is written "K.AI" and SAID as one word, "kaa-ee" (like Hindi "काई"). Never spell out the letters.`;
 }
@@ -263,10 +269,13 @@ export function buildKickoff(ctx: LearnerContext, sessionLanguage: string, scena
     scenario === "General Conversation"
       ? "then ask one easy question to get them talking"
       : `then say you'll practise "${scenario}" together and start it with the first question or scene`;
+  const levelId = normalizeLevel(ctx.level);
+  const tag = `[Session start — ${lang}, level: ${levelId}, mode: ${scenario}]`;
+  const style = LEVEL_INSTRUCTIONS[levelId].greeting;
   if (!firstName) {
-    return `[Session start — ${lang}, mode: ${scenario}] Greet the learner warmly in under 2 short sentences, introduce yourself as K.AI ("kaa-ee"), ask their name, ${mode}.`;
+    return `${tag} Greet the learner warmly in under 2 short sentences, introduce yourself as K.AI ("kaa-ee"), ask their name, ${mode}. ${style}`;
   }
-  return `[Session start — ${lang}, mode: ${scenario}] Greet ${firstName} by name in under 2 short sentences${
+  return `${tag} Greet ${firstName} by name in under 2 short sentences${
     returning ? ", say it's good to see them again" : ", say you're glad they're here"
-  }, ${mode}.`;
+  }, ${mode}. ${style}`;
 }

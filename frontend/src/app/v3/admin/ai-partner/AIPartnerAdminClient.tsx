@@ -74,7 +74,7 @@ const FIELDS: Array<{
   {
     key: "proDailyCapSeconds",
     label: "Pro daily cap (seconds)",
-    hint: "Total AI-Partner time a Pro user gets per day (IST reset). 0 = no cap. Default 3600 (1 hr).",
+    hint: "Total AI-Partner time a Pro user gets per day (IST reset). 0 = no cap. Default 1200 (20 min).",
     min: 0,
     max: 86400,
   },

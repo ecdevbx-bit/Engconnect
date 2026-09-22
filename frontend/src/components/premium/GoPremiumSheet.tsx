@@ -14,7 +14,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const FEATURES = [
   { name: "Jumble Words", free: "18 sentences daily", pro: "4,500 sentences" },
   { name: "Pronunciation", free: "3 sentences daily", pro: "1,500 sentences" },
-  { name: "AI Partner", free: "20 min / week", pro: "1 hour / day" },
+  { name: "AI Partner", free: "20 min / week", pro: "20 min / day" },
   { name: "Leaderboard", free: "Top 10 only", pro: "See your rank" },
 ] as const;
 

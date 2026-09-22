@@ -1,3 +1,4 @@
+import AppExtras from "./AppExtras";
 import Navbar from "./Navbar";
 import BottomNav from "./BottomNav";
 import FirstLoginOnboardingModal from "@/components/onboarding/FirstLoginOnboardingModal";
@@ -5,9 +6,11 @@ import FirstLoginOnboardingModal from "@/components/onboarding/FirstLoginOnboard
 /**
  * AppShell — the outer frame for in-app screens.
  * Defined once; every in-app route renders into the centered content column.
+ * AppExtras adds the in-app-only layer (tours, celebrations, Pro prompts).
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
+    <AppExtras>
     <div className="min-h-screen">
       {/* Ambient smoky gradient backdrop — soft bluish blobs fill the page
           behind the content so it never reads as flat/empty. Vivid on light,
@@ -30,5 +33,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* v3 first-login prompt — no-op for v1/Firebase users. */}
       <FirstLoginOnboardingModal />
     </div>
+    </AppExtras>
   );
 }

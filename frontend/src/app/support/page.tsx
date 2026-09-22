@@ -1,74 +1,29 @@
 import type { Metadata } from "next";
 import { InfoPageShell, Section, Bullets } from "@/components/legal/InfoPageShell";
-import { CONTACT_NUMBERS, telLink, smsLink, whatsappLink, formatNumber } from "@/config/contact";
-import FeedbackForm from "@/components/support/FeedbackForm";
 import SupportForm from "@/components/support/SupportForm";
 
 export const metadata: Metadata = {
-  title: "Support & Feedback",
-  description: "Get help with English Connection and share your feedback — reach us by call, text, or WhatsApp.",
+  title: "Help & Support",
+  description: "Something wrong with English Connection? Tell us here — the team gets your report by email and replies to you.",
   alternates: { canonical: "/support" },
 };
 
+// One support channel: the "Something wrong?" form (also in the navbar Help
+// dropdown) → support ticket + email to the team via Resend (DECISIONS D-029).
 export default function SupportPage() {
   return (
     <InfoPageShell
-      title="Support & Feedback"
-      updated="1 July 2026"
-      intro="Need a hand, or have something to tell us? We're just a message away. Share feedback below, or reach the English Connection team by call, text, or WhatsApp — we're happy to help with your account, your Pro plan, or anything about the app."
+      title="Help & Support"
+      updated="22 September 2026"
+      intro="Something not working, or an idea to share? Pick what it's about, tell us in a few words, and the English Connection team gets it by email straight away. We'll reply to your email."
     >
-      <Section title="Something wrong? Tell us">
+      <Section title="Tell us what's up">
         <p>
-          Pick what went wrong and describe it — your report reaches the team by email straight away and
-          we&apos;ll reply to you. You can also open this from the <strong>Help</strong> button at the top of
-          any screen in the app.
+          You can also open this from the <strong>Help</strong> button at the top of any screen in the app. For ideas and
+          feedback, choose <strong>Suggestion / feedback</strong>.
         </p>
         <div className="mt-4 max-w-xl">
           <SupportForm />
-        </div>
-      </Section>
-
-      <Section title="Share your feedback">
-        <p>
-          Tell us what&apos;s working and what isn&apos;t — it genuinely shapes what we build next.
-          On the free Pro trial? Your Pro access is unlocked for the whole trial automatically —
-          feedback is always welcome but never required.
-        </p>
-        <div className="mt-4">
-          <FeedbackForm />
-        </div>
-      </Section>
-
-      <Section title="Reach us">
-        <p>Tap a number to get in touch however you like:</p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {CONTACT_NUMBERS.map((n) => (
-            <div key={n} className="rounded-2xl border border-white/[0.08] bg-surface-2/40 p-4">
-              <p className="text-base font-bold text-heading">{formatNumber(n)}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={telLink(n)}
-                  className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-[#0b0e14] transition-colors hover:bg-primary-1"
-                >
-                  Call
-                </a>
-                <a
-                  href={smsLink(n)}
-                  className="rounded-full border border-white/[0.12] px-4 py-2 text-sm font-semibold text-heading transition-colors hover:bg-surface-2"
-                >
-                  Text
-                </a>
-                <a
-                  href={whatsappLink(n)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full bg-[#25D366] px-4 py-2 text-sm font-semibold text-white transition-[filter] hover:brightness-105"
-                >
-                  WhatsApp
-                </a>
-              </div>
-            </div>
-          ))}
         </div>
       </Section>
 
@@ -76,22 +31,13 @@ export default function SupportPage() {
         <p>We usually reply within a few hours, Monday to Saturday, 10 AM – 8 PM IST.</p>
       </Section>
 
-      <Section title="Email">
-        <p>
-          Prefer email? Write to us at{" "}
-          <a href="mailto:support@englishconnection.in" className="font-semibold text-primary hover:underline">
-            support@englishconnection.in
-          </a>{" "}
-          and we&apos;ll get back to you.
-        </p>
-      </Section>
-
       <Section title="What we can help with">
         <Bullets
           items={[
             "Account & sign-in problems.",
-            "Your Pro plan — billing, renewals, and what's included.",
-            "Trouble with a game — Jumble Words, Pronunciation, or K.AI.",
+            "Your Pro plan — what's included, renewals and payments.",
+            "Trouble with a game — Jumble Words, Pronunciation or K.AI.",
+            "Microphone or audio not working.",
             "Reporting a bug or suggesting a feature.",
           ]}
         />

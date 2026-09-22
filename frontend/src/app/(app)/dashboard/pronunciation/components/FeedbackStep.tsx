@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Bot, ChevronDown, Sparkles, Zap } from "lucide-react";
+import { Bot, ChevronDown, Sparkles, Volume2, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -14,6 +14,50 @@ import {
 } from "@/lib/v3Pronunciation";
 import { PixelMascot } from "@/components/v3/PixelMascot";
 import type { MascotEmotion } from "@/lib/emotion";
+
+// Read a word aloud slowly with the device's own voice (free, offline-capable;
+// prefers an Indian English voice when the phone has one).
+function speakWord(text: string) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text.replace(/[^\p{L}' -]/gu, ""));
+  const voices = window.speechSynthesis.getVoices();
+  u.voice = voices.find((v) => v.lang === "en-IN") ?? voices.find((v) => v.lang.startsWith("en")) ?? null;
+  u.lang = u.voice?.lang ?? "en-IN";
+  u.rate = 0.7;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+// "pruh-nun-see-AY-shun" → syllables with the stressed (CAPITALS) one highlighted.
+function Syllables({ value, className }: { value: string; className?: string }) {
+  const parts = value.split("-").filter(Boolean);
+  return (
+    <span className={cn("inline-flex flex-wrap items-baseline gap-x-1", className)}>
+      {parts.map((p, i) => {
+        const stressed = parts.length > 1 && /[A-Z]/.test(p) && p === p.toUpperCase();
+        return (
+          <span key={i} className="inline-flex items-baseline gap-x-1">
+            {i > 0 && <span aria-hidden className="text-muted-foreground">·</span>}
+            <span className={stressed ? "font-extrabold text-primary" : "text-heading"}>{p.toLowerCase()}</span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+function HearButton({ word }: { word: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => speakWord(word)}
+      aria-label={`Hear how to say ${word}`}
+      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors hover:bg-primary/25 active:scale-95"
+    >
+      <Volume2 className="h-5 w-5" />
+    </button>
+  );
+}
 
 // Mascot reaction by accuracy band — mirrors the 5 feedback tiers.
 function mascotFor(pct: number): MascotEmotion {
@@ -137,6 +181,15 @@ function WordChip({
             <dd className="font-medium text-heading">{word.confidence.toFixed(2)}</dd>
           </div>
         </dl>
+        {(word.syllables || word.native) && (
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-3">
+            <div className="min-w-0 space-y-0.5 text-sm">
+              {word.syllables && <Syllables value={word.syllables} />}
+              {word.native && <p className="text-heading">{word.native}</p>}
+            </div>
+            {!demo && <HearButton word={word.expected} />}
+          </div>
+        )}
         <div className="mt-3 border-t border-white/[0.06] pt-3">
           <p className={cn("text-sm font-semibold", heading.className)}>{heading.label}</p>
           {word.reason && (
@@ -192,6 +245,7 @@ export function FeedbackStep({
   demo?: boolean;
 }) {
   const meta = pronunciationFeedbackMeta(result);
+  const missed = (result.words ?? []).filter((w) => w.status !== "CORRECT");
 
   return (
     <div>
@@ -260,6 +314,32 @@ export function FeedbackStep({
           </span>
         </div>
       </div>
+
+      {!demo && missed.length > 0 && (
+        <div className="mt-8">
+          <p className="text-center text-sm font-medium text-heading">How to say the words you missed</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {missed.map((w, i) => (
+              <div key={`${w.expected}-${i}`} className="rounded-xl border border-rose-400/30 bg-rose-500/5 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-heading">{w.expected.replace(/[^\p{L}'-]/gu, "")}</p>
+                    {w.syllables && <Syllables value={w.syllables} className="mt-0.5 text-base" />}
+                    {w.native && <p className="mt-0.5 text-base text-heading">{w.native}</p>}
+                  </div>
+                  <HearButton word={w.expected} />
+                </div>
+                {w.heard && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    You said: <span className="font-semibold text-rose-300">&ldquo;{w.heard}&rdquo;</span>
+                  </p>
+                )}
+                {w.reason && <p className="mt-1 text-sm leading-relaxed text-body">{w.reason}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!demo && (
         <div className="mt-8 flex items-start gap-3 rounded-xl border border-white/[0.06] bg-surface-2/40 p-4">

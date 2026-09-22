@@ -36,6 +36,9 @@ nodes = pages, decisions (D-0xx) and the STATUS file; edges = page→page links,
 citations, decision→decision supersedes. Outputs `docs/wiki/graph.json` (for agents/tools) and
 [[meta/graph]] (Mermaid map + decision index + lint). **Re-run it after every wiki edit** and fix
 anything under "Lint". To answer "what depends on X?", read `graph.json` edges instead of grepping.
+The same run writes `frontend/src/generated/wiki-bundle.json` (all pages + STATUS + DECISIONS +
+edges), which the admin **Wiki & memory** page (`/v3/admin/wiki`) renders — commit it with the wiki
+so the deployed copy stays current (D-031).
 
 ## Conventions (graph-ready)
 - Frontmatter on every page: `title`, `type` (overview|feature|architecture|operations|meta|index|log),

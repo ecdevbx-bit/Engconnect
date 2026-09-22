@@ -20,7 +20,9 @@ ticket lands in the admin **Support inbox** (DECISIONS D-029).
   - **Tell us more** text box; guests also give their email (signed-in learners are identified
     automatically);
   - **Send to support** → "Sent! Ticket #N".
-- The same form is on the public **/support** page (with WhatsApp / call numbers below).
+- The same form is the whole public **/support** page ("Help & Support"). The old feedback form,
+  the account-menu "Support & Feedback" row and the call/WhatsApp list were removed — this is the
+  one support channel (D-034). Feedback = category "Suggestion / feedback".
 - It lives in the navbar (not a floating button) so it never covers the AI Partner mic bar on phones.
 
 ## What happens behind it

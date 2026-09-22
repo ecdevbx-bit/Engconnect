@@ -3,43 +3,52 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-09-22 (end of session 1).
+> Last updated: 2026-09-22 (session 2).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
   `frontend`, pnpm 11 via explicit commands — D-022). Auto-deploys on push to `main`.
 - GitHub `ecdevbx-bit/Engconnect` (gh logged in as `ecdevbx-bit`). Supabase `uycpxwajvhcigyhvepci`:
-  12 migrations applied, RLS everywhere.
-- Admin: **ec.devbx@gmail.com** → `/v3/admin` (Pro applications, Support inbox, Gemini keys, …).
+  13 migrations applied, RLS everywhere.
+- Admin: **ec.devbx@gmail.com** (only admin) → `/v3/admin` (Pro applications, Support inbox,
+  **Wiki & memory**, Gemini keys, …). Accounts in auth: ec.devbx@gmail.com (Google) and
+  abhi03chauhan87@gmail.com (email + Google, normal learner).
 
-## Done ✅ (session 1)
-- Backend (Supabase + Next.js API re-implementing the old Go contract), progress engine, content seeds.
-- Auth: Supabase only — **Google enabled** + email/password; Resend SMTP (branded emails, 30/h);
-  our per-email/IP limits; single-active-session rule.
-- AI Partner on Gemini Live 3.1 preview: ephemeral tokens, tap-to-talk, live captions, XP, caps,
-  learner memory; **setup card: 14 languages, 3 levels, 6 practice modes, 18 voices** (all verified).
-- Key pool: 7 free keys (different projects — confirmed) + 1 paid (last resort); `/v3/admin/keys`.
-- Pronunciation scoring with gemini-3.1-flash-lite (verified); R2 upload code (waiting for creds).
-- Support: navbar Help dropdown + /support form → `support_tickets` + Resend email to ec.devbx@gmail.com;
-  admin inbox. Pro applications: Approve / Don't approve.
-- Knowledge: CLAUDE.md schema + Workflow, wiki (23 pages), DECISIONS D-001…D-030, graph memory,
-  `scripts/` (smoke test + Gemini probes).
-- Verified: tsc clean; `next build` ✓; **production smoke 32/32** on commit b61c5c8 (incl. Tamil /
-  Job Interview / Sulafat session, invalid-option fallback, support ticket emailed via Resend).
+## Done ✅
+- Session 1: backend (Supabase + Next API on the old contract), auth (Google + email, Resend SMTP),
+  AI Partner on Gemini Live with setup options, key pool (7 free + 1 paid), pronunciation scoring,
+  support panel, wiki + graph memory, `scripts/`.
+- Session 2:
+  - Admin **Wiki & memory** page with interactive graph (D-031).
+  - K.AI **Beginner / Intermediate / Expert** + practice-mode **instruction files** and material banks
+    (IELTS cue cards, interview questions, scenes) — verified live (D-032).
+  - Pro AI Partner = **20 min/day** (D-033).
+  - Old Support & Feedback removed; Resend Help form is the only channel (D-034).
+  - Pronunciation **syllables + native-script respelling + "You said…"** + 🔊 — verified via API (D-035).
+  - R2 decided **not needed** for now (D-036).
+  - Lighter UI: app-only providers moved into AppShell; new glass mobile tab bar with K.AI button;
+    theme-toggle hydration fix (D-037).
+
+## In progress 🔧
+- **Landing page redesign** (glassmorphism, lighter, KEEP the scroll-swipe section) by a helper agent —
+  files `frontend/src/components/ShowcaseV4.tsx` + `src/components/landing/*`; not yet committed.
+  Review in the browser (mobile + desktop, both themes), make sure `src/app/landing-preview` is deleted,
+  then ship as its own commit.
 
 ## Next ⏭️
-1. Owner to try in a real browser: a voice conversation with K.AI (mic) and a pronunciation
-   recording — both verified only by scripts so far.
-2. **Verify a sending domain in Resend** (e.g. englishconnection.in) → re-run
-   `supabase/configure-auth.mjs` with `SMTP_FROM=noreply@<domain>` and set `SUPPORT_EMAIL_FROM`.
-3. R2 credentials → recordings stored; add a 90-day lifecycle rule.
-4. Consider CAPTCHA (Turnstile) on sign-up — direct `supabase.auth.signUp` bypasses our API limits.
-5. Pre-existing lint debt (untouched code): LevelsAdminClient, V3AIPartner celebration effect, AuthLayout.
-6. Later: `gemini-3.8-live` (stable) is a config switch (`GEMINI_LIVE_MODEL`).
+1. Owner tests on the phone: AI Partner (Beginner vs Expert, IELTS), pronunciation "How to say it"
+   cards, new tab bar, /v3/admin/wiki.
+2. Verify a sending domain in Resend → re-run `supabase/configure-auth.mjs` with `SMTP_FROM` and set
+   `SUPPORT_EMAIL_FROM`.
+3. Ideas not built yet: post-session review card (talk ratio, mistakes, IELTS band estimate saved per
+   session) and a learner-facing "What K.AI remembers" drawer (ENGAI's memory drawer).
+4. CAPTCHA (Turnstile) on sign-up; pre-existing lint debt (LevelsAdminClient, LeaderboardPopover,
+   V3AIPartner celebration effect, AuthLayout); old `/showcase/*` design pages could be deleted.
+5. Later: `gemini-3.8-live` (stable) is a config switch (`GEMINI_LIVE_MODEL`).
 
 ## Blocked on the owner 🙋
-- Resend: a domain they own, verified with DNS records (until then emails reach only the Resend
-  account owner). Cloudflare R2 keys. Optional Razorpay, custom domain.
+- Resend: a verified domain (until then emails reach only the Resend account owner). Optional:
+  Razorpay, custom domain, R2 (only if keeping recordings becomes a feature).
 - Security hygiene: tokens were pasted in chat (Vercel, Supabase access, Resend) — rotate when convenient
   and update `credentials.txt` + Vercel env.
 
@@ -47,5 +56,8 @@
 - pnpm: `npx -y pnpm@11.0.8 …`. No Doppler. `credentials.txt` = real secrets, never print them.
 - Next 16: `src/proxy.ts` (not middleware); route `params` are Promises; `.next` types can go stale
   after deleting a route → `rm -rf frontend/.next` before `tsc`.
+- After editing the wiki or memory files, run `node docs/wiki/build-graph.mjs` — it also refreshes the
+  admin wiki snapshot (`frontend/src/generated/wiki-bundle.json`), which must be committed.
+- Python edits on Windows: open files with `newline=""` or they get CRLF line endings.
+- TTS clips can't simulate subtle mispronunciations (the voice "fixes" them) — probes swap whole words.
 - A leftover `next start` can keep port 3000 busy on Windows — find it with Get-CimInstance.
-- Supabase free tier: email templates editable only with custom SMTP (now configured).

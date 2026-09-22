@@ -20,7 +20,12 @@ Four steps, shown in a side stepper:
 3. **Feedback** — accuracy ring + headline:
    ≥90 **Excellent** · ≥80 **Great job** · ≥55 **Solid effort** · ≥40 **Getting there** · else
    **Keep going**. Each word is green (correct), red (mispronounced) or amber (unclear); tap for
-   *expected / heard / match % / confidence / tip*. "+XP", level-up, badges; ≥80 % celebrates.
+   *expected / heard / match % / confidence / tip*, plus **how to say it**: spoken syllables with the
+   stressed one highlighted (`pruh·nun·see·AY·shun`), the same sounds **in the learner's own script**
+   (mother tongue from onboarding, e.g. Hindi `वेन्ज़-डे`, Tamil `வென்ஸ்-டே`) and a 🔊 button (device
+   voice, slow). Below the chips, **"How to say the words you missed"** cards show each missed word
+   with syllables, native-script spelling, *You said: "…"* and what to fix (D-035).
+   "+XP", level-up, badges; ≥80 % celebrates.
    With the Word Bank flag on, words can be dragged into the wallet ([[features/word-bank]]).
 4. **Improve** — "Words to revisit" (tap to hear slowly) + tip cards → **Next sentence**.
 "Sentence X of 12" is a client-side counter. The side panel shows attempts and best % (last 50).
@@ -31,13 +36,17 @@ Four steps, shown in a side stepper:
 2. `POST /api/pronunciation/attempts` (multipart). Server sniffs the real format from bytes.
 3. **Gemini `gemini-3.1-flash-lite`** hears the audio + the expected sentence and returns strict
    JSON: transcript, one verdict per expected word (CORRECT/INCORRECT/UNCLEAR + heard + confidence
-   + short tip), a feedback message and 1–3 tips. The prompt says: *do not penalise an Indian
+   + what-went-wrong tip + `syllables` + `native` respelling in the learner's script), a feedback
+   message and 1–3 tips. The audio goes **straight from our server to Gemini** inside the request —
+   nothing has to be stored first. The prompt says: *do not penalise an Indian
    accent, only sounds that change or blur the word* (v/w, th, stress, dropped syllables).
 4. Server recomputes **similarity** (Levenshtein) and **accuracy = correct ÷ expected words**, so
    numbers are deterministic. Uses the key pool's `text` lane with fail-over
    ([[architecture/gemini-key-pool]]).
 5. Verified 2026-09-22: learner said "Yesterday I go to the market and buy vegetables" for
-   "…I went… bought…" → exactly `went` and `bought` marked INCORRECT.
+   "…I went… bought…" → exactly `went` and `bought` marked INCORRECT. `scripts/pronunciation-probe.mjs`
+   (real API, native language set): "Wednesday" → INCORRECT "You said 'banana'; say 'WENZ-day'…",
+   syllables for every word, Hindi and Tamil respellings.
 
 ## Rules
 - Phrase choice: per-learner cursor per band; moves past a phrase once it's scored, so "Next
@@ -45,8 +54,8 @@ Four steps, shown in a side stepper:
 - XP = round(base × accuracy), base easy **20** / medium **30** / hard **40**; once per phrase
   per IST day. Combo continues at ≥ 80 %, else resets. XP tier: HIGH ≥80, MID ≥55, else NEEDS_REVIEW.
 - Free quota: **3 scored attempts per band per day** → `DAILY_QUOTA_REACHED` on `GET /phrases`.
-- Recording kept in **R2** (`pronunciation/<user>/<attempt>.wav`) after the response is sent
-  ([[architecture/storage-r2]]); skipped if R2 isn't configured.
+- Recording kept in **R2** (`pronunciation/<user>/<attempt>.wav`) after the response is sent — only
+  if R2 is configured; **not needed for scoring** and currently off (D-036, [[architecture/storage-r2]]).
 
 ## Content
 47 seeded phrases: 20 easy, 15 medium (Indian-English traps: v/w, th, silent letters, stress),

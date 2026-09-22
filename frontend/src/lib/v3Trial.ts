@@ -38,10 +38,6 @@ export function fmtTrialEndsOn(endsOn: string): string {
     : d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
 }
 
-export interface V3FeedbackResult {
-  proGrantedToday: boolean;
-  trial: V3TrialStatus;
-}
 
 export function v3FetchTrialStatus(accessToken: string): Promise<V3TrialStatus> {
   return v3Fetch<V3TrialStatus>("/trial/status", accessToken);
@@ -54,9 +50,3 @@ export function v3ApplyForTrial(accessToken: string, phone: string): Promise<V3T
   });
 }
 
-export function v3SubmitFeedback(accessToken: string, text: string): Promise<V3FeedbackResult> {
-  return v3Fetch<V3FeedbackResult>("/feedback", accessToken, {
-    method: "POST",
-    body: { text },
-  });
-}

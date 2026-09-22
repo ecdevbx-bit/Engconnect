@@ -72,6 +72,10 @@ export type PronunciationWord = {
   similarity: number;
   confidence: number;
   reason?: string;
+  /** Spoken syllables, stressed one in CAPITALS ("VEJ-tuh-bul"). */
+  syllables?: string;
+  /** Same sounds in the learner's own script ("वेज-टे-बल"). */
+  native?: string;
 };
 
 export type PronunciationTip = {

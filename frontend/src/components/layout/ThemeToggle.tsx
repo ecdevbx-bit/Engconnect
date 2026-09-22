@@ -18,7 +18,9 @@ export function ThemeToggle() {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const isDark = resolvedTheme === "dark";
+  // Theme is only known on the client — until mounted, render exactly what the
+  // server did (light-theme label + moon) so hydration matches.
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
     <button
@@ -29,7 +31,7 @@ export function ThemeToggle() {
       className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface-2/60 text-body transition-colors hover:bg-surface-2 hover:text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       {/* Until mounted, show a neutral icon (matches SSR) to avoid a flash. */}
-      {mounted && isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </button>
   );
 }

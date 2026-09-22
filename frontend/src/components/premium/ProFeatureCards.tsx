@@ -56,7 +56,7 @@ export const PRO_FEATURES: ProFeature[] = [
     name: "AI Partner",
     Scene: AiPartnerScene,
     free: "20 min / week",
-    pro: "1 hour / day",
+    pro: "20 min / day",
     accent: "bg-emerald-600 group-hover:bg-emerald-700",
     tint: "var(--tint-ai)",
     route: "/dashboard/ai-partner",

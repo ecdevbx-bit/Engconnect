@@ -67,3 +67,15 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-09-22] ops | Workflow + scripts saved before compaction
 - Smoke test and Gemini probes moved to `scripts/` (D-030); workflow written into root CLAUDE.md;
   [[operations/runbook]] lists the scripts.
+
+## [2026-09-22] feature | Admin wiki, K.AI levels, pronunciation guide, lighter UI
+- Admin **Wiki & memory** page renders this wiki + STATUS + DECISIONS + an interactive graph from a
+  snapshot written by `build-graph.mjs` (D-031, [[features/admin]]).
+- AI Partner levels Beginner / Intermediate / Expert with instruction files + per-session material
+  (IELTS cue cards, interview questions, scenes) — [[features/k-ai-instructions]] (D-032).
+  Pro AI Partner time is now 20 min/day (D-033).
+- Old support/feedback UI removed; the Resend Help form is the only channel (D-034, [[features/support]]).
+- Pronunciation: syllables + native-script respelling + "You said…" per missed word, 🔊 hear it
+  (D-035, [[features/pronunciation]]). R2 not needed for scoring (D-036, [[architecture/storage-r2]]).
+- Mobile tab bar redesigned (glass, raised K.AI button, custom icon); tours/celebrations/Pro
+  prompts load only inside the app; theme-toggle hydration warning fixed (D-037).

@@ -25,10 +25,11 @@ export const AI_PARTNER_LANGUAGES: AIPartnerLanguage[] = [
   { id: "Nepali", label: "Nepali + English", native: "न" },
 ];
 
+// Behaviour per level lives in server/gemini/instructions/levels.ts.
 export const AI_PARTNER_LEVELS = [
-  { id: "Beginner", label: "Beginner", hint: "Slow, simple words, more of your language" },
+  { id: "Beginner", label: "Beginner", hint: "Soft, slow voice · very simple words · repeat after K.AI" },
   { id: "Intermediate", label: "Intermediate", hint: "Full sentences, tenses, everyday topics" },
-  { id: "Advanced", label: "Advanced", hint: "Idioms, tone, fast natural talk" },
+  { id: "Expert", label: "Expert", hint: "Natural speed, idioms, tough follow-up questions" },
 ] as const;
 
 export const AI_PARTNER_SCENARIOS = [

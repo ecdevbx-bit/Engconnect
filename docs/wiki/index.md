@@ -17,11 +17,12 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | [[features/jumble-words]] | Sentence unscrambling game: rounds, hints, progressive sets, XP rules |
 | [[features/pronunciation]] | Read-aloud coach: record → Gemini scores each word → feedback |
 | [[features/ai-partner]] | K.AI voice tutor on Gemini Live: language/level/mode/voice setup, tap-to-talk, captions, memory, caps |
+| [[features/k-ai-instructions]] | K.AI's instruction files: Beginner/Intermediate/Expert behaviour, practice modes, IELTS & interview material |
 | [[features/word-bank]] | Saved words + 3-take practice (feature-flagged) |
 | [[features/progress-and-rewards]] | XP, levels, streaks, combos, badges, leaderboard |
 | [[features/premium]] | Pro: trial program, /pro invite link, quotas, Razorpay |
 | [[features/support]] | "Something wrong?" Help dropdown → ticket + email to the team (Resend) |
-| [[features/admin]] | Admin panel: Pro applications, support inbox, Gemini keys, content, settings |
+| [[features/admin]] | Admin panel: Pro applications, support inbox, wiki & memory, Gemini keys, content, settings |
 
 ## Architecture
 | Page | What it covers |

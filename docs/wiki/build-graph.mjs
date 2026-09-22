@@ -8,6 +8,8 @@
 //          supersedes decision → decision ("Supersedes D-xxx" / "superseded by D-yyy")
 // Output : docs/wiki/graph.json (machine-readable, for agents/tools)
 //          docs/wiki/meta/graph.md (Mermaid map, adjacency, decision index, lint report)
+//          frontend/src/generated/wiki-bundle.json (every page + memory file + edges, for the
+//          admin wiki at /v3/admin/wiki — committed, so re-run this after any wiki/memory edit)
 // Lint   : broken links, frontmatter/body link mismatches, orphan pages.
 
 import fs from "node:fs";
@@ -66,6 +68,7 @@ const pages = walk(wikiDir)
       tags: Array.isArray(meta.tags) ? meta.tags : [],
       updated: meta.updated || "",
       path: `docs/wiki/${rel}`,
+      body,
       bodyLinks,
       fmLinks,
       decisions,
@@ -138,7 +141,7 @@ const graph = {
   generatedAt: new Date().toISOString(),
   about: "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   nodes: [
-    ...pages.map(({ bodyLinks, fmLinks, decisions: _d, ...n }) => n),
+    ...pages.map(({ body: _b, bodyLinks, fmLinks, decisions: _d, ...n }) => n),
     ...decisions.map((d) => ({ id: d.id, title: d.title, type: "decision", date: d.date, status: d.status, path: "docs/memory/DECISIONS.md" })),
     { id: statusNode.id, title: statusNode.title, type: statusNode.type, path: statusNode.path },
   ],
@@ -200,6 +203,33 @@ ${lint.length ? lint.map((l) => `- ${l}`).join("\n") : "- ✅ no broken links, m
 `;
 fs.mkdirSync(path.join(wikiDir, "meta"), { recursive: true });
 fs.writeFileSync(path.join(wikiDir, "meta/graph.md"), md);
+
+// ── admin wiki bundle (frontend/src/generated/wiki-bundle.json) ────
+// The app is deployed from frontend/ only, so the admin wiki reads this
+// snapshot instead of docs/. Raw markdown; the viewer turns [[links]] and
+// D-0xx into links. Server-side only (never shipped to the browser as a whole).
+const bundle = {
+  generatedAt: graph.generatedAt,
+  pages: [
+    ...pages.map((p) => ({
+      id: p.id,
+      title: p.title,
+      type: p.type,
+      tags: p.tags,
+      updated: p.updated,
+      path: p.path,
+      body: p.id === "meta/graph" ? parseFrontmatter(md).body : p.body,
+    })),
+    { id: "memory/status", title: "Status (working memory)", type: "memory", tags: ["memory", "status"], updated: "", path: "docs/memory/STATUS.md", body: statusText },
+    { id: "memory/decisions", title: "Decision log", type: "memory", tags: ["memory", "decisions"], updated: "", path: "docs/memory/DECISIONS.md", body: decText },
+  ],
+  decisions: decisions.map(({ id, title, date, status, supersededBy }) => ({ id, title, date, status, supersededBy })),
+  edges: dedup,
+  lint,
+};
+const bundleDir = path.join(root, "frontend/src/generated");
+fs.mkdirSync(bundleDir, { recursive: true });
+fs.writeFileSync(path.join(bundleDir, "wiki-bundle.json"), JSON.stringify(bundle) + "\n");
 
 console.log(`graph: ${pages.length} pages, ${decisions.length} decisions, ${dedup.length} edges, ${lint.length} lint issue(s)`);
 for (const l of lint) console.log("  - " + l);

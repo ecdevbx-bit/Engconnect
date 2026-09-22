@@ -1,14 +1,15 @@
 // Navigation is config-driven — the account dropdown renders from this array.
 // Adding a destination is a one-line data change, not a layout edit.
 
-import type { LucideIcon } from "lucide-react";
-import { User, Puzzle, Sparkles, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, LayoutDashboard, LifeBuoy, Link2, ToggleRight, KeyRound, LayoutGrid, Inbox, BadgeCheck } from "lucide-react";
+import type { ComponentType } from "react";
+import { KaiIcon } from "@/components/layout/navIcons";
+import { User, Puzzle, House, Speech, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, Link2, ToggleRight, KeyRound, LayoutGrid, Inbox, BadgeCheck, BookOpen } from "lucide-react";
 
 export interface NavItem {
   id: string;
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string }>;
   description?: string;
 }
 
@@ -31,13 +32,6 @@ export const accountMenu: NavItem[] = [
     href: "/dashboard/activity",
     icon: Activity,
     description: "Review your recent sessions",
-  },
-  {
-    id: "support",
-    label: "Support & Feedback",
-    href: "/support",
-    icon: LifeBuoy,
-    description: "Share feedback or reach us",
   },
 ];
 
@@ -63,6 +57,13 @@ export const adminMenu: NavItem[] = [
     href: "/v3/admin/support",
     icon: Inbox,
     description: "Problems reported by learners",
+  },
+  {
+    id: "admin-wiki",
+    label: "Wiki & memory",
+    href: "/v3/admin/wiki",
+    icon: BookOpen,
+    description: "Product wiki, status, decisions and knowledge graph",
   },
   {
     id: "admin-keys",
@@ -135,9 +136,9 @@ export const adminMenu: NavItem[] = [
  * five-up bar readable on narrow phones.
  */
 export const primaryNav: NavItem[] = [
-  { id: "dashboard", label: "Home", href: "/dashboard", icon: LayoutDashboard },
+  { id: "dashboard", label: "Home", href: "/dashboard", icon: House },
   { id: "jumble", label: "Jumble", href: "/dashboard/jumble", icon: Puzzle },
-  { id: "ai-partner", label: "Speak", href: "/dashboard/ai-partner", icon: Sparkles },
-  { id: "pronunciation", label: "Pronounce", href: "/dashboard/pronunciation", icon: Mic },
+  { id: "ai-partner", label: "K.AI", href: "/dashboard/ai-partner", icon: KaiIcon },
+  { id: "pronunciation", label: "Pronounce", href: "/dashboard/pronunciation", icon: Speech },
   { id: "leaderboard", label: "Ranks", href: "/dashboard/leaderboard", icon: Trophy },
 ];

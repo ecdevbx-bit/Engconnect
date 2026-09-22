@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T08:45:46.344Z",
+  "generatedAt": "2026-09-22T09:25:00.853Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -121,6 +121,20 @@
       ],
       "updated": "2026-09-22",
       "path": "docs/wiki/features/jumble-words.md"
+    },
+    {
+      "id": "features/k-ai-instructions",
+      "title": "K.AI instruction files (levels + practice modes)",
+      "type": "feature",
+      "tags": [
+        "ai-partner",
+        "prompt",
+        "levels",
+        "ielts",
+        "instructions"
+      ],
+      "updated": "2026-09-22",
+      "path": "docs/wiki/features/k-ai-instructions.md"
     },
     {
       "id": "features/premium",
@@ -512,6 +526,62 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-031",
+      "title": "Admin \"Wiki & memory\" page reads a generated snapshot",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-032",
+      "title": "K.AI levels + practice modes live in instruction files",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-033",
+      "title": "Pro AI Partner time = 20 min/day",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-034",
+      "title": "One support channel: the Resend Help form",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-035",
+      "title": "Pronunciation \"how to say it\": syllables + native-script respelling",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-036",
+      "title": "Cloudflare R2 is not needed for pronunciation",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-037",
+      "title": "Lighter UI: app-only layer out of the root providers; new mobile tab bar",
+      "type": "decision",
+      "date": "2026-09-22",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -710,6 +780,11 @@
       "kind": "links"
     },
     {
+      "source": "architecture/storage-r2",
+      "target": "D-036",
+      "kind": "cites"
+    },
+    {
       "source": "architecture/system",
       "target": "architecture/database",
       "kind": "links"
@@ -756,6 +831,11 @@
     },
     {
       "source": "features/admin",
+      "target": "meta/how-this-wiki-works",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
       "target": "features/support",
       "kind": "links"
     },
@@ -790,6 +870,16 @@
       "kind": "cites"
     },
     {
+      "source": "features/admin",
+      "target": "D-031",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "features/k-ai-instructions",
+      "kind": "links"
+    },
+    {
       "source": "features/ai-partner",
       "target": "architecture/gemini-live",
       "kind": "links"
@@ -820,6 +910,16 @@
       "kind": "cites"
     },
     {
+      "source": "features/ai-partner",
+      "target": "D-032",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-033",
+      "kind": "cites"
+    },
+    {
       "source": "features/jumble-words",
       "target": "features/progress-and-rewards",
       "kind": "links"
@@ -845,6 +945,21 @@
       "kind": "links"
     },
     {
+      "source": "features/k-ai-instructions",
+      "target": "architecture/gemini-live",
+      "kind": "links"
+    },
+    {
+      "source": "features/k-ai-instructions",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "features/k-ai-instructions",
+      "target": "D-032",
+      "kind": "cites"
+    },
+    {
       "source": "features/premium",
       "target": "features/admin",
       "kind": "links"
@@ -863,6 +978,11 @@
       "source": "features/premium",
       "target": "features/ai-partner",
       "kind": "links"
+    },
+    {
+      "source": "features/premium",
+      "target": "D-033",
+      "kind": "cites"
     },
     {
       "source": "features/premium",
@@ -925,6 +1045,16 @@
       "kind": "links"
     },
     {
+      "source": "features/pronunciation",
+      "target": "D-035",
+      "kind": "cites"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "D-036",
+      "kind": "cites"
+    },
+    {
       "source": "features/support",
       "target": "operations/credentials",
       "kind": "links"
@@ -947,6 +1077,11 @@
     {
       "source": "features/support",
       "target": "D-029",
+      "kind": "cites"
+    },
+    {
+      "source": "features/support",
+      "target": "D-034",
       "kind": "cites"
     },
     {
@@ -982,6 +1117,11 @@
     {
       "source": "index",
       "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/k-ai-instructions",
       "kind": "links"
     },
     {
@@ -1126,6 +1266,16 @@
     },
     {
       "source": "log",
+      "target": "features/k-ai-instructions",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "architecture/storage-r2",
+      "kind": "links"
+    },
+    {
+      "source": "log",
       "target": "D-008",
       "kind": "cites"
     },
@@ -1195,6 +1345,41 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-031",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-032",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-033",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-034",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-035",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-036",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-037",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -1212,6 +1397,11 @@
     {
       "source": "meta/how-this-wiki-works",
       "target": "D-028",
+      "kind": "cites"
+    },
+    {
+      "source": "meta/how-this-wiki-works",
+      "target": "D-031",
       "kind": "cites"
     },
     {
@@ -1365,18 +1555,48 @@
       "kind": "supersedes"
     },
     {
+      "source": "D-033",
+      "target": "D-015",
+      "kind": "supersedes"
+    },
+    {
       "source": "memory/status",
       "target": "D-022",
       "kind": "cites"
     },
     {
       "source": "memory/status",
-      "target": "D-001",
+      "target": "D-031",
       "kind": "cites"
     },
     {
       "source": "memory/status",
-      "target": "D-030",
+      "target": "D-032",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-033",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-034",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-035",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-036",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-037",
       "kind": "cites"
     }
   ],

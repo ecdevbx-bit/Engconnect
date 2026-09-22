@@ -69,7 +69,7 @@ export const DEFAULTS: Docs = {
     recurringXp: 30,
     maxRecordingSeconds: 20,
     sessionSeconds: 600,
-    proDailyCapSeconds: 3600,
+    proDailyCapSeconds: 1200,
     freeWeeklyCapSeconds: 1200,
   },
   quotas: { jumblePerDifficultyPerDay: 18, pronunciationPerDifficultyPerDay: 3 },

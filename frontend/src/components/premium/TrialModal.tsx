@@ -163,7 +163,7 @@ export default function TrialModal({ open, onClose }: { open: boolean; onClose: 
               </DialogDescription>
             </DialogHeader>
             <Link href="/support" onClick={onClose} className={btnGreen}>
-              <MessageSquare className="h-5 w-5" /> Share feedback (optional)
+              <MessageSquare className="h-5 w-5" /> Send us feedback (optional)
             </Link>
           </>
         ) : (

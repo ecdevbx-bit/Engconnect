@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 const TOOLS = [
   { href: "/v3/admin/pro-trials", title: "Pro applications", body: "Learners who applied for Pro — approve or don't approve; program end date and cap." },
   { href: "/v3/admin/support", title: "Support inbox", body: "\"Something wrong?\" reports from learners (also emailed to you). Mark resolved." },
+  { href: "/v3/admin/wiki", title: "Wiki & memory", body: "The product + architecture wiki, current status, every decision and the knowledge graph." },
   { href: "/v3/admin/keys", title: "Gemini keys", body: "Live status of every API key: in rotation, cooling down, quota used, invalid. Add, test, disable." },
   { href: "/v3/admin/problems", title: "Content", body: "Jumble sentences and pronunciation phrases — add, reorder, activate, bulk upload." },
   { href: "/v3/admin/ai-partner", title: "AI Partner", body: "Talk-time XP rules, session length, Pro daily / free weekly time caps." },

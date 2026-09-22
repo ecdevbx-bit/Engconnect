@@ -137,7 +137,7 @@ export default function AccountDropdown({
               className="flex items-center gap-3 px-5 py-2.5 transition-colors hover:bg-surface-2/60"
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Icon size={16} />
+                <Icon className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-heading">{item.label}</p>
@@ -192,7 +192,7 @@ export default function AccountDropdown({
                   className="flex items-center gap-3 px-5 py-2.5 transition-colors hover:bg-surface-2/60"
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                    <Icon size={16} />
+                    <Icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-heading">{item.label}</p>

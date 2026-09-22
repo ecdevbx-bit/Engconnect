@@ -1,7 +1,6 @@
 "use client";
 
 import { LifeBuoy, X } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -37,12 +36,6 @@ export default function SupportMenu() {
           </button>
         </div>
         <SupportForm compact onDone={() => setOpen(false)} />
-        <p className="mt-3 border-t border-white/[0.06] pt-2 text-[11px] text-muted-foreground">
-          Prefer WhatsApp or a call?{" "}
-          <Link href="/support" onClick={() => setOpen(false)} className="font-semibold text-primary hover:underline">
-            All support options
-          </Link>
-        </p>
       </PopoverContent>
     </Popover>
   );

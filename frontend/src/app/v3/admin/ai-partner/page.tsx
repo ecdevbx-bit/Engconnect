@@ -32,7 +32,7 @@ export default async function AdminAIPartnerPage() {
         recurringXp: 15,
         maxRecordingSeconds: 20,
         sessionSeconds: 600,
-        proDailyCapSeconds: 3600,
+        proDailyCapSeconds: 1200,
         freeWeeklyCapSeconds: 1200,
       },
       defaults: {
@@ -42,7 +42,7 @@ export default async function AdminAIPartnerPage() {
         recurringXp: 15,
         maxRecordingSeconds: 20,
         sessionSeconds: 600,
-        proDailyCapSeconds: 3600,
+        proDailyCapSeconds: 1200,
         freeWeeklyCapSeconds: 1200,
       },
     };

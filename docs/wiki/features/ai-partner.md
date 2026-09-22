@@ -2,7 +2,7 @@
 title: AI Partner (K.AI)
 type: feature
 tags: [trainer, ai-partner, gemini-live, voice]
-links: [architecture/gemini-live, architecture/gemini-key-pool, features/progress-and-rewards, features/premium, architecture/api]
+links: [architecture/gemini-live, architecture/gemini-key-pool, features/progress-and-rewards, features/premium, architecture/api, features/k-ai-instructions]
 updated: 2026-09-22
 ---
 
@@ -20,9 +20,12 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
    - **Language**: English only, or any of 13 languages mixed with English (70/30, Roman script):
      Hindi, Bengali, Marathi, Gujarati, Punjabi, Tamil, Telugu, Kannada, Malayalam, Odia, Assamese,
      Urdu, Nepali. The learner's own language (profile) is listed first and preselected.
-   - **Level**: Beginner / Intermediate / Advanced.
+   - **Level**: Beginner / Intermediate / Expert — each has its own instruction block (Beginner = soft,
+     slow voice, very simple words, "say with me"); the chosen level's description shows under the
+     pills. See [[features/k-ai-instructions]].
    - **Practice mode**: ☕ Casual chat · 💼 Job interview · 🎓 IELTS/TOEFL · ✈️ Travel & shopping ·
-     🏢 Office talk · 🎯 Grammar workout (each a role-play rule in the prompt).
+     🏢 Office talk · 🎯 Grammar workout — each has rules + a material bank (IELTS cue cards,
+     interview questions, scenes…); every session gets a different slice (D-032).
    - **K.AI's voice**: 18 Gemini voices (Aoede, Kore, Leda, Zephyr, Callirrhoe, Autonoe, Despina,
      Sulafat, Erinome, Laomedeia, Puck, Charon, Fenrir, Orus, Achird, Gacrux, Umbriel, Iapetus) —
      all verified live on 2026-09-22.
@@ -58,12 +61,14 @@ Ported from the production K.AI prompt in ENGAI: acknowledge → correct with WH
 1–2 short spoken sentences (<35 words); learner does 80 % of the talking; topic guard; adapts to
 level; says its name as "kaa-ee". Language mode per session: English-only or X + English 70/30 in
 Roman script (hand-tuned phrases for 7 languages, a generic rule for the rest). A **SESSION MODE**
-block adds the chosen practice mode's role-play rules. Options are validated server-side against
+block adds the chosen practice mode's rules. Both the **LEVEL** and **SESSION MODE** blocks come from
+the instruction files `server/gemini/instructions/levels.ts` and `modes.ts`
+([[features/k-ai-instructions]]), including "TODAY'S MATERIAL" picked with the session's `material_seed`. Options are validated server-side against
 `frontend/src/lib/aiPartnerOptions.ts` and stored on `chat_sessions` (language, level, scenario,
 voice), so reconnects keep the same mode and voice.
 
 ## Limits ([[features/premium]])
-Free **20 min / week** (resets Monday IST) · Pro **60 min / day** (IST) · one live conversation
+Free **20 min / week** (resets Monday IST) · Pro **20 min / day** (IST, D-033) · one live conversation
 per learner (a new one closes the old). All admin-editable (`/v3/admin/ai-partner`).
 
 ## Code map

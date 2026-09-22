@@ -36,7 +36,8 @@ export function loadSavedSetup(): SessionSetupValue | null {
     const d = defaultSetup("English");
     return {
       language: AI_PARTNER_LANGUAGES.some((l) => l.id === saved.language) ? saved.language! : d.language,
-      level: AI_PARTNER_LEVELS.some((l) => l.id === saved.level) ? saved.level! : d.level,
+      // "Advanced" was renamed "Expert".
+      level: saved.level === "Advanced" ? "Expert" : AI_PARTNER_LEVELS.some((l) => l.id === saved.level) ? saved.level! : d.level,
       scenario: AI_PARTNER_SCENARIOS.some((s) => s.id === saved.scenario) ? saved.scenario! : d.scenario,
       voice: AI_PARTNER_VOICES.some((v) => v.id === saved.voice) ? saved.voice! : d.voice,
     };
@@ -129,6 +130,7 @@ export default function SessionSetup({
             </Pill>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground">{AI_PARTNER_LEVELS.find((l) => l.id === value.level)?.hint}</p>
       </div>
 
       <div className="space-y-2">
@@ -140,7 +142,7 @@ export default function SessionSetup({
             </Pill>
           ))}
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {AI_PARTNER_SCENARIOS.find((s) => s.id === value.scenario)?.hint}
         </p>
       </div>

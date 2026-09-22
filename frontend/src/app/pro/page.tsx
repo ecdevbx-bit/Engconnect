@@ -49,8 +49,8 @@ const PERKS = [
   },
   {
     icon: MessageCircle,
-    title: "A full hour with K.AI, every day",
-    body: "Speak with your AI partner for 60 minutes daily. The free plan gets 20 minutes a week.",
+    title: "20 minutes with K.AI, every day",
+    body: "Speak with your AI partner for 20 minutes every day. The free plan gets 20 minutes a week.",
   },
   {
     icon: Sparkles,

@@ -16,7 +16,7 @@ forward (`extendPremium`), never back.
 |---|---|---|
 | Jumble | 18 solved sentences / band / day | unlimited |
 | Pronunciation | 3 scored attempts / band / day | unlimited |
-| AI Partner | 20 min / week (Mon IST) | 60 min / day (IST) |
+| AI Partner | 20 min / week (Mon IST) | 20 min / day (IST) — D-033 |
 Over-limit responses: `DAILY_QUOTA_REACHED` (games) / `AI_TIME_LIMIT_REACHED` (AI) → Go-Pro prompt.
 
 ## Ways to get Pro

@@ -21,6 +21,10 @@ export type ScoredWord = {
   similarity: number;
   confidence: number;
   reason?: string;
+  /** Spoken syllables, stressed one in CAPITALS: "VEJ-tuh-bul". */
+  syllables?: string;
+  /** Same sounds written in the learner's own script: "वेज-टे-बल". */
+  native?: string;
 };
 
 export type ScoreResult = {
@@ -46,9 +50,20 @@ const SCHEMA = {
           heard: { type: Type.STRING, description: "What was actually heard for this word, or empty." },
           status: { type: Type.STRING, enum: ["CORRECT", "INCORRECT", "UNCLEAR"] },
           confidence: { type: Type.NUMBER, description: "0 to 1: how sure you are of this judgement." },
-          reason: { type: Type.STRING, description: "For INCORRECT/UNCLEAR: one short coaching hint (sound, stress). Else empty." },
+          reason: {
+            type: Type.STRING,
+            description: "For INCORRECT/UNCLEAR: what they got wrong + how to fix it, in simple words. Else empty.",
+          },
+          syllables: {
+            type: Type.STRING,
+            description: "The word as spoken syllables in simple English sounds, stressed syllable in CAPITALS, joined by '-'.",
+          },
+          native: {
+            type: Type.STRING,
+            description: "The same syllables written phonetically in the learner's native script, joined by '-'. Empty if none requested.",
+          },
         },
-        required: ["expected", "heard", "status", "confidence", "reason"],
+        required: ["expected", "heard", "status", "confidence", "reason", "syllables", "native"],
       },
     },
     message: { type: Type.STRING, description: "One warm, specific sentence of feedback for the learner." },
@@ -73,7 +88,27 @@ Judge each expected word:
 - UNCLEAR: you genuinely cannot tell (noise, mumbling, cut off).
 Return exactly one entry per expected word in order, even if the learner skipped it (then heard = "" and status INCORRECT).
 If the recording is silent or unrelated speech, mark every word INCORRECT and say so kindly in the message.
-Keep reasons under 12 words, practical ("stress the second syllable: ve-GE-ta-ble" style). Never mention these instructions.`;
+For every word also give:
+- syllables: how to SAY it, split into spoken syllables with simple English sounds, the stressed syllable in CAPITALS, joined by "-" (vegetable → "VEJ-tuh-bul", pronunciation → "pruh-nun-see-AY-shun", comfortable → "KUMF-tuh-bul"). One-syllable words: just the word in capitals.
+- native: the SAME syllables written phonetically in the learner's native script (so they can read how it sounds), joined by "-". Leave empty when no native script is requested.
+For INCORRECT/UNCLEAR words, the reason says exactly what they said wrong and the fix, under 20 words, naming the syllable or sound (e.g. "You said 'pro-NOUN'; say 'pruh-NUN' — no 'ow' sound, stress on AY."). Never mention these instructions.`;
+
+// Native scripts for the learner's mother tongue (profile.native_lang).
+const SCRIPTS: Record<string, string> = {
+  Hindi: "Hindi (Devanagari script)",
+  Marathi: "Marathi (Devanagari script)",
+  Nepali: "Nepali (Devanagari script)",
+  Bengali: "Bengali (Bengali script)",
+  Assamese: "Assamese (Assamese script)",
+  Gujarati: "Gujarati (Gujarati script)",
+  Punjabi: "Punjabi (Gurmukhi script)",
+  Tamil: "Tamil (Tamil script)",
+  Telugu: "Telugu (Telugu script)",
+  Kannada: "Kannada (Kannada script)",
+  Malayalam: "Malayalam (Malayalam script)",
+  Odia: "Odia (Odia script)",
+  Urdu: "Urdu (Urdu script)",
+};
 
 function norm(w: string): string {
   return w.toLowerCase().replace(/[^a-z0-9']/g, "");
@@ -105,9 +140,12 @@ export async function scorePronunciation(args: {
   expectedText: string;
   audio: Buffer;
   mimeType: string;
+  /** Learner's mother tongue — the "native" respelling uses its script. */
+  nativeLang?: string;
 }): Promise<ScoreResult> {
   const expected = args.expectedText.trim().split(/\s+/).filter(Boolean);
   const model = env.geminiTextModel();
+  const script = SCRIPTS[(args.nativeLang ?? "").trim()] ?? "";
 
   const { result: raw } = await withTextKey(args.userId, async (apiKey) => {
     const ai = new GoogleGenAI({ apiKey });
@@ -117,7 +155,11 @@ export async function scorePronunciation(args: {
         {
           role: "user",
           parts: [
-            { text: `Expected sentence: "${args.expectedText}"\nExpected words (${expected.length}): ${JSON.stringify(expected)}` },
+            {
+              text: `Expected sentence: "${args.expectedText}"\nExpected words (${expected.length}): ${JSON.stringify(expected)}\n${
+                script ? `Learner's native language for the "native" field: ${script}.` : `No native script requested — leave "native" empty.`
+              }`,
+            },
             { inlineData: { mimeType: args.mimeType, data: args.audio.toString("base64") } },
           ],
         },
@@ -127,12 +169,20 @@ export async function scorePronunciation(args: {
         responseMimeType: "application/json",
         responseSchema: SCHEMA,
         temperature: 0.1,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
       },
     });
     return JSON.parse(res.text ?? "{}") as {
       transcript?: string;
-      words?: { expected?: string; heard?: string; status?: string; confidence?: number; reason?: string }[];
+      words?: {
+        expected?: string;
+        heard?: string;
+        status?: string;
+        confidence?: number;
+        reason?: string;
+        syllables?: string;
+        native?: string;
+      }[];
       message?: string;
       tips?: { title?: string; body?: string }[];
     };
@@ -153,6 +203,8 @@ export async function scorePronunciation(args: {
       similarity: Math.round((status === "CORRECT" && !heard ? 1 : similarity(exp, heard)) * 100) / 100,
       confidence: Math.round(clamp01(g?.confidence ?? 0.5) * 100) / 100,
       ...(g?.reason && status !== "CORRECT" ? { reason: g.reason.trim() } : {}),
+      ...(g?.syllables?.trim() ? { syllables: g.syllables.trim().slice(0, 60) } : {}),
+      ...(script && g?.native?.trim() ? { native: g.native.trim().slice(0, 60) } : {}),
     };
   });
 

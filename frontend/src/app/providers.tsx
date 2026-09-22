@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { Provider } from "react-redux";
 import { ThemeProvider } from "next-themes";
-import { NextStep, NextStepProvider, type Tour } from "nextstepjs";
 import { FlagsProvider } from "@/lib/featureFlags";
 import { store } from "@/store";
 import { useAppDispatch } from "@/store/hooks";
@@ -12,44 +11,8 @@ import { SessionProvider, useSession } from "@/lib/session";
 import { v3FetchMyAttributes, v3FetchLevels } from "@/lib/v3Game";
 import { setSessionId } from "@/lib/sessionId";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import LevelUpCelebrationRoot from "@/components/v3/LevelUpCelebrationRoot";
-import BadgeCelebrationRoot from "@/components/badges/BadgeCelebrationRoot";
-import GoPremiumRoot from "@/components/premium/GoPremiumRoot";
-import TrialReminderRoot from "@/components/premium/TrialReminderRoot";
 import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
-import AIPartnerGateRoot from "@/components/game/AIPartnerGateRoot";
-import { JUMBLE_TOUR, JUMBLE_TOUR_NAME, JUMBLE_TOUR_SEEN_KEY } from "@/components/jumbleWordsComponent/jumbleTour";
-import {
-  PRONUNCIATION_TOUR,
-  PRONUNCIATION_TOUR_NAME,
-  PRONUNCIATION_TOUR_SEEN_KEY,
-} from "@/app/(app)/dashboard/pronunciation/pronunciationTour";
-import {
-  AI_PARTNER_TOUR,
-  AI_PARTNER_TOUR_NAME,
-  AI_PARTNER_TOUR_SEEN_KEY,
-} from "@/components/game/aiPartnerTour";
-import JumbleTourCard from "@/components/jumbleWordsComponent/JumbleTourCard";
 
-// Every product walkthrough is registered on the single shared <NextStep>.
-// startNextStep(name) picks the right one; the map below lets the shared
-// onComplete/onSkip mark the matching "seen" flag so each tour only
-// auto-launches once per browser.
-// Lock the page while a walkthrough is open: disableInteraction on every step
-// means even the spotlighted element can't be clicked, and clickThroughOverlay
-// is off below so everything else is blocked too. Together they stop the user
-// from switching difficulty tabs / practice steps mid-tour, on mobile and
-// desktop. Every step is informational (Next / Prev / Skip), so nothing needs
-// page interaction to advance.
-const ALL_TOURS: Tour[] = [...JUMBLE_TOUR, ...PRONUNCIATION_TOUR, ...AI_PARTNER_TOUR].map((t) => ({
-  ...t,
-  steps: t.steps.map((s) => ({ ...s, disableInteraction: true })),
-}));
-const TOUR_SEEN_KEYS: Record<string, string> = {
-  [JUMBLE_TOUR_NAME]: JUMBLE_TOUR_SEEN_KEY,
-  [PRONUNCIATION_TOUR_NAME]: PRONUNCIATION_TOUR_SEEN_KEY,
-  [AI_PARTNER_TOUR_NAME]: AI_PARTNER_TOUR_SEEN_KEY,
-};
 
 // V3StateSync pulls the *authoritative* hot-state attributes from
 // /api/users/me/attributes on session load and mirrors them into
@@ -114,33 +77,11 @@ function AuthRouter({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <V3StateSync />
       {children}
-      {/* App-wide level-up card — fires from any feature via triggerLevelUp. */}
-      <LevelUpCelebrationRoot />
-      {/* App-wide badge award celebration — fires from enqueueBadgeCelebrations. */}
-      <BadgeCelebrationRoot />
-      {/* App-wide "free daily quota reached → Go Pro" prompt. */}
-      <GoPremiumRoot />
-      {/* App-wide free-trial nudge: shows only if an admin cancelled the trial. */}
-      <TrialReminderRoot />
       {/* App-wide "install this as an app" nudge — signed in or not. Inside
           SessionProvider so it can re-offer just after a sign-in. */}
       <InstallAppPrompt />
-      {/* App-wide "AI Partner is being upgraded" popup — opened by every
-          blocked AI Partner link while its feature flag is off. */}
-      <AIPartnerGateRoot />
     </SessionProvider>
   );
-}
-
-function markTourSeen(tourName: string | null) {
-  const key = tourName ? TOUR_SEEN_KEYS[tourName] : undefined;
-  if (key && typeof window !== "undefined") {
-    try {
-      window.localStorage.setItem(key, "1");
-    } catch {
-      // Storage may be unavailable (private mode); the tour just runs again next visit.
-    }
-  }
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -149,25 +90,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <Provider store={store}>
         <FlagsProvider>
         <TooltipProvider delayDuration={200}>
-          <NextStepProvider>
-            <NextStep
-              steps={ALL_TOURS}
-              cardComponent={JumbleTourCard}
-              shadowRgb="11,14,20"
-              shadowOpacity="0.78"
-              displayArrow
-              clickThroughOverlay={false}
-              scrollToTop={false}
-              // Disable nextstepjs's own smooth scroll-to-element (it caused a
-              // jarring auto-slide when opening a tour). JumbleTourCard instead
-              // brings genuinely off-screen targets in instantly (no slide).
-              noInViewScroll
-              onComplete={markTourSeen}
-              onSkip={(_step, tourName) => markTourSeen(tourName)}
-            >
-              <AuthRouter>{children}</AuthRouter>
-            </NextStep>
-          </NextStepProvider>
+          <AuthRouter>{children}</AuthRouter>
         </TooltipProvider>
       </FlagsProvider>
       </Provider>

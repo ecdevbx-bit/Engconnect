@@ -9,7 +9,7 @@ updated: 2026-09-22
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(54 nodes · 172 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(62 nodes · 202 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -27,6 +27,7 @@ flowchart LR
     features_admin["Admin panel"]
     features_ai_partner["AI Partner (K.AI)"]
     features_jumble_words["Jumble Words"]
+    features_k_ai_instructions["K.AI instruction files (levels + practice modes)"]
     features_premium["Premium (Pro)"]
     features_progress_and_rewards["Progress & rewards"]
     features_pronunciation["Pronunciation Coach"]
@@ -87,11 +88,13 @@ flowchart LR
   architecture_system --> architecture_storage_r2
   architecture_system --> architecture_api
   features_admin --> features_premium
+  features_admin --> meta_how_this_wiki_works
   features_admin --> features_support
   features_admin --> architecture_gemini_key_pool
   features_admin --> features_progress_and_rewards
   features_admin --> features_jumble_words
   features_admin --> features_pronunciation
+  features_ai_partner --> features_k_ai_instructions
   features_ai_partner --> architecture_gemini_live
   features_ai_partner --> architecture_gemini_key_pool
   features_ai_partner --> features_premium
@@ -102,6 +105,8 @@ flowchart LR
   features_jumble_words --> features_admin
   features_jumble_words --> architecture_database
   features_jumble_words --> architecture_api
+  features_k_ai_instructions --> architecture_gemini_live
+  features_k_ai_instructions --> features_ai_partner
   features_premium --> features_admin
   features_premium --> features_jumble_words
   features_premium --> features_pronunciation
@@ -158,20 +163,23 @@ flowchart LR
 | [[architecture/database]] | D-013 |
 | [[architecture/gemini-key-pool]] | D-027, D-011 |
 | [[architecture/gemini-live]] | D-026 |
+| [[architecture/storage-r2]] | D-036 |
 | [[architecture/system]] | D-002 |
-| [[features/admin]] | D-023, D-018 |
-| [[features/ai-partner]] | D-026 |
-| [[features/premium]] | D-010 |
-| [[features/support]] | D-029 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030 |
-| [[meta/how-this-wiki-works]] | D-028 |
+| [[features/admin]] | D-023, D-018, D-031 |
+| [[features/ai-partner]] | D-026, D-032, D-033 |
+| [[features/k-ai-instructions]] | D-032 |
+| [[features/premium]] | D-033, D-010 |
+| [[features/pronunciation]] | D-035, D-036 |
+| [[features/support]] | D-029, D-034 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037 |
+| [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023 |
 | [[operations/deployment]] | D-022 |
 
 ## Decisions (from docs/memory/DECISIONS.md)
 | Id | Decision | Status | Cited by |
 |---|---|---|---|
-| D-001 | Repo layout: one git repo at `ENG/` | active | [[memory/status]] |
+| D-001 | Repo layout: one git repo at `ENG/` | active | — |
 | D-002 | Backend = Supabase (Postgres + Auth) + Next.js route handlers | active | [[architecture/system]] |
 | D-003 | Auth: keep NextAuth Google sign-in, swap the token exchange to Supabase | superseded → D-008 | — |
 | D-004 | AI Partner = Gemini Live, browser ↔ Google directly via ephemeral tokens | active | — |
@@ -200,7 +208,14 @@ flowchart LR
 | D-027 | The 7 free Gemini keys are from different Google Cloud projects | active | [[architecture/gemini-key-pool]] [[log]] [[operations/credentials]] |
 | D-028 | Graph memory = generated from the wiki (`docs/wiki/graph.json`) | active | [[log]] [[meta/how-this-wiki-works]] |
 | D-029 | Customer support panel: navbar "Help" dropdown → ticket + Resend email | active | [[features/support]] [[log]] |
-| D-030 | Verification scripts live in `scripts/`; the workflow is written in CLAUDE.md | active | [[log]] [[memory/status]] |
+| D-030 | Verification scripts live in `scripts/`; the workflow is written in CLAUDE.md | active | [[log]] |
+| D-031 | Admin "Wiki & memory" page reads a generated snapshot | active | [[features/admin]] [[log]] [[meta/how-this-wiki-works]] [[memory/status]] |
+| D-032 | K.AI levels + practice modes live in instruction files | active | [[features/ai-partner]] [[features/k-ai-instructions]] [[log]] [[memory/status]] |
+| D-033 | Pro AI Partner time = 20 min/day | active | [[features/ai-partner]] [[features/premium]] [[log]] [[memory/status]] |
+| D-034 | One support channel: the Resend Help form | active | [[features/support]] [[log]] [[memory/status]] |
+| D-035 | Pronunciation "how to say it": syllables + native-script respelling | active | [[features/pronunciation]] [[log]] [[memory/status]] |
+| D-036 | Cloudflare R2 is not needed for pronunciation | active | [[architecture/storage-r2]] [[features/pronunciation]] [[log]] [[memory/status]] |
+| D-037 | Lighter UI: app-only layer out of the root providers; new mobile tab bar | active | [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

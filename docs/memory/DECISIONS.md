@@ -242,3 +242,60 @@
   repo-relative paths (read secrets from `frontend/.env.local` / `credentials.txt`, print none).
 - Root `CLAUDE.md` now has a numbered **Workflow**: orient → build → check → record (wiki, D-entry,
   STATUS, graph) → ship (secret scan, commit, push) → verify prod (`scripts/smoke-test.mjs`).
+
+## D-031 · Admin "Wiki & memory" page reads a generated snapshot — 2026-09-22
+- Owner: "in admin page option there should be the wiki page also". `/v3/admin/wiki/[...page]` renders
+  every wiki page + STATUS + DECISIONS (react-markdown + remark-gfm, server-side after the admin check),
+  with search, backlinks, cited decisions and an interactive SVG knowledge graph (no graph library;
+  mermaid was tried and dropped — ~900 extra lockfile lines for one page).
+- Vercel builds from `frontend/` only, so `build-graph.mjs` also writes
+  `frontend/src/generated/wiki-bundle.json`; it is committed and must be regenerated after wiki edits.
+- ec.devbx@gmail.com confirmed as the only admin (ADMIN_EMAILS local + Vercel); the second account
+  (abhi03chauhan87@gmail.com) is a normal learner.
+
+## D-032 · K.AI levels + practice modes live in instruction files — 2026-09-22
+- Owner: "modes like beginner, intermediate and expert … complete beginner should speak softly and make
+  them understand slowly … write instruction files", "options like ENGAI, preparing for IELTS".
+- Levels Beginner / Intermediate / Expert ("Advanced" renamed; normalised on read) in
+  `server/gemini/instructions/levels.ts` (voice & pace, teaching, correction depth, language mix, reply
+  length, greeting). Modes in `instructions/modes.ts`: rules + material banks (IELTS Part 1 topics,
+  12 original cue cards, Part 3 questions, interview questions, travel/office scenes, grammar points by
+  level, casual topics). Each session gets a seeded slice; `chat_sessions.material_seed` (migration
+  …1300) keeps reconnects identical. Pacing ("softly, slowly") is by prompt — native-audio models follow it.
+- Verified live with `scripts/ai-partner-probe.mjs` (Beginner+Hindi, Expert+IELTS).
+
+## D-033 · Pro AI Partner time = 20 min/day — 2026-09-22
+- Owner: "for pro limit the timings for 20 mins talk a day". Partly supersedes D-015 (only the Pro cap;
+  free stays 20 min/week). Default `proDailyCapSeconds` 3600 → 1200 (admin can still change it); UI copy
+  on /pro, Go-Pro sheet/cards and the AI Partner screen updated.
+
+## D-034 · One support channel: the Resend Help form — 2026-09-22
+- Owner: "remove the old support and feedback … now we have connected with Resend". Removed the old
+  FeedbackForm (`/feedback` table form), the account-menu "Support & Feedback" row and the call/WhatsApp
+  list on /support. /support = "Help & Support" with the SupportForm; feedback uses the
+  "Suggestion / feedback" category. The old `POST /feedback` API stays for the trial admin view.
+
+## D-035 · Pronunciation "how to say it": syllables + native-script respelling — 2026-09-22
+- Owner: break words into syllables and show them "written in Hindi" (the learner's language), plus what
+  they pronounced wrong. The scoring JSON now returns per word `syllables` (stressed syllable in
+  CAPITALS) and `native` (same sounds in the script of `profiles.native_lang`; 13 Indian languages mapped
+  to scripts), and the reason names the wrong sound/syllable. UI: chip popover + "How to say the words you
+  missed" cards with "You said …" and a 🔊 button using the device's speech synthesis (rate 0.7, en-IN).
+
+## D-036 · Cloudflare R2 is not needed for pronunciation — 2026-09-22
+- Scoring sends the WAV from our server straight to Gemini inline in the request (≤ a few hundred KB;
+  inline limit 20 MB). R2 only *keeps* recordings (history playback, disputes, datasets). Decision: run
+  without R2 for now (privacy + zero cost); the upload code stays and switches on when R2 env vars exist.
+  The browser can't call Gemini directly for scoring: ephemeral tokens only work for the Live API, and a
+  raw key in the browser would leak.
+
+## D-037 · Lighter UI: app-only layer out of the root providers; new mobile tab bar — 2026-09-22
+- Owner: "optimize the UI to be faster … I don't want it heavy". NextStep tours + level-up / badge
+  celebrations + Go-Pro / trial / AI-Partner-gate overlays moved from `app/providers.tsx` into
+  `components/layout/AppExtras.tsx`, mounted by AppShell (in-app screens only); overlays are next/dynamic.
+  Public pages (landing, /pro, /login) no longer download them.
+- Mobile BottomNav rewritten: glass island, raised centre K.AI button with a custom speech-bubble +
+  waveform icon (`navIcons.tsx`), House / Puzzle / Speech / Trophy icons, no JS drag logic.
+- ThemeToggle: label/icon gated on mount (fixes the hydration-mismatch warning).
+- Landing: owner likes the scroll-driven horizontal swipe — keep it (GSAP ScrollTrigger ≈ 30 KB gz is
+  fine); make the rest lighter (lazy demos, CSS motion, glassmorphism) — landing redesign in progress.

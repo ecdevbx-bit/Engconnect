@@ -117,7 +117,14 @@ export function registerPronunciationRoutes(r: Router) {
     const buf = Buffer.from(await audio.arrayBuffer());
     const mime = sniffAudio(buf, audio.type);
 
-    const score = await scorePronunciation({ userId: u.id, expectedText: p.final, audio: buf, mimeType: mime });
+    const { data: prof } = await db().from("profiles").select("native_lang").eq("id", u.id).maybeSingle();
+    const score = await scorePronunciation({
+      userId: u.id,
+      expectedText: p.final,
+      audio: buf,
+      mimeType: mime,
+      nativeLang: (prof?.native_lang as string | undefined) ?? "",
+    });
     const accuracyPercent = Math.floor(score.accuracy * 100);
     const baseXp = Math.round(BASE_XP[d] * score.accuracy);
     const paid = baseXp > 0 ? await claimDailyReward(u.id, p.id, baseXp) : false;
