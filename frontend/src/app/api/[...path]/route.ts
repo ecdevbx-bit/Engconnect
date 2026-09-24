@@ -13,11 +13,12 @@ export const dynamic = "force-dynamic";
 // Pronunciation scoring + Gemini token minting can take a few seconds.
 export const maxDuration = 60;
 
-type Ctx = { params: Promise<{ path: string[] }> };
-
-async function handle(req: NextRequest, { params }: Ctx): Promise<Response> {
-  const { path } = await params;
-  return api.dispatch(req, (path ?? []).join("/"));
+// The raw (still %-encoded) path after /api/: the router decodes each
+// segment itself and answers a malformed escape with a JSON 4xx. Awaiting
+// Next's decoded `params` threw on "%E0%A4" and produced an HTML 500 page.
+async function handle(req: NextRequest): Promise<Response> {
+  const raw = new URL(req.url).pathname.replace(/^\/api\/?/, "");
+  return api.dispatch(req, raw);
 }
 
 export const GET = handle;

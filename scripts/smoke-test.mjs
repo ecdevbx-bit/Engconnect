@@ -53,7 +53,8 @@ try {
   x = await api("/game/jumble/submit", { method: "POST", body: JSON.stringify({ order: s0.order, difficulty: "easy", userAnswer: [...full.split(" ")].reverse() }) });
   check("submit wrong answer", x.body.success && x.body.data.correct === false && x.body.data.combo === 0);
   x = await api("/game/jumble/submit", { method: "POST", body: JSON.stringify({ order: s0.order, difficulty: "easy", userAnswer: full.split(" ") }) });
-  check("submit right answer", x.body.success && x.body.data.correct && x.body.data.xpEarned === 10, `xp=${x.body.data?.totalXp} combo=${x.body.data?.combo}`);
+  // The answer came from the full-sentence hint, so this sentence pays half XP (D-043).
+  check("submit right answer (after full hint: ½ XP)", x.body.success && x.body.data.correct && x.body.data.xpEarned === 5 && x.body.data.hintPenalty === true, `xp=${x.body.data?.totalXp} combo=${x.body.data?.combo}`);
   x = await api("/game/jumble/submit", { method: "POST", body: JSON.stringify({ order: s0.order, difficulty: "easy", userAnswer: full.split(" ") }) });
   check("replay pays no XP (once/day)", x.body.success && x.body.data.xpEarned === 0);
   x = await api("/game/jumble/batch?difficulty=easy"); check("cursor advanced past solved", x.body.data?.sentences?.[0]?.order !== s0.order);
@@ -68,7 +69,7 @@ try {
   check("POST /word-bank/ normalises", x.body.success && x.body.data.word.word === "vegetable" && x.body.data.added);
   x = await api("/word-bank/", { method: "POST", body: JSON.stringify({ word: "vegetable" }) }); check("duplicate word → added:false", x.body.success && x.body.data.added === false);
   x = await api("/leaderboard?mode=xp&meRadius=2&top=5"); check("GET /leaderboard", x.body.success && x.body.data.me?.rank >= 1);
-  x = await api("/users/me/attributes"); check("GET /users/me/attributes", x.body.success && x.body.data.xp === 10 && x.body.data.activityStreak === 1, `xp=${x.body.data?.xp} streak=${x.body.data?.activityStreak}`);
+  x = await api("/users/me/attributes"); check("GET /users/me/attributes", x.body.success && x.body.data.xp === 5 && x.body.data.activityStreak === 1, `xp=${x.body.data?.xp} streak=${x.body.data?.activityStreak}`);
 
   // AI Partner: usage → create session (mints a real Gemini token) → progress → end
   x = await api("/chat/usage"); check("GET /chat/usage", x.body.success && x.body.data.capSeconds === 1200, `cap=${x.body.data?.capSeconds}s`);
