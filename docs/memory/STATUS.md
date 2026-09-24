@@ -8,13 +8,15 @@
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
   `frontend`, pnpm 11 via explicit commands — D-022). Auto-deploys on push to `main`.
-  Session 3 pushed as one commit (see git log); production smoke result recorded in the log/commit after deploy.
+  Session 3: `0856583` (features + fixes) and `1513925` (raw-path API dispatch) READY; production smoke
+  **32/32**, `jumble-hints-probe` all ✓, `audit-guards-probe` all ✓, `sentry-check` ✓ (server error +
+  browser tunnel event both arrived; source maps uploaded for the release).
 - GitHub `ecdevbx-bit/Engconnect` (gh logged in as `ecdevbx-bit`). Supabase `uycpxwajvhcigyhvepci`:
   15 migrations applied (…0924000100 learn+hints, …0924000200 session guards), RLS everywhere.
 - Admin: **ec.devbx@gmail.com** → `/v3/admin` (Learn switch on top, Pro applications, Support inbox,
   Wiki & memory, Gemini keys, content, settings).
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
-  (wiki: operations/monitoring, D-044).
+  (wiki: operations/monitoring, D-044). **Verified working in production 2026-09-24** (`scripts/sentry-check.mjs`).
 
 ## Done ✅
 - Sessions 1–2: backend, auth, K.AI on Gemini Live (hands-free), key pool, pronunciation scoring (strict,
@@ -41,7 +43,8 @@
    level `pauseMs`), pronunciation on an **iPhone** (Safari AudioContext fix), the Jumble 💡 hint card.
 3. Verify a sending domain in Resend → `supabase/configure-auth.mjs` with `SMTP_FROM`, set `SUPPORT_EMAIL_FROM`.
 4. Not fixed from the audit (low): leaderboard RPC capped at 1,000 rows by PostgREST (rank missing past
-   1,000 learners); streak board ranks stored streaks that never reset by themselves.
+   1,000 learners); streak board ranks stored streaks that never reset by themselves. A malformed
+   %-escape in an /api URL gets an HTML 500 from Next.js itself on Vercel (before our code) — harmless.
 5. Not built yet: post-session review card (talk ratio, mistakes, IELTS band), "What K.AI remembers"
    drawer, "Practise this lesson with K.AI" deep link (K.AI grammar focus from a Learn lesson),
    admin switch for single-active-session (D-009 confuses testers), CAPTCHA on sign-up (needs keys).

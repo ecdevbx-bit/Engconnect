@@ -145,3 +145,9 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 
 ## [2026-09-24] ui | Landing explained with figures
 - ~1,000 → ~470 words; animated figures for every feature; scroll-swipe kept ([[overview]], D-046).
+
+## [2026-09-24] ops | Session 3 deployed and verified
+- `0856583` + `1513925` live. Production: smoke 32/32 (Jumble answer via the full hint now expects ½ XP),
+  jumble-hints and audit-guards probes ✓, Sentry receives server errors (traceId tag) and browser events
+  through `/monitoring` (EU region `r=de`), source maps uploaded ([[operations/monitoring]]).
+- API entry now dispatches from the raw URL path (single decode) ([[architecture/api]]).
