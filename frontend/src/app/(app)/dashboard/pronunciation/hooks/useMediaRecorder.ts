@@ -42,6 +42,9 @@ export function useMediaRecorder() {
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startedAtRef = useRef<number>(0);
+  // Bumped by stop/reset/unmount: a start() still waiting on the permission
+  // prompt sees it changed and releases the mic instead of recording forever.
+  const genRef = useRef(0);
 
   // Tear everything down — stop tracks, drop the recorder. Safe to call
   // when nothing is running.
@@ -54,6 +57,7 @@ export function useMediaRecorder() {
   }, []);
 
   const cleanup = useCallback(() => {
+    genRef.current++;
     stopVad();
     recorderRef.current = null;
     if (streamRef.current) {
@@ -65,26 +69,45 @@ export function useMediaRecorder() {
 
   useEffect(() => cleanup, [cleanup]);
 
-  const start = useCallback(async (): Promise<void> => {
+  // Resolves true once the mic is actually recording (false on error or when
+  // cancelled while the permission prompt was open).
+  const start = useCallback(async (): Promise<boolean> => {
+    const gen = ++genRef.current;
     setError(null);
     setBlob(null);
     chunksRef.current = [];
 
+    // A previous take that never stopped: release its mic and analyser first.
+    stopVad();
+    const old = recorderRef.current;
+    if (old) {
+      old.ondataavailable = null;
+      old.onstop = null;
+      if (old.state !== "inactive") old.stop();
+      recorderRef.current = null;
+    }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setError("no-media-devices");
-      return;
+      return false;
     }
     if (typeof MediaRecorder === "undefined") {
       setError("not-supported");
-      return;
+      return false;
     }
 
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      setError("permission-denied");
-      return;
+      if (gen === genRef.current) setError("permission-denied");
+      return false;
+    }
+    if (gen !== genRef.current) {
+      stream.getTracks().forEach((t) => t.stop());
+      return false;
     }
 
     const mimeType = pickMimeType();
@@ -94,7 +117,7 @@ export function useMediaRecorder() {
     } catch {
       stream.getTracks().forEach((t) => t.stop());
       setError("internal");
-      return;
+      return false;
     }
 
     recorder.ondataavailable = (ev) => {
@@ -123,6 +146,9 @@ export function useMediaRecorder() {
       const AC: typeof AudioContext =
         window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new AC();
+      // Created after an await (not in a tap), so Safari may start it
+      // suspended — then the level meter would read silence forever.
+      if (ctx.state === "suspended") await ctx.resume().catch(() => {});
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 1024;
       ctx.createMediaStreamSource(stream).connect(analyser);
@@ -150,11 +176,17 @@ export function useMediaRecorder() {
     } catch {
       // No Web Audio: the time limit still ends the take.
     }
-  }, []);
+    return true;
+  }, [stopVad]);
 
   const getVoicedMs = useCallback(() => voicedMsRef.current, []);
+  // False when the level meter isn't running (no Web Audio, or the context
+  // stayed suspended) — then "no voice heard" means nothing and the take is
+  // sent anyway (the server rejects real silence itself).
+  const canDetectSpeech = useCallback(() => vadRef.current?.ctx.state === "running", []);
 
   const stop = useCallback((): number => {
+    genRef.current++;
     stopVad();
     const rec = recorderRef.current;
     if (rec && rec.state !== "inactive") {
@@ -171,11 +203,12 @@ export function useMediaRecorder() {
   }, [stopVad]);
 
   const reset = useCallback(() => {
+    genRef.current++;
     setBlob(null);
     setError(null);
     setSpeechEnded(false);
     chunksRef.current = [];
   }, []);
 
-  return { isRecording, blob, error, stream, speechEnded, getVoicedMs, start, stop, reset };
+  return { isRecording, blob, error, stream, speechEnded, getVoicedMs, canDetectSpeech, start, stop, reset };
 }

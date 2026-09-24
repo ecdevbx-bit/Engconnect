@@ -2,8 +2,8 @@
 title: Runbook
 type: operations
 tags: [ops, local-dev, migrations]
-links: [operations/deployment, operations/credentials, architecture/database, architecture/gemini-key-pool]
-updated: 2026-09-22
+links: [operations/deployment, operations/credentials, operations/monitoring, architecture/database, architecture/gemini-key-pool]
+updated: 2026-09-24
 ---
 
 # Runbook
@@ -37,6 +37,10 @@ Checks: `npx tsc --noEmit` · `npx -y pnpm@11.0.8 lint` · `npx -y pnpm@11.0.8 b
 | `node scripts/pro-flow-probe.mjs [url]` | Trial status/apply, payment plans, /pro link, entitlement, and what a second login does to the first session |
 | `node scripts/wait-deploy.mjs <sha>` | Waits for Vercel to finish deploying that commit |
 | `node scripts/tail-prod-logs.mjs` | Streams production runtime logs for 4 min — reproduce the bug while it runs (how the Gemini 503s were found) |
+| `node scripts/jumble-hints-probe.mjs [url]` | Jumble hint ladder with a Hindi-speaking throwaway account: structure clue + meaning (cached on the 2nd call), word hints, half XP after the full sentence (D-043) |
+| `node scripts/audit-guards-probe.mjs [url]` | The audit guards (D-045): a browser can't mark shared keys invalid, ended K.AI sessions aren't billed, crafted/silent WAVs rejected without using quota, bad ids → 4xx. Starts one real K.AI session |
+| `node scripts/sentry-check.mjs [url]` | Proves production reports to Sentry: a deliberate API error (internal-key-only `POST /api/debug/sentry`) must show up tagged with its traceId, and a test event through the `/monitoring` tunnel must arrive (D-044) |
+| `node scripts/sentry-setup.mjs` | Sentry project + DSN + Vercel env (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`) — idempotent (D-044, [[operations/monitoring]]) |
 | `node scripts/vercel-setup.mjs` | Creates/links the Vercel project, sets env vars, triggers a deploy |
 
 ## Gemini keys
@@ -67,3 +71,4 @@ long paths.
 | Emails not arriving | built-in Supabase SMTP limit — configure custom SMTP |
 | `K.AI is busy right now` | Google 503 on the text model — transient, already retried + model fallback (D-040). Check `gemini_key_overview.last_error` |
 | Signed out when opening the app elsewhere | single-active-session by design (D-009) — the older device gets `SESSION_SUPERSEDED` |
+| A learner reports "Something went wrong" with a code | that's the `traceId` — search it in Sentry (tag `traceId`) for the stack ([[operations/monitoring]]) |

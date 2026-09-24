@@ -2,8 +2,8 @@
 title: Product overview
 type: overview
 tags: [product]
-links: [features/jumble-words, features/pronunciation, features/ai-partner, features/word-bank, features/progress-and-rewards, features/premium, features/admin, features/support, architecture/auth, architecture/system]
-updated: 2026-09-22
+links: [features/jumble-words, features/pronunciation, features/ai-partner, features/word-bank, features/progress-and-rewards, features/premium, features/admin, features/support, features/learn, architecture/auth, architecture/system, operations/monitoring]
+updated: 2026-09-24
 ---
 
 # English Connection — product overview
@@ -34,12 +34,20 @@ on every screen for reporting problems ([[features/support]]).
 
 ## The landing page
 `frontend/src/components/ShowcaseV4.tsx` (rendered by `src/app/page.tsx` for logged-out visitors;
-signed-in users are redirected to the dashboard). Glass editorial design built around the product:
-live-caption hero, "every mistake comes back as a fix", pronunciation respelling, jumble, AI Partner
-minutes, mixed-language strip, the scroll-driven **swipe** section (`components/landing/ScrollSwipe.tsx`),
-setup/voices, progress, reviews, plans, CTA. Demos mount only near the viewport
-(`components/landing/LazyMount.tsx`, `LazyDemos.tsx`); shared styles in `landing/landingStyles.ts`.
-One short line per section — the owner asked twice for less text (D-041).
+signed-in users are redirected to the dashboard). **Explained with figures, not text** (D-046, ~470
+words): animated live-call hero, a 3-step "How it works" flow diagram, the scroll-driven **swipe**
+(`components/landing/ScrollSwipe.tsx`) carrying a K.AI call timeline, jumble chips and a pronunciation
+figure, setup tiles (levels, 14 languages, 6 modes, 18 voices), progress widgets, one-line reviews, and
+Free vs Pro drawn on the same scale. Figures live in `components/landing/figures/` (HTML/SVG + CSS,
+`role="img"` + `aria-label`), animated by `landing/FigurePlayer.tsx` only while on screen. Glass style and
+lightness from D-041. A "Learn" link appears when the Learn library is public ([[features/learn]]).
+
+## Learn library
+Free grammar & speaking lessons at `/learn` (39 lessons, 4 tracks, 13 Pro), visual-first, behind an
+admin "show to everyone" switch — [[features/learn]].
+
+## Monitoring
+Errors are reported to Sentry (privacy-first, errors only) — [[operations/monitoring]].
 
 ## Business model
 Free tier with daily limits → Pro (trial program, invite link, later Razorpay subscriptions).

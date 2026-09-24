@@ -74,7 +74,9 @@ function reducer(s: State, a: Action): State {
       return { ...s, remainingMs: next };
     }
     case "START_RECORDING":
-      return { ...s, phase: "recording", remainingMs: s.recordDurationMs };
+      // Only from the countdown: a mic that opens late (slow permission
+      // prompt) must not pull a reset/left screen back into recording.
+      return s.phase === "countdown" ? { ...s, phase: "recording", remainingMs: s.recordDurationMs } : s;
     case "STOP_RECORDING":
       return {
         ...s,
@@ -115,6 +117,17 @@ export function useRecorderStateMachine() {
   const [state, dispatch] = useReducer(reducer, initial);
   const recorder = useMediaRecorder();
   const tickHandleRef = useRef<number | null>(null);
+  // The recording clock starts only once the mic is really on (the first
+  // take may sit on the browser's permission prompt).
+  const startingRef = useRef(false);
+  const beginRecording = useCallback(() => {
+    if (startingRef.current) return;
+    startingRef.current = true;
+    void recorder.start().then((started) => {
+      startingRef.current = false;
+      if (started) dispatch({ type: "START_RECORDING" });
+    });
+  }, [recorder]);
   const lastTickRef = useRef<number>(0);
 
   // Single ticker — runs continuously while in countdown or recording.
@@ -145,18 +158,15 @@ export function useRecorderStateMachine() {
 
   // Countdown hit zero → auto-start recording.
   useEffect(() => {
-    if (state.phase === "countdown" && state.remainingMs <= 0) {
-      void recorder.start();
-      dispatch({ type: "START_RECORDING" });
-    }
-  }, [state.phase, state.remainingMs, recorder]);
+    if (state.phase === "countdown" && state.remainingMs <= 0) beginRecording();
+  }, [state.phase, state.remainingMs, beginRecording]);
 
   // Recording hit auto-cut, or the learner finished speaking → stop and bank
   // the blob. The MediaRecorder produces the blob asynchronously via onstop;
   // it's attached by the next effect that watches recorder.blob.
   useEffect(() => {
     if (state.phase === "recording" && (state.remainingMs <= 0 || recorder.speechEnded)) {
-      const noSpeech = recorder.getVoicedMs() < MIN_VOICED_MS;
+      const noSpeech = recorder.canDetectSpeech() && recorder.getVoicedMs() < MIN_VOICED_MS;
       const dur = recorder.stop();
       dispatch({ type: "STOP_RECORDING", blob: null, durationMs: dur, noSpeech });
     }
@@ -190,13 +200,12 @@ export function useRecorderStateMachine() {
 
   const skipCountdown = useCallback(() => {
     if (state.phase !== "countdown") return;
-    void recorder.start();
-    dispatch({ type: "START_RECORDING" });
-  }, [state.phase, recorder]);
+    beginRecording();
+  }, [state.phase, beginRecording]);
 
   const stopRecording = useCallback(() => {
     if (state.phase !== "recording") return;
-    const noSpeech = recorder.getVoicedMs() < MIN_VOICED_MS;
+    const noSpeech = recorder.canDetectSpeech() && recorder.getVoicedMs() < MIN_VOICED_MS;
     const dur = recorder.stop();
     dispatch({ type: "STOP_RECORDING", blob: null, durationMs: dur, noSpeech });
   }, [state.phase, recorder]);

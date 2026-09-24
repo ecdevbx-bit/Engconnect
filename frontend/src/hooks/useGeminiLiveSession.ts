@@ -53,6 +53,17 @@ const BARGE_HOLD_MS = 1500;
 const POLL_MS = 200;
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
+// Fire-and-forget end for a session id (keepalive survives page unload).
+function sendEnd(id: string, token: string, body: Record<string, unknown>): void {
+  const sid = getSessionId();
+  void fetch(`${API_URL}/api/chat/sessions/${encodeURIComponent(id)}/end`, {
+    method: "POST",
+    keepalive: true,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(sid ? { "X-Session-Id": sid } : {}) },
+    body: JSON.stringify(body),
+  }).catch(() => {});
+}
+
 type LiveGrant = {
   token: string;
   wsUrl: string;
@@ -194,6 +205,8 @@ export function useGeminiLiveSession({
   const assistantTextRef = useRef("");
   const replyTimerRef = useRef<number | null>(null);
   const heartbeatRef = useRef<number | null>(null);
+  // Lets callbacks declared before close() (progress, reconnect) end the session.
+  const closeRef = useRef<() => void>(() => {});
   const speakingPollRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -308,7 +321,12 @@ export function useGeminiLiveSession({
         body: { speakingSeconds: speakingSeconds(), turns, usage: usageRef.current },
       });
       applyProgress(p);
-      if (!p.sessionActive) setError("This conversation was ended (maybe opened in another tab).");
+      if (!p.sessionActive) {
+        // Ended on the server (opened in another tab, swept as stale…): stop
+        // the mic, socket and heartbeat so nothing keeps running for it.
+        setError("This conversation was ended (maybe opened in another tab).");
+        closeRef.current();
+      }
     } catch (err) {
       pendingTurnsRef.current.unshift(...turns); // retry them next beat
       console.warn(`${LOG} progress failed`, err);
@@ -321,18 +339,12 @@ export function useGeminiLiveSession({
     const token = tokenRef.current;
     if (!id || !token || endedRef.current) return;
     endedRef.current = true;
-    const sid = getSessionId();
-    void fetch(`${API_URL}/api/chat/sessions/${encodeURIComponent(id)}/end`, {
-      method: "POST",
-      keepalive: true,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(sid ? { "X-Session-Id": sid } : {}) },
-      body: JSON.stringify({
-        speakingSeconds: speakingSeconds(),
-        turns: pendingTurnsRef.current.splice(0),
-        usage: usageRef.current,
-        reason,
-      }),
-    }).catch(() => {});
+    sendEnd(id, token, {
+      speakingSeconds: speakingSeconds(),
+      turns: pendingTurnsRef.current.splice(0),
+      usage: usageRef.current,
+      reason,
+    });
   }, []);
 
   // ── socket ───────────────────────────────────────────────────────
@@ -384,6 +396,7 @@ export function useGeminiLiveSession({
       if (!id || !token || closedRef.current) return;
       if (reconnectsRef.current >= MAX_RECONNECTS) {
         setError("Lost the connection to K.AI. Please start a new session.");
+        closeRef.current();
         return;
       }
       reconnectsRef.current += 1;
@@ -396,11 +409,11 @@ export function useGeminiLiveSession({
         resumeHandleRef.current = null;
         openSocket(res.live, "replay");
       } catch (err) {
-        if (err instanceof ApiError && err.code === AI_TIME_LIMIT_REACHED_CODE) {
-          setAiLimitReached(true);
-          return;
-        }
-        setError(err instanceof Error ? err.message : "Couldn't reconnect to K.AI.");
+        // Either way this conversation can't continue: end it so the
+        // heartbeat stops billing time against the learner's allowance.
+        if (err instanceof ApiError && err.code === AI_TIME_LIMIT_REACHED_CODE) setAiLimitReached(true);
+        else setError(err instanceof Error ? err.message : "Couldn't reconnect to K.AI.");
+        closeRef.current();
       }
     },
     [openSocket],
@@ -587,6 +600,7 @@ export function useGeminiLiveSession({
   // ── lifecycle ────────────────────────────────────────────────────
 
   const close = useCallback(() => {
+    if (closedRef.current && !wsRef.current && heartbeatRef.current === null) return; // already closed
     closedRef.current = true;
     clearReplyTimer();
     if (heartbeatRef.current !== null) window.clearInterval(heartbeatRef.current);
@@ -607,6 +621,9 @@ export function useGeminiLiveSession({
     commitTurns();
     postEnd("closed");
   }, [clearReplyTimer, closeMic, commitTurns, postEnd]);
+  useEffect(() => {
+    closeRef.current = close;
+  }, [close]);
 
   useEffect(() => {
     if (!enabled || !accessToken) return;
@@ -627,7 +644,12 @@ export function useGeminiLiveSession({
           method: "POST",
           body: { language: nativeLanguage, level, scenario, voice },
         });
-        if (cancelled) return;
+        if (cancelled) {
+          // Left the screen while the session was being created: end it now
+          // instead of leaving a live key slot held until the stale sweep.
+          sendEnd(res.sessionID, accessToken, { speakingSeconds: 0, turns: [], reason: "cancelled" });
+          return;
+        }
         // Fresh conversation: clear anything left from a previous session.
         setMessages([]);
         setError(null);

@@ -127,3 +127,21 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 - Runbook now documents building the COMMIT in a throwaway worktree before pushing (a filtered `tsc`
   hid a type error that only the clean build caught), plus the two new "common problems".
 - [[overview]] records where the landing page lives and how it's put together.
+
+## [2026-09-24] feature | Learn library + admin switch
+- 39 visual lessons in 4 tracks (13 Pro), server-side Pro gate, SEO metadata + JSON-LD, sitemap while
+  public. Admin "show to everyone" switch (starts OFF) on the admin home + feature flags
+  ([[features/learn]], [[features/admin]], D-042).
+
+## [2026-09-24] feature | Jumble hint ladder
+- Sentence shape (type, tense, blocks, meaning in the learner's script) → words → full sentence at half
+  XP; 💡 Hint button ([[features/jumble-words]], D-043).
+
+## [2026-09-24] ops | Sentry + code-audit hardening
+- Sentry errors-only monitoring with privacy filters ([[operations/monitoring]], D-044).
+- 17-finding audit, 15 fixed: shared keys can't be disabled by a browser, dead K.AI sessions don't bill,
+  AI-call timeouts, WAV validation, quota before scoring, recorder mic leak, safe fetch helpers
+  ([[operations/runbook]] probes, D-045).
+
+## [2026-09-24] ui | Landing explained with figures
+- ~1,000 → ~470 words; animated figures for every feature; scroll-swipe kept ([[overview]], D-046).

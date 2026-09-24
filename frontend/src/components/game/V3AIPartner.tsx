@@ -5,6 +5,7 @@
 // token). Kept as a separate file so the v1 code is untouched.
 
 import { useSession } from "@/lib/session";
+import { storageSeen } from "@/lib/safeStorage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { HelpCircle } from "lucide-react";
@@ -468,9 +469,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
 
   useEffect(() => {
     if (!started) return;
-    const seen =
-      typeof window !== "undefined" &&
-      window.localStorage.getItem(AI_PARTNER_TOUR_SEEN_KEY) === "1";
+    const seen = storageSeen(AI_PARTNER_TOUR_SEEN_KEY);
     const shouldStart = tourFlag === "1" || !seen;
     if (!shouldStart) return;
 

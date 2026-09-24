@@ -51,6 +51,10 @@ type Mode = "signin" | "signup";
 export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mode }) {
   const router = useRouter();
   const params = useSearchParams();
+  // Where to land after sign-in (e.g. back to a Learn lesson). Same-site paths
+  // only — never "//evil.com" or a full URL.
+  const nextParam = params?.get("next") ?? "";
+  const afterLogin = /^\/(?!\/)[\w\-/.?=&%#]*$/.test(nextParam) ? nextParam : "/dashboard";
   const notice = NOTICES[params?.get("reason") ?? ""] ?? NOTICES[params?.get("error") ?? ""] ?? null;
 
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -78,7 +82,7 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
   async function handleGoogle() {
     setGoogleLoading(true);
     try {
-      await googleSignIn("/dashboard");
+      await googleSignIn(afterLogin);
     } catch {
       emitToast({ type: "error", title: "Sign in failed", body: "We couldn't start Google sign-in. Please try again." });
       setGoogleLoading(false);
@@ -93,7 +97,7 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
       if (mode === "signin") {
         const res = await signInWithPassword(email, password);
         if (res.ok) {
-          router.replace("/dashboard");
+          router.replace(afterLogin);
           router.refresh();
           return;
         }

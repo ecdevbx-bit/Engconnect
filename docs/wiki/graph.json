@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T20:33:09.255Z",
+  "generatedAt": "2026-09-24T11:03:08.224Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -119,7 +119,7 @@
         "jumble",
         "xp"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-09-24",
       "path": "docs/wiki/features/jumble-words.md"
     },
     {
@@ -135,6 +135,19 @@
       ],
       "updated": "2026-09-22",
       "path": "docs/wiki/features/k-ai-instructions.md"
+    },
+    {
+      "id": "features/learn",
+      "title": "Learn library",
+      "type": "feature",
+      "tags": [
+        "learn",
+        "content",
+        "seo",
+        "pro"
+      ],
+      "updated": "2026-09-24",
+      "path": "docs/wiki/features/learn.md"
     },
     {
       "id": "features/premium",
@@ -205,7 +218,7 @@
       "title": "Wiki index",
       "type": "index",
       "tags": [],
-      "updated": "2026-09-22",
+      "updated": "2026-09-24",
       "path": "docs/wiki/index.md"
     },
     {
@@ -253,6 +266,19 @@
       "path": "docs/wiki/operations/deployment.md"
     },
     {
+      "id": "operations/monitoring",
+      "title": "Monitoring (Sentry)",
+      "type": "operations",
+      "tags": [
+        "ops",
+        "errors",
+        "sentry",
+        "privacy"
+      ],
+      "updated": "2026-09-24",
+      "path": "docs/wiki/operations/monitoring.md"
+    },
+    {
       "id": "operations/runbook",
       "title": "Runbook",
       "type": "operations",
@@ -261,7 +287,7 @@
         "local-dev",
         "migrations"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-09-24",
       "path": "docs/wiki/operations/runbook.md"
     },
     {
@@ -271,7 +297,7 @@
       "tags": [
         "product"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-09-24",
       "path": "docs/wiki/overview.md"
     },
     {
@@ -282,7 +308,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-09-24",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -614,6 +640,46 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-042",
+      "title": "Learn library (/learn) behind an admin \"show to everyone\" switch",
+      "type": "decision",
+      "date": "2026-09-24",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-043",
+      "title": "Jumble hint ladder starts with the sentence's shape; the full answer costs half XP",
+      "type": "decision",
+      "date": "2026-09-24",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-044",
+      "title": "Sentry for errors (errors only, privacy-first, EU region)",
+      "type": "decision",
+      "date": "2026-09-24",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-045",
+      "title": "Code-audit hardening (2026-09-24)",
+      "type": "decision",
+      "date": "2026-09-24",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-046",
+      "title": "Landing explains the product with figures, not text",
+      "type": "decision",
+      "date": "2026-09-24",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -670,6 +736,11 @@
       "source": "architecture/api",
       "target": "architecture/system",
       "kind": "links"
+    },
+    {
+      "source": "architecture/api",
+      "target": "D-043",
+      "kind": "cites"
     },
     {
       "source": "architecture/auth",
@@ -740,6 +811,11 @@
       "source": "architecture/database",
       "target": "features/progress-and-rewards",
       "kind": "links"
+    },
+    {
+      "source": "architecture/database",
+      "target": "D-043",
+      "kind": "cites"
     },
     {
       "source": "architecture/database",
@@ -888,6 +964,11 @@
     },
     {
       "source": "features/admin",
+      "target": "features/learn",
+      "kind": "links"
+    },
+    {
+      "source": "features/admin",
       "target": "features/progress-and-rewards",
       "kind": "links"
     },
@@ -909,6 +990,11 @@
     {
       "source": "features/admin",
       "target": "D-018",
+      "kind": "cites"
+    },
+    {
+      "source": "features/admin",
+      "target": "D-042",
       "kind": "cites"
     },
     {
@@ -978,6 +1064,11 @@
     },
     {
       "source": "features/jumble-words",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "features/jumble-words",
       "target": "features/admin",
       "kind": "links"
     },
@@ -990,6 +1081,11 @@
       "source": "features/jumble-words",
       "target": "architecture/api",
       "kind": "links"
+    },
+    {
+      "source": "features/jumble-words",
+      "target": "D-043",
+      "kind": "cites"
     },
     {
       "source": "features/k-ai-instructions",
@@ -1005,6 +1101,46 @@
       "source": "features/k-ai-instructions",
       "target": "D-032",
       "kind": "cites"
+    },
+    {
+      "source": "features/learn",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "features/learn",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "features/learn",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "features/learn",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "features/learn",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "features/learn",
+      "target": "overview",
+      "kind": "links"
+    },
+    {
+      "source": "features/learn",
+      "target": "D-042",
+      "kind": "cites"
+    },
+    {
+      "source": "features/premium",
+      "target": "features/learn",
+      "kind": "links"
     },
     {
       "source": "features/premium",
@@ -1203,6 +1339,11 @@
     },
     {
       "source": "index",
+      "target": "features/learn",
+      "kind": "links"
+    },
+    {
+      "source": "index",
       "target": "architecture/system",
       "kind": "links"
     },
@@ -1249,6 +1390,11 @@
     {
       "source": "index",
       "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "operations/monitoring",
       "kind": "links"
     },
     {
@@ -1334,6 +1480,16 @@
     {
       "source": "log",
       "target": "overview",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "features/learn",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "operations/monitoring",
       "kind": "links"
     },
     {
@@ -1462,6 +1618,31 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-042",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-043",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-044",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-045",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-046",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -1489,6 +1670,11 @@
     {
       "source": "operations/credentials",
       "target": "operations/deployment",
+      "kind": "links"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "operations/monitoring",
       "kind": "links"
     },
     {
@@ -1527,6 +1713,11 @@
       "kind": "cites"
     },
     {
+      "source": "operations/credentials",
+      "target": "D-044",
+      "kind": "cites"
+    },
+    {
       "source": "operations/deployment",
       "target": "operations/runbook",
       "kind": "links"
@@ -1545,6 +1736,41 @@
       "source": "operations/deployment",
       "target": "D-022",
       "kind": "cites"
+    },
+    {
+      "source": "operations/monitoring",
+      "target": "architecture/gemini-key-pool",
+      "kind": "links"
+    },
+    {
+      "source": "operations/monitoring",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "operations/monitoring",
+      "target": "operations/runbook",
+      "kind": "links"
+    },
+    {
+      "source": "operations/monitoring",
+      "target": "operations/deployment",
+      "kind": "links"
+    },
+    {
+      "source": "operations/monitoring",
+      "target": "architecture/api",
+      "kind": "links"
+    },
+    {
+      "source": "operations/monitoring",
+      "target": "D-044",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "operations/monitoring",
+      "kind": "links"
     },
     {
       "source": "operations/runbook",
@@ -1574,6 +1800,21 @@
     {
       "source": "operations/runbook",
       "target": "D-038",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "D-043",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "D-045",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "D-044",
       "kind": "cites"
     },
     {
@@ -1628,6 +1869,16 @@
     },
     {
       "source": "overview",
+      "target": "features/learn",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "operations/monitoring",
+      "kind": "links"
+    },
+    {
+      "source": "overview",
       "target": "architecture/system",
       "kind": "links"
     },
@@ -1635,6 +1886,11 @@
       "source": "overview",
       "target": "features/admin",
       "kind": "links"
+    },
+    {
+      "source": "overview",
+      "target": "D-046",
+      "kind": "cites"
     },
     {
       "source": "overview",
@@ -1678,57 +1934,37 @@
     },
     {
       "source": "memory/status",
-      "target": "D-031",
+      "target": "D-044",
       "kind": "cites"
     },
     {
       "source": "memory/status",
-      "target": "D-032",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-033",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-034",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-035",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-038",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-036",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-037",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-039",
-      "kind": "cites"
-    },
-    {
-      "source": "memory/status",
-      "target": "D-040",
+      "target": "D-001",
       "kind": "cites"
     },
     {
       "source": "memory/status",
       "target": "D-041",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-042",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-043",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-045",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-046",
       "kind": "cites"
     },
     {

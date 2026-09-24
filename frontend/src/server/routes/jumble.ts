@@ -10,11 +10,13 @@ import {
   type Difficulty,
   type ProblemRow,
 } from "../domain/problems";
-import { awardProgress, bumpUsage, getAttributes, isPro, setCursor, usageToday } from "../domain/users";
+import { awardProgress, bumpUsage, getAttributes, isPro, istDate, setCursor, usageToday } from "../domain/users";
+import { getJumbleClue } from "../gemini/jumbleClue";
 import { requireUser } from "../guards";
 import { fail, int, ok, readJson } from "../http";
 import type { Router } from "../router";
 import { getSettings } from "../settings";
+import { db } from "../supabase";
 
 // Jumble Words — see docs/wiki/features/jumble-words.md for the learner's view.
 //
@@ -23,6 +25,9 @@ import { getSettings } from "../settings";
 //    per-learner cursor per band. The cursor only moves on a CORRECT answer,
 //    so unsolved sentences come back in the next round.
 //  * The answer never leaves the server (except the level-3 "full" hint).
+//  * Hints (D-043): a structure clue first (sentence type, tense, building
+//    blocks in order, meaning in the learner's language), then words by level.
+//    Seeing the full sentence (level 3) halves that sentence's XP today.
 //  * XP: easy 10 · medium 15 · hard 25; progressive by variant 1/2/3+ →
 //    10/15/25, plus the admin "set bonus" when the last variant of a set is
 //    solved. XP for a given sentence is paid at most once per IST day.
@@ -56,6 +61,28 @@ async function lookup(body: { difficulty: Difficulty; order?: number; base?: num
   return p;
 }
 
+// order/base/variant identify a sentence in GET query strings.
+function lookupFromQuery(query: URLSearchParams) {
+  return lookup({
+    difficulty: parseDifficulty(query.get("difficulty")),
+    order: query.has("order") ? int(query.get("order"), "order") : undefined,
+    base: query.has("base") ? int(query.get("base"), "base") : undefined,
+    variant: query.has("variant") ? int(query.get("variant"), "variant") : undefined,
+  });
+}
+
+// Highest hint level the learner opened for this sentence today (0 = none).
+async function hintLevelToday(userId: string, problemId: number): Promise<number> {
+  const { data } = await db()
+    .from("jumble_hint_uses")
+    .select("max_level")
+    .eq("user_id", userId)
+    .eq("problem_id", problemId)
+    .eq("day", istDate(new Date()))
+    .maybeSingle();
+  return (data?.max_level as number | undefined) ?? 0;
+}
+
 export function registerJumbleRoutes(r: Router) {
   r.on("GET", "/game/jumble/batch", async ({ req, query }) => {
     const u = await requireUser(req);
@@ -83,16 +110,26 @@ export function registerJumbleRoutes(r: Router) {
 
   // Progressive hint: level 1 = first+last word, 2 = also 2nd and 2nd-last,
   // 3 = everything + the full sentence. Hidden words only reveal their length.
-  r.on("GET", "/game/jumble/hint", async ({ req, query }) => {
-    await requireUser(req);
-    const d = parseDifficulty(query.get("difficulty"));
-    const level = int(query.get("level"), "level", { min: 1, max: 3 });
-    const p = await lookup({
-      difficulty: d,
-      order: query.has("order") ? int(query.get("order"), "order") : undefined,
-      base: query.has("base") ? int(query.get("base"), "base") : undefined,
-      variant: query.has("variant") ? int(query.get("variant"), "variant") : undefined,
+  // Structure clue (first hint): never reveals a word's position.
+  r.on("GET", "/game/jumble/clue", async ({ req, query }) => {
+    const u = await requireUser(req);
+    const p = await lookupFromQuery(query);
+    const { data: prof } = await db().from("profiles").select("native_lang").eq("id", u.id).maybeSingle();
+    const clue = await getJumbleClue({
+      userId: u.id,
+      problemId: p.id,
+      sentence: p.final,
+      nativeLang: (prof?.native_lang as string | undefined) ?? "",
     });
+    return ok(clue);
+  });
+
+  r.on("GET", "/game/jumble/hint", async ({ req, query }) => {
+    const u = await requireUser(req);
+    const level = int(query.get("level"), "level", { min: 1, max: 3 });
+    const p = await lookupFromQuery(query);
+    const { error: logErr } = await db().rpc("record_jumble_hint", { p_user: u.id, p_problem: p.id, p_level: level });
+    if (logErr) console.warn("[jumble] could not record hint use:", logErr.message);
     const words = tokens(p.final);
     const n = words.length;
     const shown = new Set<number>();
@@ -147,7 +184,9 @@ export function registerJumbleRoutes(r: Router) {
       setComplete = (p.variant ?? 0) >= maxVariant;
     }
 
-    const baseXp = xpFor(p);
+    // The full sentence was shown (level-3 hint) → half XP for this one.
+    const gaveAway = (await hintLevelToday(u.id, p.id)) >= 3;
+    const baseXp = gaveAway ? Math.ceil(xpFor(p) / 2) : xpFor(p);
     const paid = await claimDailyReward(u.id, p.id, baseXp);
     const bonus = paid && setComplete ? (await getSettings("jumble")).progressiveSetBonusXp : 0;
     const xp = paid ? baseXp + bonus : 0;
@@ -175,6 +214,7 @@ export function registerJumbleRoutes(r: Router) {
       leveledUp: res.leveledUp,
       combo: res.combo,
       newlyEarnedBadges: res.newlyEarnedBadges,
+      hintPenalty: gaveAway && paid,
       ...(d === "progressive" ? { progressiveSetComplete: setComplete, setBonusXp: bonus } : {}),
     });
   });

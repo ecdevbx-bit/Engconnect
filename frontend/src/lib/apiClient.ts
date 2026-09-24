@@ -96,6 +96,24 @@ export class ApiError extends Error {
   }
 }
 
+// Read an API body without trusting it to be JSON: Vercel's own 413/502/504
+// pages are HTML, and res.json() would surface "Unexpected token <".
+export async function readJsonSafe<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  try {
+    return (text ? JSON.parse(text) : {}) as T;
+  } catch {
+    throw new ApiError(
+      `HTTP_${res.status}`,
+      res.status === 413
+        ? "That upload was too large."
+        : res.status >= 500
+          ? "The server took too long to answer. Please try again."
+          : "Unexpected response from the server. Please try again.",
+    );
+  }
+}
+
 export async function v3Fetch<T>(
   path: string,
   idToken: string,

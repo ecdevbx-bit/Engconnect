@@ -7,7 +7,10 @@
 //   GET  /api/pronunciation/attempts?limit=
 
 import { toWav16k } from "@/audio/toWav";
+import { ApiError, readJsonSafe, v3Fetch } from "./apiClient";
 import { freshAccessToken } from "./freshToken";
+import { getSessionId } from "./sessionId";
+import { handleSessionSuperseded, SESSION_SUPERSEDED_CODE } from "./sessionSupersede";
 
 import { DAILY_QUOTA_REACHED_CODE, triggerQuotaPrompt } from "./quotaPrompt";
 
@@ -133,17 +136,12 @@ export async function v3FetchPronunciationPhrase(
   sessionOffset: number,
 ): Promise<PronunciationPhrase> {
   const params = new URLSearchParams({ difficulty, sessionOffset: String(sessionOffset) });
-  const res = await fetch(`${API_URL}/api/pronunciation/phrases?${params.toString()}`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${accessToken}` },
-    cache: "no-store",
-  });
-  const body = (await res.json()) as Envelope<PronunciationPhrase>;
-  if (!res.ok || !body.success || !body.data) {
-    if (body.errorCode === DAILY_QUOTA_REACHED_CODE) triggerQuotaPrompt("pronunciation", difficulty);
-    throw envelopeError(body, "Failed to load phrase");
+  try {
+    return await v3Fetch<PronunciationPhrase>(`/pronunciation/phrases?${params.toString()}`, accessToken);
+  } catch (err) {
+    if (err instanceof ApiError && err.code === DAILY_QUOTA_REACHED_CODE) triggerQuotaPrompt("pronunciation", difficulty);
+    throw err;
   }
-  return body.data;
 }
 
 export async function v3SubmitPronunciationAttempt(
@@ -165,10 +163,11 @@ export async function v3SubmitPronunciationAttempt(
   form.append("difficulty", args.difficulty);
   form.append("durationMs", String(args.durationMs));
 
+  const sid = getSessionId();
   const send = (token: string) =>
     fetch(`${API_URL}/api/pronunciation/attempts`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...(sid ? { "X-Session-Id": sid } : {}) },
       body: form,
     });
   let res = await send(accessToken);
@@ -177,8 +176,10 @@ export async function v3SubmitPronunciationAttempt(
     const fresh = await freshAccessToken(accessToken);
     if (fresh) res = await send(fresh);
   }
-  const body = (await res.json()) as Envelope<PronunciationAttemptResult>;
+  const body = await readJsonSafe<Envelope<PronunciationAttemptResult>>(res);
   if (!res.ok || !body.success || !body.data) {
+    if (body.errorCode === SESSION_SUPERSEDED_CODE) handleSessionSuperseded();
+    if (body.errorCode === DAILY_QUOTA_REACHED_CODE) triggerQuotaPrompt("pronunciation", args.difficulty);
     throw envelopeError(body, "Failed to score attempt");
   }
   return body.data;
@@ -188,14 +189,6 @@ export async function v3ListPronunciationAttempts(
   accessToken: string,
   limit = 20,
 ): Promise<PronunciationHistoryRow[]> {
-  const res = await fetch(`${API_URL}/api/pronunciation/attempts?limit=${limit}`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${accessToken}` },
-    cache: "no-store",
-  });
-  const body = (await res.json()) as Envelope<{ attempts: PronunciationHistoryRow[] }>;
-  if (!res.ok || !body.success || !body.data) {
-    throw envelopeError(body, "Failed to load history");
-  }
-  return body.data.attempts ?? [];
+  const data = await v3Fetch<{ attempts: PronunciationHistoryRow[] }>(`/pronunciation/attempts?limit=${limit}`, accessToken);
+  return data?.attempts ?? [];
 }

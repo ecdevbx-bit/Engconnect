@@ -3,7 +3,7 @@
 
 import type { ComponentType } from "react";
 import { KaiIcon } from "@/components/layout/navIcons";
-import { User, Puzzle, House, Speech, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, Link2, ToggleRight, KeyRound, LayoutGrid, Inbox, BadgeCheck, BookOpen } from "lucide-react";
+import { User, Puzzle, House, Speech, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, Link2, ToggleRight, KeyRound, LayoutGrid, Inbox, BadgeCheck, BookOpen, GraduationCap } from "lucide-react";
 
 export interface NavItem {
   id: string;
@@ -34,6 +34,16 @@ export const accountMenu: NavItem[] = [
     description: "Review your recent sessions",
   },
 ];
+
+/** Account-dropdown row for the Learn library — shown only while it's visible
+ *  (admin switch ON, or to admins); see hooks/useLearnVisible.ts. */
+export const learnMenuItem: NavItem = {
+  id: "learn",
+  label: "Learn",
+  href: "/learn",
+  icon: GraduationCap,
+  description: "Free grammar lessons with pictures and examples",
+};
 
 /** Admin-only rows in the account dropdown. Rendered only when user.isAdmin is true. */
 export const adminMenu: NavItem[] = [

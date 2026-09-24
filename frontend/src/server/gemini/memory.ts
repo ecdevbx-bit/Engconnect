@@ -5,6 +5,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { env } from "../env";
 import { db } from "../supabase";
 import { withTextKey } from "./keyPool";
+import { parseModelJson } from "./textModel";
 
 // After an AI Partner session, compile the transcript into the learner's
 // long-term memory (summary + recurring mistakes + vocabulary). The next
@@ -65,7 +66,7 @@ export async function compileSessionMemory(userId: string, sessionId: string): P
     .slice(-12000);
 
   const { result } = await withTextKey(userId, async (apiKey) => {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: 20_000 } });
     const res = await ai.models.generateContent({
       model: env.geminiTextModel(),
       contents: [
@@ -88,11 +89,11 @@ Return:
       ],
       config: { responseMimeType: "application/json", responseSchema: SCHEMA, temperature: 0.2, maxOutputTokens: 1500 },
     });
-    return JSON.parse(res.text ?? "{}") as {
+    return parseModelJson<{
       summary?: string;
       mistakes?: { wrong: string; correct: string; why?: string }[];
       vocabulary?: { word: string; meaning?: string }[];
-    };
+    }>(res);
   });
 
   const now = new Date().toISOString();

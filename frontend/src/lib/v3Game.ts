@@ -7,19 +7,9 @@
 // MainLayout.tsx only has to branch on the flag — no field renaming
 // downstream.
 
-import type { JumbleBatch, SubmitJumbleAnswerRequest, SubmitJumbleAnswerResponse } from "./apiClient";
-import { getSessionId } from "./sessionId";
-import { handleSessionSuperseded, SESSION_SUPERSEDED_CODE } from "./sessionSupersede";
+import { ApiError, v3Fetch, type JumbleBatch, type SubmitJumbleAnswerRequest, type SubmitJumbleAnswerResponse } from "./apiClient";
 import { DAILY_QUOTA_REACHED_CODE, difficultyFromPath, gameFromPath, QuotaReachedError, triggerQuotaPrompt } from "./quotaPrompt";
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
-
-// Stamp the single-active-session header when we have one. Empty until login
-// (or for pre-rollout sessions) — the backend treats a missing id as inert.
-function sessionHeaders(): Record<string, string> {
-  const sid = getSessionId();
-  return sid ? { "X-Session-Id": sid } : {};
-}
 
 type V3Sentence = {
   position: number;
@@ -32,47 +22,25 @@ type V3Sentence = {
 
 type V3BatchResponse = { sentences: V3Sentence[] };
 
-type V3Envelope<T> = { success: boolean; message: string; data?: T; errorCode?: string };
-
-async function v3Get<T>(path: string, accessToken: string): Promise<T> {
-  const res = await fetch(`${API_URL}/api${path}`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${accessToken}`, ...sessionHeaders() },
-    cache: "no-store",
-  });
-  const body = (await res.json()) as V3Envelope<T>;
-  if (!res.ok || !body.success) {
-    if (body.errorCode === SESSION_SUPERSEDED_CODE) handleSessionSuperseded();
-    if (body.errorCode === DAILY_QUOTA_REACHED_CODE) {
+// Through v3Fetch: non-JSON error pages, an expired token (refresh + retry)
+// and "signed in elsewhere" are handled there; the daily-quota prompt here.
+async function v3Call<T>(path: string, accessToken: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+  try {
+    return await v3Fetch<T>(path, accessToken, init);
+  } catch (err) {
+    if (err instanceof ApiError && err.code === DAILY_QUOTA_REACHED_CODE) {
       const game = gameFromPath(path);
       const difficulty = difficultyFromPath(path);
       triggerQuotaPrompt(game, difficulty);
-      throw new QuotaReachedError(body.message ?? "Daily limit reached", game, difficulty);
+      throw new QuotaReachedError(err.message || "Daily limit reached", game, difficulty);
     }
-    throw new Error(body.message ?? `v3 GET ${path} failed`);
+    throw err;
   }
-  return body.data as T;
 }
 
-async function v3Post<T>(path: string, accessToken: string, payload: unknown): Promise<T> {
-  const res = await fetch(`${API_URL}/api${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, ...sessionHeaders() },
-    body: JSON.stringify(payload),
-  });
-  const body = (await res.json()) as V3Envelope<T>;
-  if (!res.ok || !body.success) {
-    if (body.errorCode === SESSION_SUPERSEDED_CODE) handleSessionSuperseded();
-    if (body.errorCode === DAILY_QUOTA_REACHED_CODE) {
-      const game = gameFromPath(path);
-      const difficulty = difficultyFromPath(path);
-      triggerQuotaPrompt(game, difficulty);
-      throw new QuotaReachedError(body.message ?? "Daily limit reached", game, difficulty);
-    }
-    throw new Error(body.message ?? `v3 POST ${path} failed`);
-  }
-  return body.data as T;
-}
+const v3Get = <T,>(path: string, accessToken: string) => v3Call<T>(path, accessToken);
+const v3Post = <T,>(path: string, accessToken: string, payload: unknown) =>
+  v3Call<T>(path, accessToken, { method: "POST", body: payload });
 
 // Normalise difficulty casing to match the v1 wire shape the UI expects.
 function upperDifficulty(d: string): "EASY" | "MEDIUM" | "HARD" | "PROGRESSIVE" {
@@ -131,6 +99,29 @@ export async function v3FetchJumbleHint(
   if (params.variant != null) qp.variant = String(params.variant);
   const qs = new URLSearchParams(qp).toString();
   return v3Get<V3JumbleHint>(`/game/jumble/hint?${qs}`, accessToken);
+}
+
+// Structure clue — the first hint (D-043): sentence type, tense, building
+// blocks in order and the meaning in the learner's own language. Reveals no
+// word positions.
+export type V3JumbleClue = {
+  kind: "statement" | "question" | "negative" | "command" | "exclamation";
+  tense: string;
+  pattern: string[];
+  clue: string;
+  meaning: string;
+  meaningLang: string;
+  source: "ai" | "basic";
+};
+
+export async function v3FetchJumbleClue(
+  accessToken: string,
+  params: { order: number; difficulty: string; base?: number; variant?: number },
+): Promise<V3JumbleClue> {
+  const qp: Record<string, string> = { order: String(params.order), difficulty: params.difficulty.toLowerCase() };
+  if (params.base != null) qp.base = String(params.base);
+  if (params.variant != null) qp.variant = String(params.variant);
+  return v3Get<V3JumbleClue>(`/game/jumble/clue?${new URLSearchParams(qp).toString()}`, accessToken);
 }
 
 export type V3UserAttributes = {
@@ -208,19 +199,7 @@ export async function v3PatchMyProfile(
   accessToken: string,
   patch: Partial<Pick<V3MeProfile, "name" | "phone" | "location" | "nativeLang" | "currentStatus" | "englishReason" | "goals" | "hobbies" | "avatar">>,
 ): Promise<V3MeProfile> {
-  const res = await fetch(`${API_URL}/api/users/me`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(patch),
-  });
-  const body = (await res.json()) as { success: boolean; message: string; data?: V3MeProfile };
-  if (!res.ok || !body.success) {
-    throw new Error(body.message ?? "Update failed");
-  }
-  return body.data as V3MeProfile;
+  return v3Call<V3MeProfile>("/users/me", accessToken, { method: "PATCH", body: patch });
 }
 
 // ─── Levels ──────────────────────────────────────────────────────────────

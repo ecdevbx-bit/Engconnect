@@ -7,6 +7,7 @@
 //   <SessionProvider>, signOut({ callbackUrl, redirect }), signIn("google", { callbackUrl })
 // Plus email/password helpers for the new sign-in form.
 
+import { setUser as setSentryUser } from "@sentry/nextjs";
 import type { Session as SupabaseSession } from "@supabase/supabase-js";
 import { jwtDecode } from "jwt-decode";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -109,10 +110,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [authSession]);
   const uid = authSession?.user?.id ?? null;
 
+  // Error reports carry only the opaque account id (lib/sentryScrub.ts).
+  useEffect(() => {
+    setSentryUser(uid ? { id: uid } : null);
+  }, [uid]);
+
   const loadProfile = useCallback(async () => {
     const token = tokenRef.current;
     if (!token) return null;
-    const { user, code } = await fetchSessionUser(token);
+    let { user, code } = await fetchSessionUser(token);
+    if (code === "SESSION_SUPERSEDED") {
+      // Right after a sign-in this GET can race POST /session/start (which
+      // records the new login). Ask once more before signing the learner out.
+      await new Promise((r) => setTimeout(r, 1500));
+      ({ user, code } = await fetchSessionUser(tokenRef.current || token));
+    }
     if (code === "SESSION_SUPERSEDED") {
       await supabase.auth.signOut({ scope: "local" });
       window.location.assign("/login?reason=signed_in_elsewhere");

@@ -58,7 +58,11 @@ function match(pattern: string[], parts: string[]): Record<string, string> | nul
   for (let i = 0; i < pattern.length; i++) {
     const p = pattern[i];
     if (p.startsWith(":")) {
-      params[p.slice(1)] = decodeURIComponent(parts[i]);
+      try {
+        params[p.slice(1)] = decodeURIComponent(parts[i]);
+      } catch {
+        return null; // malformed %-escape → no route matches → 404, not a 500
+      }
     } else if (p !== parts[i]) {
       return null;
     }

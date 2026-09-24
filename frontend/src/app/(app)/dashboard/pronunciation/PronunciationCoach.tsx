@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { storageSeen } from "@/lib/safeStorage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HelpCircle, Mic } from "lucide-react";
 import { useNextStep } from "nextstepjs";
@@ -176,9 +177,7 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
   // is stripped afterwards so a reload won't re-trigger it.
   const tourFlag = searchParams?.get(PRONUNCIATION_TOUR_QUERY);
   useEffect(() => {
-    const seen =
-      typeof window !== "undefined" &&
-      window.localStorage.getItem(PRONUNCIATION_TOUR_SEEN_KEY) === "1";
+    const seen = storageSeen(PRONUNCIATION_TOUR_SEEN_KEY);
     const shouldStart = tourFlag === "1" || !seen;
     if (!shouldStart) return;
 

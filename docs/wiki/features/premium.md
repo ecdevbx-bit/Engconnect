@@ -2,7 +2,7 @@
 title: Premium (Pro)
 type: feature
 tags: [premium, pro, trial, payments, quotas]
-links: [features/admin, features/jumble-words, features/pronunciation, features/ai-partner]
+links: [features/learn, features/admin, features/jumble-words, features/pronunciation, features/ai-partner]
 updated: 2026-09-22
 ---
 
@@ -37,3 +37,7 @@ Over-limit responses: `DAILY_QUOTA_REACHED` (games) / `AI_TIME_LIMIT_REACHED` (A
    until `RAZORPAY_*` env vars are set. The plans UI component exists but isn't mounted.
 
 Feedback (`POST /api/feedback`) is collected for everyone; it no longer affects Pro.
+
+## Pro in the Learn library
+13 of the 39 [[features/learn]] lessons are Pro (Advanced track, most of Speaking & Career, two
+Intermediate). Non-Pro visitors see a preview (first section) and an "Unlock with Pro" card.

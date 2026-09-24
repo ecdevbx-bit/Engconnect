@@ -121,8 +121,27 @@ export function isModelBusy(status: number | undefined, message: string): boolea
     m.includes("overloaded") ||
     m.includes("unavailable") ||
     m.includes("try again later") ||
-    m.includes("internal error")
+    m.includes("internal error") ||
+    // our own per-call timeout (httpOptions.timeout): the model is slow, not the key
+    m.includes("timed out") ||
+    m.includes("timeout")
   );
+}
+
+// The model answered but its output was unusable (cut off, not JSON). Not the
+// key's fault — retried like a busy model, then the next model is tried.
+export class ModelOutputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ModelOutputError";
+  }
+}
+
+// "models/x is not found" / not supported: another key won't help, another
+// model might (withTextModel moves on).
+export function isModelMissing(status: number | undefined, message: string): boolean {
+  const m = (message || "").toLowerCase();
+  return status === 404 || m.includes("is not found for api version") || m.includes("not supported for generatecontent");
 }
 
 export function errorStatus(err: unknown): number | undefined {
@@ -140,11 +159,18 @@ export async function withTextKey<T>(
   userId: string | null,
   fn: (apiKey: string) => Promise<T>,
   maxAttempts = 3,
+  // Epoch ms after which no new attempt starts (keeps a request under the
+  // function's time limit when the model is slow).
+  deadline?: number,
 ): Promise<{ result: T; keyLabel: string }> {
   const tried: string[] = [];
   let lastError = "";
   let busy = false;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (deadline && attempt > 0 && Date.now() > deadline) {
+      busy = true;
+      break;
+    }
     // A busy model is worth retrying on the same keys; a bad key is not.
     const lease = await leaseKey(userId, "text", 90, busy ? [] : tried);
     if (!lease) break;
@@ -155,7 +181,11 @@ export async function withTextKey<T>(
       return { result, keyLabel: lease.keyLabel };
     } catch (err) {
       lastError = errorMessage(err);
-      if (isModelBusy(errorStatus(err), lastError)) {
+      if (isModelMissing(errorStatus(err), lastError)) {
+        await releaseLease(lease.leaseId, "ok");
+        throw err;
+      }
+      if (err instanceof ModelOutputError || isModelBusy(errorStatus(err), lastError)) {
         // The key is fine — keep it in rotation and wait a moment.
         busy = true;
         await releaseLease(lease.leaseId, "ok");

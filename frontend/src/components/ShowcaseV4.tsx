@@ -1,21 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Space_Grotesk } from "next/font/google";
-import type { CSSProperties, ReactNode } from "react";
-import {
-  ArrowRight,
-  BriefcaseBusiness,
-  Building2,
-  Coffee,
-  GraduationCap,
-  MessageCircle,
-  Mic,
-  Plane,
-  Sparkles,
-  Star,
-  Target,
-  type LucideIcon,
-} from "lucide-react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
+import { ArrowRight, Sparkles, Star, Timer } from "lucide-react";
 
 import { CONTACT_NUMBERS, telLink, formatNumber } from "@/config/contact";
 import {
@@ -27,26 +14,37 @@ import {
 import AccountChip from "@/components/layout/AccountChip";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { KaiFigure } from "@/components/landing/KaiFigure";
-import { LazyDemo, type LazyDemoKind } from "@/components/landing/LazyDemos";
+import { FigurePlayer } from "@/components/landing/FigurePlayer";
 import { MascotEmotionMarquee } from "@/components/landing/MascotEmotionMarquee";
-import PlatformInsights from "@/components/landing/PlatformInsights";
 import { ReviewsSwipe, StepsSwipe } from "@/components/landing/ScrollSwipe";
 import { LANDING_CSS } from "@/components/landing/landingStyles";
+import { FIGURE_CSS } from "@/components/landing/figures/figureStyles";
+import { HeroCall } from "@/components/landing/figures/HeroCall";
+import { FlowDiagram } from "@/components/landing/figures/FlowDiagram";
+import { CallTimeline } from "@/components/landing/figures/CallTimeline";
+import { JumbleFigure } from "@/components/landing/figures/JumbleFigure";
+import { PronunciationFigure } from "@/components/landing/figures/PronunciationFigure";
+import { LanguageOrbit, LevelLadder, ModeGrid, VoiceBars } from "@/components/landing/figures/SetupFigures";
+import { BadgeShelf, Podium, StreakDots, XpRing } from "@/components/landing/figures/ProgressFigures";
+import { PlansCompare } from "@/components/landing/figures/PlansCompare";
+import { Wave, cssVars } from "@/components/landing/figures/Wave";
 
 // The public landing page (rendered by app/page.tsx for logged-out visitors).
 //
-// Editorial layout — big confident type, asymmetric/bento sections, the real
-// product UI in frosted-glass frames — over a softly lit gradient stage, in
-// BOTH themes (follows the next-themes toggle: orange on dark, Lumina blue on
-// light). Copy is specific and product-true: the Hindi/Tamil/… phrases are
-// K.AI's own (server/gemini/tutorPrompt.ts), the "WENZ-day" respelling is the
-// Pronunciation Coach's syllables/native-script output (server/gemini/scoring.ts).
+// Owner's brief: explain the product with diagrams and figures, as little text
+// as possible (plus: glass, light, keep the scroll swipe). So each section is one
+// short heading (≤ 6 words), at most one line, and a figure that carries the
+// meaning: the hero call card, the 3-step flow, a call timeline (hands-free),
+// jumble chips sorting themselves, the pronunciation pipeline, the level
+// staircase, the language orbit, progress widgets and a same-scale Free/Pro
+// comparison. Figure labels stay ≤ 3 words; every figure has role="img" and a
+// full aria-label, so screen readers still get the whole explanation.
 //
-// A Server Component on purpose: static content ships as plain HTML. Client
-// code is limited to the nav (theme toggle + account chip), the lazily mounted
-// demos (landing/LazyDemos) and the two scroll swipes (landing/ScrollSwipe —
-// GSAP is imported on demand, never for reduced motion). Everything else
-// animates with CSS (landing/landingStyles).
+// A Server Component on purpose: the figures are plain HTML/SVG animated by CSS
+// (landing/figures/figureStyles). Client code is limited to the nav (theme
+// toggle + account chip), FigurePlayer (starts a figure's animation when it's on
+// screen), the mascot emotion picker and the two scroll swipes (landing/
+// ScrollSwipe — GSAP is imported on demand, never for reduced motion).
 
 // Display face for the big headings — self-hosted by next/font (no render-
 // blocking Google Fonts @import), exposed as --ff-kinetic.
@@ -54,14 +52,17 @@ const kinetic = Space_Grotesk({ subsets: ["latin"], variable: "--ff-kinetic", di
 
 const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 
-const INDIAN_LANGUAGES = AI_PARTNER_LANGUAGES.length - 1; // minus "English only"
-
-export default function ShowcaseV4() {
+// showLearn: the Learn library is public (admin switch ON, D-042) — adds it to
+// the header and footer, which also gives search engines a path to the lessons.
+export default function ShowcaseV4({ showLearn = false }: { showLearn?: boolean }) {
+  const navLinks = showLearn ? [...NAV_LINKS, { label: "Learn", href: "/learn" }] : NAV_LINKS;
+  const webappLinks = showLearn ? [...FOOTER_WEBAPP, { label: "Learn English free", href: "/learn" }] : FOOTER_WEBAPP;
   return (
     <div
       className={`lp ${kinetic.variable} relative isolate min-h-dvh overflow-x-clip bg-background font-body text-body antialiased`}
     >
-      <style>{LANDING_CSS}</style>
+      <style>{LANDING_CSS + FIGURE_CSS}</style>
+      <FigurePlayer />
 
       <a
         href="#main"
@@ -98,7 +99,7 @@ export default function ShowcaseV4() {
               </span>
             </Link>
             <ul className="hidden items-center gap-1 lg:flex">
-              {NAV_LINKS.map((l) => (
+              {navLinks.map((l) => (
                 <li key={l.href}>
                   <a
                     href={l.href}
@@ -124,23 +125,23 @@ export default function ShowcaseV4() {
           className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-28 sm:pt-36 lg:min-h-[100svh] lg:grid-cols-12 lg:gap-8 lg:pb-20"
         >
           <div className="lg:col-span-7">
-            <p className="lp-rise text-xs font-bold uppercase tracking-[0.16em] text-primary sm:text-sm sm:tracking-[0.24em]">
-              English Connection · K.AI voice tutor
+            <p className="lp-rise inline-flex items-center gap-2 rounded-full border border-border bg-surface-1/40 px-3.5 py-2">
+              <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+              <span className="lp-tag text-heading">Hands-free voice tutor</span>
             </p>
             <h1
               id="hero-title"
-              className="lp-kinetic mt-5 text-[3.1rem] font-bold leading-[0.98] text-heading min-[400px]:text-[3.5rem] sm:text-7xl lg:text-[5.6rem]"
+              className="lp-kinetic mt-6 text-[3.1rem] font-bold leading-[0.98] text-heading min-[400px]:text-[3.5rem] sm:text-7xl lg:text-[5.6rem]"
             >
               {/* One masked block (not per-line spans) so phones wrap it naturally. */}
               <span className="lp-mask">
                 <span>
-                  Speak English with a tutor that <span className="lp-grad-text">talks back.</span>
+                  Speak English. <span className="lp-grad-text">K.AI talks back.</span>
                 </span>
               </span>
             </h1>
             <p className="lp-rise mt-7 max-w-xl text-lg leading-relaxed text-body sm:text-xl" style={delay(140)}>
-              Just talk. K.AI replies out loud and fixes your English — in English, or mixed with
-              your own language.
+              Just talk. It answers out loud and fixes your English.
             </p>
             <div className="lp-rise mt-9 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6" style={delay(200)}>
               <Link href="/signup" className="lp-btn lp-btn-primary px-7">
@@ -153,144 +154,44 @@ export default function ShowcaseV4() {
                 I already have an account
               </Link>
             </div>
-            <p className="lp-rise mt-5 text-sm text-body" style={delay(240)}>
-              20 free minutes with K.AI every week · Sign in with Google or email
-            </p>
             <div
               className="lp-rise mt-10 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-border pt-6"
-              style={delay(280)}
+              style={delay(260)}
             >
               <div className="flex items-center gap-2">
                 <Stars />
                 <span className="text-sm font-semibold text-heading">4.9 rating</span>
               </div>
-              <span className="h-4 w-px bg-heading/15" aria-hidden="true" />
+              <span className="hidden h-4 w-px bg-heading/15 sm:block" aria-hidden="true" />
               <div className="text-sm font-semibold text-heading">
                 1,00,000+ <span className="font-medium text-body">learners</span>
               </div>
+              <span className="hidden h-4 w-px bg-heading/15 sm:block" aria-hidden="true" />
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                <Timer className="h-4 w-4 text-primary" aria-hidden="true" />
+                20 min free <span className="font-medium text-body">/ week</span>
+              </div>
             </div>
           </div>
 
-          <HeroVisual />
-        </section>
-
-        {/* ───────────────────────── BENTO: what a fix looks like ───────────────────────── */}
-        <section id="features" aria-labelledby="fix-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
-          <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-            <h2
-              id="fix-title"
-              className="lp-kinetic lp-reveal text-4xl font-bold leading-[1.02] text-heading sm:text-6xl lg:col-span-7"
-            >
-              Every mistake comes back as a fix you can use.
-            </h2>
-            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              You see the right version, and you say it again.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-4 md:grid-cols-6">
-            {/* Pronunciation — the big tile */}
-            <article className="lp-glass lp-reveal relative overflow-hidden rounded-[28px] p-6 sm:p-8 md:col-span-4 md:row-span-2">
-              <TileLabel>Pronunciation Coach</TileLabel>
-              <p className="lp-kinetic mt-8 text-[3.4rem] font-bold leading-none text-heading min-[400px]:text-6xl sm:text-8xl">
-                Wednesday
-              </p>
-              <div className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-3">
-                <p className="lp-kinetic text-3xl font-bold text-primary sm:text-4xl">
-                  WENZ<span className="text-body">-day</span>
-                </p>
-                <p className="text-2xl font-semibold text-heading sm:text-3xl" lang="hi">
-                  वेन्ज़-डे
-                </p>
-              </div>
-              <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_250px] lg:items-end">
-                <p className="max-w-md text-sm leading-relaxed text-body sm:text-base">
-                  Read aloud and see how each word should sound — in your script too. Your accent is
-                  never marked wrong.
-                </p>
-                <div className="rounded-2xl border border-border bg-surface-2/70 p-4">
-                  <span className="rounded-full bg-rose-500/15 px-2.5 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
-                    Needs work
-                  </span>
-                  <p className="mt-3 text-sm leading-relaxed text-heading">
-                    You said &ldquo;wed-nes-day&rdquo;. Say &ldquo;WENZ-day&rdquo; — the first d is silent.
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            {/* Jumble */}
-            <article className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-2">
-              <TileLabel>Jumble Words</TileLabel>
-              <ul className="mt-5 flex flex-wrap gap-1.5" aria-label="Scrambled words">
-                {["worked", "I", "bank", "have", "a", "in"].map((w) => (
-                  <li
-                    key={w}
-                    className="rounded-lg border border-border bg-surface-2/70 px-2.5 py-1.5 text-sm font-semibold text-heading"
-                  >
-                    {w}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 flex items-center gap-2 text-base font-bold text-heading">
-                <ArrowRight className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />I have worked in a bank.
-              </p>
-              <p className="mt-3 text-sm text-body">Tap the words into order. Stuck? Take a hint.</p>
-            </article>
-
-            {/* Talk time */}
-            <article className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-2">
-              <TileLabel>AI Partner</TileLabel>
-              <p className="lp-kinetic mt-4 text-6xl font-bold leading-none text-heading">
-                20<span className="ml-1 text-2xl text-body">min</span>
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-body">
-                of talking with K.AI every week, free. Pro gives you 20 minutes a day.
-              </p>
-            </article>
-
-            {/* Corrections in your language */}
-            <article className="lp-glass lp-reveal rounded-[28px] p-6 sm:p-8 md:col-span-6">
-              <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <TileLabel>Mixed-language mode</TileLabel>
-                  <p className="mt-3 max-w-xl text-lg font-semibold leading-snug text-heading sm:text-xl">
-                    &ldquo;One small correction&rdquo; — in the language you think in.
-                  </p>
-                </div>
-                <p className="max-w-sm text-sm text-body">Mostly English, a little of your language.</p>
-              </div>
-              <ul className="mt-6 flex flex-wrap gap-2">
-                {CORRECTION_PHRASES.map((p) => (
-                  <li
-                    key={p.lang}
-                    className="inline-flex items-baseline gap-2 rounded-full border border-border bg-surface-2/60 px-4 py-2 text-sm"
-                  >
-                    <span className="font-semibold text-primary">{p.lang}</span>
-                    <span className="text-heading">{p.line}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </div>
-        </section>
-
-        {/* ───────────────────────── HOW IT WORKS: the scroll swipe ───────────────────────── */}
-        <section aria-labelledby="how-title" className="mx-auto max-w-7xl scroll-mt-24 px-5">
-          <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
-            <div className="lp-reveal lg:col-span-7">
-              <TileLabel>How it works</TileLabel>
-              <h2 id="how-title" className="lp-kinetic mt-3 scroll-mt-28 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
-                Talk. Build. Pronounce.
-              </h2>
+          <div className="lp-pop relative mx-auto w-full max-w-[460px] lg:col-span-5 lg:max-w-none" style={delay(120)}>
+            <div className="relative mx-auto aspect-square w-full max-w-[460px]">
+              <KaiFigure />
             </div>
-            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              Three ways to practise. Scroll to see each one.
-            </p>
+            <HeroCall className="relative z-10 -mt-28 sm:-mt-32" />
           </div>
         </section>
 
-        <section id="how-it-works" aria-label="The three drills" className="lp-swipe relative">
+        {/* ───────────────────────── HOW IT WORKS: the loop ───────────────────────── */}
+        <section id="how" aria-labelledby="how-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
+          <SectionTitle id="how-title">How it works</SectionTitle>
+          <div className="lp-reveal mt-12">
+            <FlowDiagram />
+          </div>
+        </section>
+
+        {/* ───────────────────────── THE THREE DRILLS: the scroll swipe ───────────────────────── */}
+        <section id="drills" aria-label="The three drills" className="lp-swipe relative">
           <div data-swipe-track>
             {STEPS.map((s, i) => (
               <article
@@ -315,15 +216,7 @@ export default function ShowcaseV4() {
                       >
                         {s.title}
                       </h3>
-                      <p className="mt-5 text-base leading-relaxed text-body sm:text-lg">{s.body}</p>
-                      <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-border pt-6">
-                        {s.facts.map((f) => (
-                          <div key={f.k}>
-                            <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-body">{f.k}</dt>
-                            <dd className="mt-1 text-sm font-semibold leading-snug text-heading">{f.v}</dd>
-                          </div>
-                        ))}
-                      </dl>
+                      <p className="mt-5 text-base leading-relaxed text-body sm:text-lg">{s.line}</p>
                       <Link href="/signup" className="lp-btn lp-btn-glass mt-8">
                         {s.cta} <ArrowRight className="h-4 w-4" aria-hidden="true" />
                       </Link>
@@ -332,10 +225,10 @@ export default function ShowcaseV4() {
                   <div data-col className={`relative mx-auto w-full max-w-[540px] ${i % 2 ? "lg:order-1" : ""}`}>
                     <div
                       data-swipe-frame
-                      className="flex h-[var(--frame-h)] w-full"
+                      className="flex w-full items-center"
                       style={{ "--frame-h": `${s.frameH}px` } as CSSProperties}
                     >
-                      <LazyDemo kind={s.kind} className="flex h-full w-full" />
+                      <s.Figure />
                     </div>
                   </div>
                 </div>
@@ -343,123 +236,69 @@ export default function ShowcaseV4() {
             ))}
           </div>
         </section>
-        <StepsSwipe targetId="how-it-works" />
+        <StepsSwipe targetId="drills" />
 
-        {/* ───────────────────────── SET UP EACH CONVERSATION ───────────────────────── */}
-        <section id="languages" aria-labelledby="setup-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
-          <div className="grid gap-10 lg:grid-cols-12">
-            <div className="lp-reveal lg:col-span-5">
-              <TileLabel>Before every conversation</TileLabel>
-              <h2 id="setup-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
-                Choose how K.AI talks to you.
-              </h2>
-              <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8">
-                {SETUP_STATS.map((s) => (
-                  <div key={s.label} className="flex flex-col-reverse border-t border-border pt-4">
-                    <dt className="mt-1 text-sm font-semibold text-body">{s.label}</dt>
-                    <dd className="lp-kinetic text-5xl font-bold text-heading sm:text-6xl">{s.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <div className="grid gap-4 lg:col-span-7">
-              <div className="lp-glass lp-reveal rounded-[28px] p-6 sm:p-8">
-                <h3 className="text-lg font-bold text-heading">Language</h3>
-                <p className="mt-1 text-sm text-body">English only, or mixed with your language.</p>
-                <ul className="mt-5 flex flex-wrap gap-2" aria-label="Languages">
-                  {AI_PARTNER_LANGUAGES.map((l) => (
-                    <li
-                      key={l.id}
-                      className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-2/60 py-1.5 pl-1.5 pr-3.5 text-sm font-medium text-heading"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 text-sm font-semibold text-primary"
-                      >
-                        {l.native}
-                      </span>
-                      {l.id === "English" ? "English only" : l.id}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="grid gap-4 md:grid-cols-5">
-                <div className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-3">
-                  <h3 className="text-lg font-bold text-heading">Practice mode</h3>
-                  <ul className="mt-4 grid gap-2.5 min-[400px]:grid-cols-2">
-                    {AI_PARTNER_SCENARIOS.map((sc) => {
-                      const Icon = SCENARIO_ICONS[sc.id] ?? MessageCircle;
-                      return (
-                        <li key={sc.id} className="flex items-center gap-2.5 text-sm font-medium text-heading">
-                          <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                          {stripLeadingEmoji(sc.label)}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-                <div className="lp-glass lp-reveal rounded-[28px] p-6 md:col-span-2">
-                  <h3 className="text-lg font-bold text-heading">Level &amp; voice</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-body">
-                    {AI_PARTNER_LEVELS.map((l) => l.label).join(" · ")}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-body">{VOICE_FEELS} — female and male voices.</p>
-                </div>
-              </div>
-            </div>
+        {/* ───────────────────────── SET UP EACH CALL ───────────────────────── */}
+        <section aria-labelledby="setup-title" className="mx-auto max-w-7xl px-5 py-20 sm:py-28">
+          <SectionTitle id="setup-title">Tune K.AI before every call.</SectionTitle>
+          <div className="mt-12 grid gap-4 lg:grid-cols-12">
+            <SetupTile value={AI_PARTNER_LEVELS.length} label="Levels" className="lg:col-span-7">
+              <LevelLadder />
+            </SetupTile>
+            <SetupTile
+              id="languages"
+              value={AI_PARTNER_LANGUAGES.length}
+              label="Languages"
+              className="lg:col-span-5 lg:col-start-8 lg:row-start-1"
+            >
+              <LanguageOrbit />
+            </SetupTile>
+            <SetupTile value={AI_PARTNER_SCENARIOS.length} label="Practice modes" className="lg:col-span-7">
+              <ModeGrid />
+            </SetupTile>
+            <SetupTile value={AI_PARTNER_VOICES.length} label="Voices" className="lg:col-span-5 lg:col-start-8 lg:row-start-2">
+              <VoiceBars />
+            </SetupTile>
           </div>
         </section>
 
         {/* ───────────────────────── K.AI REACTS (mascot emotions) ───────────────────────── */}
         <section aria-labelledby="care-title" className="mx-auto max-w-7xl px-5 py-20 sm:py-28">
-          <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-            <div className="lp-reveal lg:col-span-7">
-              <TileLabel>Made to care</TileLabel>
-              <h2 id="care-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
-                K.AI&apos;s face moves with the conversation.
-              </h2>
-            </div>
-            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              Tap a feeling to see it.
-            </p>
-          </div>
+          <SectionTitle id="care-title">K.AI reacts as you talk.</SectionTitle>
           <div className="mt-12">
             <MascotEmotionMarquee bare />
           </div>
         </section>
 
-        {/* ───────────────────────── PROGRESS (in-app preview marquee) ───────────────────────── */}
-        <section id="progress" aria-labelledby="progress-title" className="scroll-mt-24 py-20 sm:py-28">
-          <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-12 lg:items-end">
-            <div className="lp-reveal lg:col-span-7">
-              <TileLabel>Your progress</TileLabel>
-              <h2 id="progress-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
-                Proof you&apos;re getting better.
-              </h2>
-            </div>
-            <p className="lp-reveal text-base leading-relaxed text-body sm:text-lg lg:col-span-5">
-              XP, streaks, badges and a weekly leaderboard.
-            </p>
-          </div>
-          <div className="mx-auto mt-12 max-w-[1440px]">
-            <PlatformInsights />
+        {/* ───────────────────────── PROGRESS ───────────────────────── */}
+        <section id="progress" aria-labelledby="progress-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
+          <SectionTitle id="progress-title">Proof you&apos;re getting better.</SectionTitle>
+          <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <ProgressTile label="XP & levels">
+              <XpRing />
+            </ProgressTile>
+            <ProgressTile label="Daily streak">
+              <StreakDots />
+            </ProgressTile>
+            <ProgressTile label="Badges">
+              <BadgeShelf />
+            </ProgressTile>
+            <ProgressTile label="Weekly leaderboard">
+              <Podium />
+            </ProgressTile>
           </div>
         </section>
 
         {/* ───────────────────────── REVIEWS (scroll swipe) ───────────────────────── */}
         <section id="reviews" aria-labelledby="reviews-title" className="lp-reviews py-20 sm:py-28">
           <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-12 lg:items-end">
-            <div className="lp-reveal lg:col-span-8">
-              <TileLabel>Learners</TileLabel>
-              <h2 id="reviews-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
-                Heard in Bengaluru, Pune, Delhi and Chennai.
-              </h2>
+            <div className="lg:col-span-8">
+              <SectionTitle id="reviews-title">In their own words.</SectionTitle>
             </div>
             <dl className="lp-reveal flex gap-3 lg:col-span-4 lg:justify-end">
               {REVIEW_STATS.map((s) => (
                 <div key={s.label} className="lp-glass flex min-w-[120px] flex-col-reverse rounded-2xl px-5 py-3">
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-body">{s.label}</dt>
+                  <dt className="lp-tag text-body">{s.label}</dt>
                   <dd className="lp-kinetic text-3xl font-bold text-primary">{s.value}</dd>
                 </div>
               ))}
@@ -469,10 +308,12 @@ export default function ShowcaseV4() {
             <ul data-swipe-track aria-label="Reviews" className="flex w-max gap-5 px-5 pb-2 lg:px-12">
               {REVIEWS.map((r) => (
                 <li key={r.name} className="w-[280px] shrink-0 sm:w-[340px]">
-                  <figure className="lp-glass flex h-full flex-col gap-4 rounded-[28px] p-6">
-                    <Stars />
-                    <blockquote className="text-[0.95rem] leading-relaxed text-heading">
-                      <p>&ldquo;{r.body}&rdquo;</p>
+                  <figure className="lp-glass flex h-full flex-col gap-5 rounded-[28px] p-6">
+                    <svg viewBox="0 0 32 24" className="h-6 w-8 fill-primary/60" aria-hidden="true">
+                      <path d="M0 24V14C0 6 4 1 12 0l1 4c-4 1-6 4-6 8h6v12H0zm19 0V14c0-8 4-13 12-14l1 4c-4 1-6 4-6 8h6v12H19z" />
+                    </svg>
+                    <blockquote className="lp-kinetic text-xl font-semibold leading-snug text-heading">
+                      <p>&ldquo;{r.quote}&rdquo;</p>
                     </blockquote>
                     <figcaption className="mt-auto flex items-center gap-3 border-t border-border pt-4">
                       <span
@@ -481,10 +322,11 @@ export default function ShowcaseV4() {
                       >
                         {r.name[0]}
                       </span>
-                      <span>
+                      <span className="min-w-0 flex-1">
                         <span className="block text-sm font-bold text-heading">{r.name}</span>
                         <span className="block text-xs text-body">{r.city}</span>
                       </span>
+                      <Stars />
                     </figcaption>
                   </figure>
                 </li>
@@ -497,54 +339,11 @@ export default function ShowcaseV4() {
         {/* ───────────────────────── PLANS ───────────────────────── */}
         <section id="plans" aria-labelledby="plans-title" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:py-28">
           <div className="grid gap-10 lg:grid-cols-12">
-            <div className="lp-reveal lg:col-span-5">
-              <TileLabel>Plans</TileLabel>
-              <h2 id="plans-title" className="lp-kinetic mt-3 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
-                20 minutes a week, free. 20 a day on Pro.
-              </h2>
-              <p className="mt-5 max-w-md text-base leading-relaxed text-body sm:text-lg">
-                Everything works on the free plan. Pro removes the daily limits.
-              </p>
+            <div className="lg:col-span-4">
+              <SectionTitle id="plans-title">Start free. Talk more on Pro.</SectionTitle>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
-              <article aria-labelledby="plan-free" className="lp-glass lp-reveal flex flex-col rounded-[28px] p-6 sm:p-8">
-                <h3 id="plan-free" className="text-sm font-bold uppercase tracking-[0.2em] text-body">
-                  Free
-                </h3>
-                <p className="lp-kinetic mt-3 text-4xl font-bold text-heading">
-                  20 min<span className="text-xl text-body"> / week</span>
-                </p>
-                <p className="mt-1 text-sm text-body">with K.AI</p>
-                <ul className="mb-8 mt-6 space-y-2.5 border-t border-border pt-5 text-sm text-heading">
-                  <li>Daily Jumble Words</li>
-                  <li>Daily Pronunciation practice</li>
-                  <li>XP, levels, streaks &amp; badges</li>
-                </ul>
-                <Link href="/signup" className="lp-btn lp-btn-primary mt-auto">
-                  Start talking — free <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </article>
-
-              <article
-                aria-labelledby="plan-pro"
-                className="lp-glass-strong lp-reveal relative flex flex-col rounded-[28px] p-6 ring-1 ring-primary/40 sm:p-8"
-              >
-                <h3 id="plan-pro" className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                  <Sparkles className="h-4 w-4" aria-hidden="true" /> Pro
-                </h3>
-                <p className="lp-kinetic mt-3 text-4xl font-bold text-heading">
-                  20 min<span className="text-xl text-body"> / day</span>
-                </p>
-                <p className="mt-1 text-sm text-body">with K.AI</p>
-                <ul className="mb-8 mt-6 space-y-2.5 border-t border-border pt-5 text-sm text-heading">
-                  <li>No daily cap on Jumble Words</li>
-                  <li>No daily cap on Pronunciation</li>
-                  <li>Your streak, XP &amp; badges carry over</li>
-                </ul>
-                <Link href="/pro" className="lp-btn lp-btn-glass mt-auto">
-                  See Pro <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </article>
+            <div className="lg:col-span-8">
+              <PlansCompare />
             </div>
           </div>
         </section>
@@ -560,11 +359,9 @@ export default function ShowcaseV4() {
             <div className="relative grid gap-10 lg:grid-cols-12 lg:items-end">
               <div className="lg:col-span-8">
                 <h2 id="ready-title" className="lp-kinetic text-4xl font-bold leading-[1.02] text-heading sm:text-6xl">
-                  Say your first sentence to K.AI today.
+                  Say your first sentence today.
                 </h2>
-                <p className="mt-5 max-w-lg text-base text-body sm:text-lg">
-                  Free with Google or email.
-                </p>
+                <p className="mt-5 max-w-lg text-base text-body sm:text-lg">Free with Google or email.</p>
               </div>
               <div className="flex flex-col gap-4 lg:col-span-4 lg:items-end">
                 <Link href="/signup" className="lp-btn lp-btn-primary px-7">
@@ -572,13 +369,17 @@ export default function ShowcaseV4() {
                 </Link>
                 <Link
                   href="/login"
-                  className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-heading underline decoration-heading/25 underline-offset-4 transition-colors duration-200 hover:decoration-primary"
+                  className="inline-flex min-h-11 min-w-11 items-center justify-center text-sm font-semibold text-heading underline decoration-heading/25 underline-offset-4 transition-colors duration-200 hover:decoration-primary"
                 >
                   Log in
                 </Link>
               </div>
             </div>
-            <div className="relative mt-12 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+            {/* A voice line as the divider — the product in one shape. */}
+            <div data-fig aria-hidden="true" className="relative mt-12 opacity-60">
+              <Wave n={72} seed={13} live spread className="text-primary" style={cssVars({ "--wh": "40px", "--sp": "1300ms" })} />
+            </div>
+            <div className="relative mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="flex flex-wrap items-center gap-2 text-sm text-body">
                 Android and iOS apps <ComingSoonBadge />
               </p>
@@ -620,7 +421,7 @@ export default function ShowcaseV4() {
                 </ul>
               </div>
             </div>
-            <FooterCol title="Webapp" links={FOOTER_WEBAPP} />
+            <FooterCol title="Webapp" links={webappLinks} />
             <FooterCol title="Company" links={FOOTER_COMPANY} />
             <FooterCol title="Get the app" links={FOOTER_APP} />
           </div>
@@ -642,136 +443,63 @@ const NAV_LINKS = [
   { label: "Plans", href: "#plans" },
 ];
 
-// K.AI's own "one small correction" phrase per language (server/gemini/tutorPrompt.ts).
-const CORRECTION_PHRASES = [
-  { lang: "Hindi", line: "Ek choti si correction" },
-  { lang: "Tamil", line: "Oru chinna correction" },
-  { lang: "Bengali", line: "Ekta choto correction" },
-  { lang: "Telugu", line: "Oka chinna correction" },
-  { lang: "Marathi", line: "Ek chotishi correction" },
-  { lang: "Gujarati", line: "Ek nani correction" },
-];
-
-// `frameH` = the demo's fixed box height (fixed so lazy mounting never shifts
-// the page; on desktop the pinned swipe caps it to the viewport).
+// The three drills in the scroll swipe. `frameH` caps the figure's box on
+// desktop, where the pinned swipe fits each panel to the viewport.
 const STEPS: {
   id: string;
   n: string;
   label: string;
   title: string;
-  body: string;
-  facts: { k: string; v: string }[];
+  line: string;
   cta: string;
-  kind: LazyDemoKind;
+  Figure: ComponentType;
   frameH: number;
 }[] = [
   {
     id: "ai-partner",
     n: "01",
     label: "AI Partner",
-    title: "Talk it out with K.AI.",
-    body: "Pick a mode — chat, job interview, IELTS, travel, office — and talk. K.AI answers when you pause.",
-    facts: [
-      { k: "Hands-free", v: "It waits while you think" },
-      { k: "Captions", v: "Live, for both of you" },
-      { k: "Rewards", v: "XP for every minute" },
-    ],
+    title: "Talk. K.AI answers when you pause.",
+    line: "Cut in anytime. The only button is mute.",
     cta: "Talk to K.AI",
-    kind: "ai",
-    frameH: 580,
+    Figure: CallTimeline,
+    frameH: 520,
   },
   {
     id: "jumble-words",
     n: "02",
     label: "Jumble Words",
-    title: "Build the sentence, move the train.",
-    body: "Tap the scrambled words into order and the train leaves the station.",
-    facts: [
-      { k: "Hints", v: "From your AI coach" },
-      { k: "Combo", v: "Right answers in a row" },
-      { k: "Rewards", v: "XP per sentence" },
-    ],
+    title: "Tap the words into order.",
+    line: "Stuck? Take a hint.",
     cta: "Play Jumble Words",
-    kind: "jumble",
-    frameH: 600,
+    Figure: JumbleFigure,
+    frameH: 520,
   },
   {
     id: "pronunciation",
     n: "03",
     label: "Pronunciation Coach",
-    title: "Hear exactly where a word slipped.",
-    body: "Read a sentence aloud and get a score, word by word, with a tip for each one.",
-    facts: [
-      { k: "Score", v: "For every attempt" },
-      { k: "Breakdown", v: "Word by word" },
-      { k: "Accent", v: "Never penalised" },
-    ],
+    title: "See exactly which word slipped.",
+    line: "Syllables, your own script, and a listen button.",
     cta: "Try it free",
-    kind: "pronunciation",
-    frameH: 690,
+    Figure: PronunciationFigure,
+    frameH: 560,
   },
 ];
-
-const SETUP_STATS = [
-  { value: String(INDIAN_LANGUAGES), label: "Indian languages to mix in" },
-  { value: String(AI_PARTNER_SCENARIOS.length), label: "practice modes" },
-  { value: String(AI_PARTNER_LEVELS.length), label: "levels" },
-  { value: String(AI_PARTNER_VOICES.length), label: "voices" },
-];
-
-const SCENARIO_ICONS: Record<string, LucideIcon> = {
-  "General Conversation": Coffee,
-  "Job Interview": BriefcaseBusiness,
-  "IELTS Speaking": GraduationCap,
-  "Travel & Daily Life": Plane,
-  "Office & Workplace": Building2,
-  "Grammar Workout": Target,
-};
-
-// Scenario labels carry a leading emoji for the in-app picker; the landing uses
-// SVG icons instead (no emoji as icons).
-function stripLeadingEmoji(label: string) {
-  return label.replace(/^[^\p{L}\p{N}]+/u, "");
-}
-
-// "Breezy, firm, youthful, bright and more" — straight from the voice list.
-const VOICE_FEELS = (() => {
-  const feels = [...new Set(AI_PARTNER_VOICES.map((v) => v.feel.toLowerCase()))].slice(0, 4);
-  const text = feels.join(", ");
-  return `${text.charAt(0).toUpperCase()}${text.slice(1)} and more`;
-})();
 
 const REVIEW_STATS: { value: string; label: string }[] = [
   { value: "1L+", label: "Happy users" },
   { value: "4.9", label: "Rating" },
 ];
 
-const REVIEWS: { name: string; city: string; body: string }[] = [
-  {
-    name: "Priya R.",
-    city: "Bengaluru",
-    body: "After a 5-minute lesson, English Connection tells me what I did, what I missed, and how to improve. Way more motivating than my old class.",
-  },
-  {
-    name: "Anita K.",
-    city: "Pune",
-    body: "I'm a mom in my 40s teaching at a school. I tried lots of apps — English Connection feels more effective because it makes me actually speak in a structured way.",
-  },
-  {
-    name: "Mehul S.",
-    city: "Hyderabad",
-    body: "Even when my sentences aren't perfect, English Connection understands me and keeps the conversation going. Unlike other apps where I freeze, I practice naturally.",
-  },
-  {
-    name: "Rohan T.",
-    city: "Delhi",
-    body: "I reached a point where I could chat comfortably while studying abroad — that genuinely surprised me. It's the first app that finally challenges me at the right level.",
-  },
-  {
-    name: "Sneha M.",
-    city: "Chennai",
-    body: "It feels like talking to a friend on the phone. The voice AI catches things I never would have caught reading.",
-  },
+// Verbatim lines from the learners' reviews (the owner's existing testimonials),
+// cut to the one sentence that says it — pull quotes, not paraphrases.
+const REVIEWS: { name: string; city: string; quote: string }[] = [
+  { name: "Priya R.", city: "Bengaluru", quote: "Way more motivating than my old class." },
+  { name: "Anita K.", city: "Pune", quote: "It makes me actually speak in a structured way." },
+  { name: "Mehul S.", city: "Hyderabad", quote: "Unlike other apps where I freeze, I practice naturally." },
+  { name: "Rohan T.", city: "Delhi", quote: "It's the first app that finally challenges me at the right level." },
+  { name: "Sneha M.", city: "Chennai", quote: "It feels like talking to a friend on the phone." },
 ];
 
 const FOOTER_WEBAPP = [
@@ -795,49 +523,49 @@ const FOOTER_APP = [
 
 /* ───────────────────────── pieces ───────────────────────── */
 
-// K.AI over its glow, with one frosted live-caption card showing a real kind of
-// exchange (Hindi + English mode — K.AI's actual correction phrases).
-function HeroVisual() {
+function SectionTitle({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <div className="lp-pop relative mx-auto w-full max-w-[460px] lg:col-span-5 lg:max-w-none" style={delay(120)}>
-      <div className="relative mx-auto aspect-square w-full max-w-[460px]">
-        <KaiFigure />
-      </div>
-      <figure
-        aria-label="Example: K.AI correcting a sentence"
-        className="lp-glass-strong lp-blur relative z-10 -mt-24 rounded-3xl p-4 sm:-mt-28 sm:p-5"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-body">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-            Live captions
-          </span>
-          <span>Hindi + English · Job interview</span>
-        </div>
-        <div className="mt-4 space-y-2.5 text-sm leading-relaxed sm:text-[0.95rem]">
-          <p className="rounded-2xl rounded-bl-md bg-surface-2/80 px-4 py-2.5 text-heading">
-            <span className="mr-2 text-xs font-bold uppercase tracking-wider text-body">You</span>I{" "}
-            <span className="lp-slip">am work</span> in a bank since 2019.
-          </p>
-          <p className="rounded-2xl rounded-br-md bg-primary/10 px-4 py-2.5 text-heading">
-            <span className="mr-2 text-xs font-bold uppercase tracking-wider text-primary">K.AI</span>
-            Ek choti si correction — &ldquo;I <span className="lp-fix">have worked</span>{" "}
-            in a bank since 2019.&rdquo; Ab ek baar sahi wala boliye.
-          </p>
-        </div>
-        <div className="mt-4 flex items-center gap-3 text-xs font-semibold text-body">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground" aria-hidden="true">
-            <Mic className="h-4 w-4" />
-          </span>
-          Hands-free · K.AI answers when you pause
-        </div>
-      </figure>
-    </div>
+    <h2
+      id={id}
+      className="lp-kinetic lp-reveal max-w-3xl scroll-mt-28 text-4xl font-bold leading-[1.02] text-heading sm:text-6xl"
+    >
+      {children}
+    </h2>
   );
 }
 
-function TileLabel({ children }: { children: ReactNode }) {
-  return <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{children}</p>;
+// One choice from the session start card: a big count + a figure of it.
+function SetupTile({
+  id,
+  value,
+  label,
+  className,
+  children,
+}: {
+  id?: string;
+  value: number;
+  label: string;
+  className: string;
+  children: ReactNode;
+}) {
+  return (
+    <article id={id} className={`lp-glass lp-reveal flex scroll-mt-28 flex-col rounded-[28px] p-6 sm:p-8 ${className}`}>
+      <h3 className="flex items-baseline gap-3">
+        <span className="lp-kinetic text-5xl font-bold leading-none text-heading sm:text-6xl">{value}</span>
+        <span className="lp-tag text-primary">{label}</span>
+      </h3>
+      <div className="mt-8 flex flex-1 items-center justify-center">{children}</div>
+    </article>
+  );
+}
+
+function ProgressTile({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <article className="lp-glass lp-reveal flex min-w-0 flex-col rounded-[24px] p-4 sm:rounded-[28px] sm:p-6">
+      <h3 className="lp-tag text-primary">{label}</h3>
+      <div className="mt-5 flex min-h-[150px] flex-1 items-center justify-center sm:mt-6 sm:min-h-[210px]">{children}</div>
+    </article>
+  );
 }
 
 function Stars() {
@@ -897,7 +625,7 @@ function FooterCol({ title, links }: { title: string; links: { label: string; hr
           <li key={l.label}>
             <Link
               href={l.href}
-              className="inline-flex min-h-11 items-center rounded text-sm text-body transition-colors duration-200 hover:text-primary"
+              className="inline-flex min-h-11 min-w-11 items-center rounded text-sm text-body transition-colors duration-200 hover:text-primary"
             >
               {l.label}
             </Link>

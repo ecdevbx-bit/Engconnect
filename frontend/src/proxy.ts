@@ -30,8 +30,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Pages only: skip the API (Bearer-authenticated), auth callbacks (they set
-  // cookies themselves), Next internals and static files.
+  // cookies themselves), the Sentry tunnel, Next internals and static files.
   matcher: [
-    "/((?!api/|auth/|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|js)$).*)",
+    "/((?!api/|auth/|monitoring|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|js)$).*)",
   ],
 };

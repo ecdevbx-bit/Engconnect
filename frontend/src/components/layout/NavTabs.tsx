@@ -6,6 +6,7 @@ import { LayoutDashboard, Trophy, type LucideIcon } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAIPartnerGate } from "@/hooks/useAIPartnerGate";
+import { useLearnVisible } from "@/hooks/useLearnVisible";
 
 // Primary in-app destinations shown as a pill switcher in the navbar. These
 // mirror a curated subset of the account-menu nav (see config/nav.ts); the
@@ -19,6 +20,8 @@ const NAV_TABS: NavTab[] = [
   { id: "pronunciation", label: "Pronunciation", href: "/dashboard/pronunciation" },
   { id: "ai-partner", label: "AI Partner", href: "/dashboard/ai-partner" },
   { id: "leaderboard", label: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
+  // Learn library — only while visible (admin switch, useLearnVisible).
+  { id: "learn", label: "Learn", href: "/learn" },
   // Desktop-only Premium CTA. Lives here (not in config/nav.ts:primaryNav) so
   // it shows in the navbar tabs without also appearing in the mobile bottom
   // nav island. Text tab (no icon) so it reads clearly as the upsell.
@@ -31,18 +34,20 @@ export default function NavTabs() {
   // (it doubles as the announcement) but the click opens the "upgrading" popup
   // instead of navigating.
   const { guard } = useAIPartnerGate();
+  const learnVisible = useLearnVisible();
+  const tabs = learnVisible ? NAV_TABS : NAV_TABS.filter((t) => t.id !== "learn");
   // Most-specific match wins so /dashboard/jumble highlights Jumble rather
   // than Dashboard (whose href is a prefix of every other tab). Falls back to
   // no active tab on routes that aren't in the set (e.g. /dashboard/profile).
   const active =
-    [...NAV_TABS]
+    [...tabs]
       .sort((a, b) => b.href.length - a.href.length)
       .find((t) => pathname === t.href || pathname.startsWith(`${t.href}/`))?.id ?? "";
 
   return (
     <Tabs value={active} className="hidden md:block">
       <TabsList className="h-auto gap-1 rounded-full border border-white/[0.06] bg-surface-2/40 p-1">
-        {NAV_TABS.map((t) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           return (
             <TabsTrigger

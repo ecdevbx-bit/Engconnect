@@ -3,6 +3,7 @@ import "server-only";
 import { after } from "next/server";
 
 import { awardProgress, getProfile, isProRow, type ProfileRow } from "../domain/users";
+import { googleRejectsKey } from "../gemini/admin";
 import { heartbeatLease, releaseLease, classifyGeminiError, type Outcome } from "../gemini/keyPool";
 import { grantLiveSession, LIVE_LEASE_TTL_SECONDS, type LiveGrant } from "../gemini/liveToken";
 import { compileSessionMemory } from "../gemini/memory";
@@ -48,6 +49,7 @@ type SessionRow = {
   user_words: number;
   milestones_awarded: number;
   xp_awarded: number;
+  key_reports: number;
 };
 
 const STALE_AFTER_SECONDS = 150;
@@ -99,7 +101,10 @@ function xpForMilestones(m: number, r: AIPartnerRewards): number {
 
 // ── helpers ─────────────────────────────────────────────────────────
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function loadSession(userId: string, id: string): Promise<SessionRow> {
+  if (!UUID_RE.test(id)) throw fail.notFound("Session not found."); // Postgres would 500 on a non-uuid
   const s = must(
     await db().from("chat_sessions").select("*").eq("id", id).eq("user_id", userId).maybeSingle(),
     "load chat session",
@@ -170,25 +175,30 @@ const countWords = (s: string) => s.split(/\s+/).filter(Boolean).length;
 
 // Apply a heartbeat (or the final /end): persist new transcript turns, clamp
 // and bill time, award talk-time XP. Returns the speech_progress payload.
+// readOnly (a session that already ended): report the stored numbers and write
+// nothing — billing a dead session's wall-clock would eat the learner's minutes.
 async function applyProgress(
   u: AuthedUser,
   s: SessionRow,
   body: Record<string, unknown>,
   final: boolean,
+  readOnly = false,
 ) {
   const rewards = await getSettings("ai_partner_rewards");
   const profile = await getProfile(u.id);
 
-  const turns = parseTurns(body.turns);
+  const turns = readOnly ? [] : parseTurns(body.turns);
   if (turns.length) {
     await db().from("chat_messages").insert(turns.map((t) => ({ session_id: s.id, user_id: u.id, role: t.role, body: t.text })));
   }
   const userWords = s.user_words + turns.filter((t) => t.role === "user").reduce((n, t) => n + countWords(t.text), 0);
 
-  const elapsed = Math.max(0, Math.floor((Date.now() - new Date(s.started_at).getTime()) / 1000));
+  const elapsed = readOnly
+    ? s.billed_seconds
+    : Math.max(0, Math.floor((Date.now() - new Date(s.started_at).getTime()) / 1000));
   // Talk-time can't exceed wall-clock, and needs real words behind it
   // (~2 s per recognised word + slack), so silent mic taps earn nothing.
-  const claimed = Math.max(0, Math.floor(Number(body.speakingSeconds) || 0));
+  const claimed = readOnly ? 0 : Math.max(0, Math.floor(Number(body.speakingSeconds) || 0));
   const speaking = Math.max(s.speaking_seconds, Math.min(claimed, elapsed, userWords * 2 + 10));
 
   const usage = await usageFor(profile, rewards, s.id);
@@ -196,7 +206,19 @@ async function applyProgress(
   const capReached = usage.cap > 0 && usage.used + elapsed >= usage.cap;
 
   const milestones = milestonesFor(speaking, rewards);
-  const xp = Math.max(0, xpForMilestones(milestones, rewards) - xpForMilestones(s.milestones_awarded, rewards));
+  let xp = readOnly ? 0 : Math.max(0, xpForMilestones(milestones, rewards) - xpForMilestones(s.milestones_awarded, rewards));
+
+  // Claim the milestones before paying: a heartbeat and /end arriving together
+  // both see the old count — only the one whose conditional update matches pays.
+  if (xp > 0) {
+    const { data: claimedRows } = await db()
+      .from("chat_sessions")
+      .update({ milestones_awarded: milestones, xp_awarded: s.xp_awarded + xp })
+      .eq("id", s.id)
+      .eq("milestones_awarded", s.milestones_awarded)
+      .select("id");
+    if (!claimedRows?.length) xp = 0;
+  }
 
   const progress =
     xp > 0
@@ -206,26 +228,26 @@ async function applyProgress(
   const pt = Math.max(0, Math.floor(Number((body.usage as { promptTokens?: number })?.promptTokens) || 0));
   const rt = Math.max(0, Math.floor(Number((body.usage as { responseTokens?: number })?.responseTokens) || 0));
 
-  must(
-    await db()
-      .from("chat_sessions")
-      .update({
-        last_heartbeat_at: new Date().toISOString(),
-        billed_seconds: billed,
-        speaking_seconds: speaking,
-        user_words: userWords,
-        milestones_awarded: Math.max(milestones, s.milestones_awarded),
-        xp_awarded: s.xp_awarded + xp,
-        ...(pt ? { prompt_tokens: pt } : {}),
-        ...(rt ? { response_tokens: rt } : {}),
-        ...(final ? { status: "ended", ended_at: new Date().toISOString(), end_reason: String(body.reason ?? "ended").slice(0, 60) } : {}),
-      })
-      .eq("id", s.id)
-      .select("id"),
-    "update chat session",
-  );
+  if (!readOnly) {
+    must(
+      await db()
+        .from("chat_sessions")
+        .update({
+          last_heartbeat_at: new Date().toISOString(),
+          billed_seconds: billed,
+          speaking_seconds: speaking,
+          user_words: userWords,
+          ...(pt ? { prompt_tokens: pt } : {}),
+          ...(rt ? { response_tokens: rt } : {}),
+          ...(final ? { status: "ended", ended_at: new Date().toISOString(), end_reason: String(body.reason ?? "ended").slice(0, 60) } : {}),
+        })
+        .eq("id", s.id)
+        .select("id"),
+      "update chat session",
+    );
+  }
 
-  if (!final && s.lease_id) await heartbeatLease(s.lease_id, LIVE_LEASE_TTL_SECONDS);
+  if (!final && !readOnly && s.lease_id) await heartbeatLease(s.lease_id, LIVE_LEASE_TTL_SECONDS);
 
   let attrs = progress;
   if (!attrs) {
@@ -327,14 +349,20 @@ export function registerChatRoutes(r: Router) {
       voice,
       pauseMs: LEVEL_INSTRUCTIONS[normalizeLevel(level)].pauseMs,
     });
-    const session = must(
-      await db()
-        .from("chat_sessions")
-        .insert({ user_id: u.id, language, level, scenario, voice, material_seed: materialSeed, model: grant.model, lease_id: grant.leaseId })
-        .select("id")
-        .single(),
-      "create chat session",
-    ) as { id: string };
+    const created = await db()
+      .from("chat_sessions")
+      .insert({ user_id: u.id, language, level, scenario, voice, material_seed: materialSeed, model: grant.model, lease_id: grant.leaseId })
+      .select("id")
+      .single();
+    if (created.error) {
+      await releaseLease(grant.leaseId, "ok", "session insert failed");
+      // chat_sessions_one_active_per_user: another tab started one this instant.
+      if (created.error.code === "23505") {
+        throw fail.conflict("Another K.AI conversation is already starting. Please try again.", "SESSION_CONFLICT");
+      }
+      throw new Error(`create chat session: ${created.error.message}`);
+    }
+    const session = created.data as { id: string };
 
     // Combo for AI Partner = milestones reached in this conversation.
     await awardProgress({ userId: u.id, game: "ai-partner", xp: 0, combo: "reset", log: false });
@@ -356,7 +384,7 @@ export function registerChatRoutes(r: Router) {
     const u = await requireUser(req);
     const s = await loadSession(u.id, params.id);
     if (s.status !== "active") {
-      return ok({ ...(await applyProgress(u, s, {}, false)), sessionActive: false });
+      return ok({ ...(await applyProgress(u, s, {}, false, true)), sessionActive: false });
     }
     const progress = await applyProgress(u, s, await readJson(req), false);
     return ok({ ...progress, sessionActive: true });
@@ -373,17 +401,35 @@ export function registerChatRoutes(r: Router) {
     const detail = String(body.detail ?? "").slice(0, 500);
     const closeCode = Number(body.closeCode) || undefined;
 
+    // The browser says the key failed. It can't be trusted to judge a SHARED
+    // key: a daily-quota claim becomes a short cooldown, "invalid" only counts
+    // when Google itself rejects the key, and only 2 reports per session count.
+    // This session moves to another key either way.
     let outcome: Outcome = "ok";
     const exclude: string[] = [];
-    if (body.keyFailed === true || closeCode === 1011 || closeCode === 1008) {
-      outcome = classifyGeminiError(undefined, detail);
-      if (outcome === "ok") outcome = "error";
+    const reported = body.keyFailed === true || closeCode === 1011 || closeCode === 1008;
+    const { data: lease } = s.lease_id
+      ? await db().from("gemini_key_leases").select("key_id").eq("id", s.lease_id).maybeSingle()
+      : { data: null };
+    const keyId = (lease?.key_id as string | undefined) ?? "";
+    if (reported && keyId) {
+      exclude.push(keyId);
+      if ((s.key_reports ?? 0) < 2) {
+        const claimed = classifyGeminiError(undefined, detail);
+        outcome =
+          claimed === "invalid"
+            ? (await googleRejectsKey(keyId))
+              ? "invalid"
+              : "error"
+            : claimed === "quota_daily"
+              ? "quota_minute"
+              : claimed === "ok"
+                ? "error"
+                : claimed;
+        await db().from("chat_sessions").update({ key_reports: (s.key_reports ?? 0) + 1 }).eq("id", s.id);
+      }
     }
-    if (s.lease_id) {
-      const { data: lease } = await db().from("gemini_key_leases").select("key_id").eq("id", s.lease_id).maybeSingle();
-      if (lease?.key_id && outcome !== "ok") exclude.push(lease.key_id as string);
-      await releaseLease(s.lease_id, outcome, detail || "reconnect");
-    }
+    if (s.lease_id) await releaseLease(s.lease_id, outcome, detail || "reconnect");
 
     const profile = await getProfile(u.id);
     const rewards = await getSettings("ai_partner_rewards");
@@ -412,11 +458,9 @@ export function registerChatRoutes(r: Router) {
     const body = req.method === "DELETE" ? {} : await readJson(req);
     if (s.status !== "active") return ok({ ended: true });
     const progress = await applyProgress(u, s, body, true);
-    if (s.lease_id) {
-      const outcome = (typeof body.outcome === "string" ? body.outcome : "ok") as Outcome;
-      const valid: Outcome[] = ["ok", "quota_daily", "quota_minute", "concurrency", "invalid", "error"];
-      await releaseLease(s.lease_id, valid.includes(outcome) ? outcome : "ok", String(body.detail ?? "").slice(0, 500), progress.totalSeconds);
-    }
+    // Always "ok": key health is judged by the server (reconnect), never by
+    // what the browser puts in the end report.
+    if (s.lease_id) await releaseLease(s.lease_id, "ok", String(body.detail ?? "").slice(0, 500), progress.totalSeconds);
     // Learn from the conversation after responding.
     after(async () => {
       try {

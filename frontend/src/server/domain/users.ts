@@ -194,6 +194,18 @@ export async function usageToday(userId: string, bucket: string): Promise<number
   return (data?.used as number | undefined) ?? 0;
 }
 
+// Take one of today's free slots atomically; false when they're all used.
+// Pair with refundUsage() when the work then fails (e.g. K.AI busy).
+export async function reserveUsage(userId: string, bucket: string, cap: number): Promise<boolean> {
+  const { data, error } = await db().rpc("bump_daily_usage", { p_user: userId, p_bucket: bucket, p_cap: cap, p_amount: 1 });
+  if (error) throw new Error(`reserve usage: ${error.message}`);
+  return (data as number) >= 0;
+}
+
+export async function refundUsage(userId: string, bucket: string): Promise<void> {
+  await db().rpc("bump_daily_usage", { p_user: userId, p_bucket: bucket, p_cap: 0, p_amount: -1 });
+}
+
 export async function bumpUsage(userId: string, bucket: string): Promise<void> {
   must(
     await db().rpc("bump_daily_usage", { p_user: userId, p_bucket: bucket, p_cap: 0, p_amount: 1 }),

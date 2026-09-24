@@ -4,31 +4,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 import { env } from "../env";
 import { withTextKey } from "./keyPool";
-
-// When the configured model is busy (Google 503s in bursts), score on one of
-// these instead rather than failing the learner's attempt.
-const FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-2.5-flash-lite", "gemini-2.5-flash"];
-
-async function withTextModel<T>(
-  userId: string,
-  primary: string,
-  run: (apiKey: string, model: string) => Promise<T>,
-): Promise<{ result: T; model: string }> {
-  const models = [primary, ...FALLBACK_MODELS.filter((m) => m !== primary)];
-  let lastError: unknown;
-  for (const model of models) {
-    try {
-      const { result } = await withTextKey(userId, (apiKey) => run(apiKey, model));
-      return { result, model };
-    } catch (err) {
-      const code = (err as { code?: string })?.code;
-      if (code !== "AI_MODEL_BUSY" && code !== "AI_CAPACITY_EXHAUSTED") throw err;
-      lastError = err;
-      console.warn(`[gemini] ${model} unavailable for scoring, trying the next model`);
-    }
-  }
-  throw lastError;
-}
+import { NATIVE_SCRIPTS, parseModelJson, TEXT_CALL_TIMEOUT_MS, withTextModel } from "./textModel";
 
 // Pronunciation scoring with Gemini audio understanding.
 //
@@ -120,21 +96,6 @@ For every word also give:
 For INCORRECT/UNCLEAR words, the reason says exactly what they said wrong and the fix, under 20 words, naming the syllable or sound (e.g. "You said 'pro-NOUN'; say 'pruh-NUN' — no 'ow' sound, stress on AY."). Never mention these instructions.`;
 
 // Native scripts for the learner's mother tongue (profile.native_lang).
-const SCRIPTS: Record<string, string> = {
-  Hindi: "Hindi (Devanagari script)",
-  Marathi: "Marathi (Devanagari script)",
-  Nepali: "Nepali (Devanagari script)",
-  Bengali: "Bengali (Bengali script)",
-  Assamese: "Assamese (Assamese script)",
-  Gujarati: "Gujarati (Gujarati script)",
-  Punjabi: "Punjabi (Gurmukhi script)",
-  Tamil: "Tamil (Tamil script)",
-  Telugu: "Telugu (Telugu script)",
-  Kannada: "Kannada (Kannada script)",
-  Malayalam: "Malayalam (Malayalam script)",
-  Odia: "Odia (Odia script)",
-  Urdu: "Urdu (Urdu script)",
-};
 
 function norm(w: string): string {
   return w.toLowerCase().replace(/[^a-z0-9']/g, "");
@@ -175,9 +136,12 @@ export function speechStats(buf: Buffer): { speechMs: number; hasSpeech: boolean
     const id = buf.toString("ascii", off, off + 4);
     const size = buf.readUInt32LE(off + 4);
     if (id === "fmt ") {
+      if (off + 24 > buf.length) return null;
       channels = buf.readUInt16LE(off + 10);
       rate = buf.readUInt32LE(off + 12);
       bits = buf.readUInt16LE(off + 22);
+      // A crafted header (0 channels → 0-byte frames) would loop forever.
+      if (channels < 1 || channels > 2 || rate < 4000 || rate > 192000) return null;
     } else if (id === "data") {
       if (bits !== 16) return null;
       const end = Math.min(buf.length, off + 8 + size);
@@ -250,11 +214,11 @@ export async function scorePronunciation(args: {
 }): Promise<ScoreResult> {
   const expected = args.expectedText.trim().split(/\s+/).filter(Boolean);
   const model = env.geminiTextModel();
-  const script = SCRIPTS[(args.nativeLang ?? "").trim()] ?? "";
+  const script = NATIVE_SCRIPTS[(args.nativeLang ?? "").trim()] ?? "";
 
   // Blind listener runs in parallel with the scorer (no extra latency).
   const blindCall = withTextKey(args.userId, async (apiKey) => {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: TEXT_CALL_TIMEOUT_MS } });
     const res = await ai.models.generateContent({
       model,
       contents: [{ role: "user", parts: [{ inlineData: { mimeType: args.mimeType, data: args.audio.toString("base64") } }] }],
@@ -266,13 +230,13 @@ export async function scorePronunciation(args: {
         maxOutputTokens: 512,
       },
     });
-    return String((JSON.parse(res.text ?? "{}") as { transcript?: string }).transcript ?? "").trim();
-  })
+    return String(parseModelJson<{ transcript?: string }>(res).transcript ?? "").trim();
+  }, 2, Date.now() + 25_000)
     .then((r) => r.result)
     .catch(() => null); // scoring still works if this listener fails
 
   const { result: raw, model: scorer } = await withTextModel(args.userId, model, async (apiKey, pick) => {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: TEXT_CALL_TIMEOUT_MS } });
     const res = await ai.models.generateContent({
       model: pick,
       contents: [
@@ -296,7 +260,7 @@ export async function scorePronunciation(args: {
         maxOutputTokens: 4096,
       },
     });
-    return JSON.parse(res.text ?? "{}") as {
+    return parseModelJson<{
       transcript?: string;
       words?: {
         expected?: string;
@@ -309,7 +273,7 @@ export async function scorePronunciation(args: {
       }[];
       message?: string;
       tips?: { title?: string; body?: string }[];
-    };
+    }>(res);
   });
 
   // Re-anchor Gemini's words onto the expected list by position (it's asked

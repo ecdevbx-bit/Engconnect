@@ -1,6 +1,13 @@
 'use client';
 
-export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
+
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="c-box rounded-xl max-w-md w-full px-8 py-12 flex flex-col items-center gap-6 text-center">

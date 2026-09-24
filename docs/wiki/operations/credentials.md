@@ -2,7 +2,7 @@
 title: Credentials & config
 type: operations
 tags: [ops, secrets, config]
-links: [operations/deployment, architecture/auth, architecture/storage-r2, architecture/gemini-key-pool]
+links: [operations/deployment, operations/monitoring, architecture/auth, architecture/storage-r2, architecture/gemini-key-pool]
 updated: 2026-09-22
 ---
 
@@ -24,3 +24,5 @@ Secrets live **only** in: `credentials.txt` (repo root, git-ignored, local), `fr
 | `INTERNAL_API_KEY`, `ADMIN_EMAILS` | admin actions; admin allow-list (ec.devbx@gmail.com) | generated / owner | ✅ set (D-023) |
 | `SUPPORT_EMAIL_TO`, `SUPPORT_EMAIL_FROM` | where support tickets are emailed / sender | owner | ✅ ec.devbx@gmail.com / onboarding@resend.dev |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | payments | Razorpay dashboard | optional, later |
+| `NEXT_PUBLIC_SENTRY_DSN` | where error reports go (public by design) | Sentry project `engconnect` (org `englishconnection`, EU) | ✅ set locally + Vercel (D-044) |
+| `SENTRY_AUTH_TOKEN` | source-map upload at build time — Vercel only | owner's Sentry user token (sntryu_…, in `credentials.txt`); swap for an org token (Sentry → Settings → Auth Tokens) when convenient | ✅ set on Vercel (encrypted) |

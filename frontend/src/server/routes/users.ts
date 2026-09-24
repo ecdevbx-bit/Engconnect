@@ -155,6 +155,13 @@ export function registerUserRoutes(r: Router) {
     return ok(toProfileDto(p));
   });
 
+  // Sentry check (D-044, scripts/sentry-check.mjs): fails on purpose so an
+  // unhandled API error is reported with its traceId. Internal key only.
+  r.on("POST", "/debug/sentry", async ({ req }) => {
+    await requireInternal(req);
+    throw new Error(`Sentry test error (POST /api/debug/sentry) at ${new Date().toISOString()}`);
+  });
+
   r.on("POST", "/debug/clientlog", async ({ req }) => {
     await requireInternal(req);
     console.error("[clientlog]", JSON.stringify(await readJson(req)).slice(0, 2000));

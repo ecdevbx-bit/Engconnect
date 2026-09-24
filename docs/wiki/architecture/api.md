@@ -27,7 +27,9 @@ Served by `frontend/src/app/api/[...path]/route.ts` → `src/server/routes/index
 `GET /flags` (public) · `GET /stt/token` (legacy → always `provider:"browser"`) ·
 `GET /users/internal/:sub` (internal) · `POST /debug/clientlog` (internal)
 
-**Jumble** — `GET /game/jumble/batch?difficulty=` · `GET /game/jumble/hint` · `POST /game/jumble/submit`
+**Jumble** — `GET /game/jumble/batch?difficulty=` · `GET /game/jumble/clue` (sentence shape + meaning,
+D-043) · `GET /game/jumble/hint` (level 1–3, logged; level 3 ⇒ half XP) · `POST /game/jumble/submit`
+(`hintPenalty`)
 → [[features/jumble-words]]
 
 **Pronunciation & Word Bank** — `GET /pronunciation/phrases` · `POST /pronunciation/attempts`

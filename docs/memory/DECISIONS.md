@@ -367,3 +367,85 @@
 - Sign-up now states agreement to the Terms of Service and Privacy Policy (both pages already existed
   and are linked in the landing footer).
 - Checked at 375 px and 1280 px, dark scheme: one `<h1>`, no horizontal scroll, 44 px tap targets.
+
+## D-042 · Learn library (/learn) behind an admin "show to everyone" switch — 2026-09-24
+- Owner: "build a free resource page like W3Schools … basic to pro, some only unlockable under Pro
+  membership" and "add this option as a toggle in the admin menu — whether we show it to everyone or not".
+- `/learn` → tracks → lessons, public pages (SEO), lesson content as typed data in
+  `frontend/src/content/learn/` rendered by `components/learn/` (visual-first: timelines, sentence blocks,
+  formulas, tables — the owner wants pictures over text). Pro lessons are gated in SERVER components: a
+  non-Pro visitor gets the title, summary and first section only; the rest is never sent to the browser.
+  Admins count as Pro (preview).
+- Switch = feature flag `englishconnection-learn` (migration …0924000100), **starts OFF** so the owner can
+  read AI-written lessons before learners see them. OFF → `/learn` 404s for everyone but admins, menus hide
+  it, sitemap leaves it out, pages are `noindex`. Toggle on the admin home card or `/v3/admin/feature-flags`.
+  Server check: `learnAccess()` in `server/viewer.ts`; client: `hooks/useLearnVisible.ts`.
+
+## D-043 · Jumble hint ladder starts with the sentence's shape; the full answer costs half XP — 2026-09-24
+- Owner: "when they are not able to solve, give them hints regarding the structure".
+- New first rung `GET /game/jumble/clue`: sentence type, tense, building blocks in order
+  ("Who → Action → What → When"), one grammar clue and the meaning in the learner's own language/script
+  (profiles.native_lang). Written once per sentence × language by the text model (`gemini/jumbleClue.ts`)
+  and cached in `problem_hints`; if the model is busy a plain clue from the punctuation is used (not cached).
+- Then the existing word reveals (first/last, then 2nd/2nd-last) and the full sentence. `/hint` now logs
+  the level reached per learner/sentence/IST day (`jumble_hint_uses`, `record_jumble_hint()`); a solve after
+  the full sentence was shown pays **half XP** (before, any learner could fetch level 3 and take full XP).
+- A 💡 Hint button on the board opens the ladder any time; it still opens by itself after 2 misses.
+
+## D-044 · Sentry for errors (errors only, privacy-first, EU region) — 2026-09-24
+- Owner gave a Sentry token. Org `englishconnection` (EU, de.sentry.io), project `engconnect` created by
+  `scripts/sentry-setup.mjs` (idempotent), which also sets `NEXT_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN`
+  on Vercel. Sentry only issues org (CI) tokens in its web UI, so the owner's personal token is the
+  source-map upload token for now (encrypted on Vercel) — swap in an org token when convenient.
+- `@sentry/nextjs` 11: `src/instrumentation.ts` (server/edge, 5 % server traces), `src/instrumentation-client.ts`
+  (errors only — no tracing, no replay, to keep pages light), `app/error.tsx` + `app/global-error.tsx` capture,
+  and `server/http.ts` reports every unhandled API error with the learner-visible `traceId` as a tag
+  (search it in Sentry) plus deliberate 5xx (K.AI busy/capacity) as grouped warnings.
+- Reports only from Vercel deployments. `lib/sentryScrub.ts`: `dataCollection` off for cookies, bodies,
+  auth headers, local variables, gen-AI data; URLs scrubbed of access_token/token_hash/code; user = opaque id.
+- Browser events go through our own `/monitoring` tunnel (ad blockers), excluded from `proxy.ts`.
+
+## D-045 · Code-audit hardening (2026-09-24) — 2026-09-24
+- Owner: "verify for any places where code can break". A read-only audit found 17 issues; fixed:
+  - Learners could mark SHARED Gemini keys invalid/exhausted via `/chat/…/reconnect` (`keyFailed` + text) and
+    `/end` (`outcome`). Now: `/end` always releases "ok"; a reported "invalid" only counts if Google itself
+    rejects the key (`googleRejectsKey`), a "daily quota" claim becomes a short cooldown, ≤ 2 reports per
+    session count (`chat_sessions.key_reports`).
+  - Ended/replaced K.AI sessions kept billing wall-clock against the learner's minutes (heartbeat from a dead
+    tab). The server now answers read-only for non-active sessions; the client closes on `sessionActive:false`
+    or a failed reconnect; a session created after the learner left the screen is ended at once.
+  - Talk-time milestone XP could be paid twice (heartbeat + /end race) → claimed with a conditional update.
+  - Two tabs could open two live sessions → unique partial index `chat_sessions_one_active_per_user`
+    (migration …0924000200) + `SESSION_CONFLICT`.
+  - Sign-in race: `GET /session` could beat `POST /session/start` and sign a fresh login out → one retry.
+  - Text calls (scoring, blind listener, clues, memory) had no timeout → 15 s per call, 30 s deadline, so the
+    60 s function never returns Vercel's HTML error page; garbled/cut-off JSON and missing models fall back to
+    the next model instead of a 500 (and don't count against the key).
+  - Crafted WAV header (0 channels) could hang an instance → validated; unreadable WAV → 400.
+  - Free pronunciation quota is now reserved BEFORE scoring (was only checked when loading a phrase) and
+    refunded if scoring fails.
+  - Recorder: a slow mic-permission prompt could leave the mic on / start the take's clock early; Safari's
+    suspended AudioContext could mark every take as silence → generation guard, clock starts after the mic
+    opens, `ctx.resume()`, and "can't measure" ≠ "silent".
+  - Client fetch helpers (jumble, pronunciation, word bank, profile) now go through `v3Fetch`/`readJsonSafe`
+    (non-JSON error pages, expired-token refresh, "signed in elsewhere"). Blocked localStorage no longer
+    crashes three screens. Malformed `%`-escapes and non-uuid session ids → 4xx, not 500. toWav leak fixed.
+- Not changed (noted in STATUS): leaderboard RPC is capped at 1,000 rows by PostgREST; the streak board ranks
+  stored streaks that never reset by themselves; 49 pre-existing React-compiler lint errors (mostly the old
+  `/showcase/*` previews) — the build doesn't depend on them.
+- Proof: `scripts/audit-guards-probe.mjs` (all ✓ locally).
+
+## D-046 · Landing explains the product with figures, not text — 2026-09-24
+- Owner: "explain mostly things in the landing page via diagrams or figures or images — as little text as
+  possible, humans understand better by visuals". Builds on D-041 (glass, light, scroll-swipe kept).
+- `ShowcaseV4.tsx` + `components/landing/figures/*`: animated live-call hero (voice → caption with the mistake
+  struck → K.AI's fix → +XP), a 3-step "How it works" flow diagram, the kept scroll-swipe now carrying a K.AI
+  call timeline (pause → answer → you cut in → it stops; mute only), jumble chips snapping into order, a
+  pronunciation figure (score ring, coloured words, "Wednesday" → WENZ·day + Devanagari respelling), setup
+  tiles (level staircase, script-letter orbit, mode icons, voice equaliser), progress widgets, and Free vs Pro
+  drawn on the same scale (7 day-blocks, drill dots vs ∞). Reviews cut to one-sentence pull quotes, verbatim.
+- ~1,000 → ~470 words of copy. Figures are server-rendered HTML/SVG + CSS; one tiny `FigurePlayer` starts
+  animations on screen and pauses them off screen; reduced-motion / no-JS shows the finished frame; every
+  figure has `role="img"` + a full `aria-label`. The old live demos (LazyDemos, PlatformInsights) no longer
+  load on the landing — lighter page. No images added, no new dependencies.
+- The landing shows a "Learn" link (header + footer) only while the Learn library is public (D-042).

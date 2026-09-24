@@ -10,7 +10,8 @@ import { LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { DisplayUser } from "@/lib/displayUser";
 
-import { accountMenu, adminMenu } from "@/config/nav";
+import { accountMenu, adminMenu, learnMenuItem } from "@/config/nav";
+import { useLearnVisible } from "@/hooks/useLearnVisible";
 
 /**
  * AccountDropdown — the rich account menu (Layout.md §7).
@@ -31,6 +32,7 @@ export default function AccountDropdown({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { resolvedTheme, setTheme } = useTheme();
+  const learnVisible = useLearnVisible();
   // Fixed viewport position computed from the trigger, so the portaled menu
   // lines up under it (right-aligned) like the old absolute placement did.
   const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
@@ -126,7 +128,7 @@ export default function AccountDropdown({
 
       {/* 2 — item rows (config-driven) */}
       <div className="py-2">
-        {accountMenu.map((item) => {
+        {(learnVisible ? [...accountMenu, learnMenuItem] : accountMenu).map((item) => {
           const Icon = item.icon;
           return (
             <Link

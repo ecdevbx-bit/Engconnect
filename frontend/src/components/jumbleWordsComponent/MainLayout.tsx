@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { storageSeen } from "@/lib/safeStorage";
 import dynamic from "next/dynamic";
 import { HiSpeakerWave } from "react-icons/hi2";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -11,7 +12,9 @@ import {
     v3FetchJumbleBatch,
     v3SubmitJumbleAnswer,
     v3FetchJumbleHint,
+    v3FetchJumbleClue,
     type V3JumbleHint,
+    type V3JumbleClue,
     type JumbleDifficulty,
 } from "@/lib/v3Game";
 import { QuotaReachedError, remainingDifficulties } from "@/lib/quotaPrompt";
@@ -21,7 +24,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import confetti from "canvas-confetti";
 import { emitToast } from "@/lib/toast";
 import { speak } from "@/lib/tts";
-import { Puzzle, HelpCircle } from "lucide-react";
+import { Puzzle, HelpCircle, Lightbulb } from "lucide-react";
 import { useNextStep } from "nextstepjs";
 import {
     JUMBLE_TOUR_NAME,
@@ -137,9 +140,11 @@ export default function MainLayout() {
     // ── Hint flow ──────────────────────────────────────────────────────────
     // wrongAttempts counts consecutive misses on the *current* question (it
     // survives the resetKey remount that lets the player retry the same
-    // sentence). After 3, the AI partner offers a hint. hintLevel: 0 none ·
-    // 1 first/last · 2 +second/second-last · 3 full. The revealed words come
-    // from the server so hidden words never reach the browser.
+    // sentence). After 2, the AI coach offers a hint (or the 💡 button, any
+    // time). The ladder: clue = the sentence's shape (type, tense, building
+    // blocks, meaning in their language) → hintLevel 1 first/last word · 2
+    // +second/second-last · 3 full (half XP). Everything comes from the server
+    // so hidden words never reach the browser.
     // hintOpen controls the pop-up's visibility on its own — decoupled from
     // hintLevel so closing (✕ / No thanks / Got it) always hides the card,
     // even after the full sentence (hintLevel 3) has been revealed.
@@ -147,6 +152,7 @@ export default function MainLayout() {
     const [hintLevel, setHintLevel] = useState(0);
     const [hintOpen, setHintOpen] = useState(false);
     const [hint, setHint] = useState<V3JumbleHint | null>(null);
+    const [clue, setClue] = useState<V3JumbleClue | null>(null);
     const [hintLoading, setHintLoading] = useState(false);
 
     const resetHints = useCallback(() => {
@@ -154,6 +160,7 @@ export default function MainLayout() {
         setHintLevel(0);
         setHintOpen(false);
         setHint(null);
+        setClue(null);
         setHintLoading(false);
     }, []);
 
@@ -217,9 +224,7 @@ export default function MainLayout() {
     const tourFlag = searchParams?.get(JUMBLE_TOUR_QUERY);
     useEffect(() => {
         if (loading || !authReady || sentences.length === 0) return;
-        const seen =
-            typeof window !== "undefined" &&
-            window.localStorage.getItem(JUMBLE_TOUR_SEEN_KEY) === "1";
+        const seen = storageSeen(JUMBLE_TOUR_SEEN_KEY);
         const shouldStart = tourFlag === "1" || !seen;
         if (!shouldStart) return;
 
@@ -305,6 +310,35 @@ export default function MainLayout() {
         },
         [sentences, currentIndex, authReady, v3AccessToken],
     );
+
+    // First rung: the sentence's shape. Reveals no word positions.
+    const fetchClue = useCallback(async () => {
+        const cur = sentences[currentIndex];
+        if (!cur || !authReady) return;
+        setHintLoading(true);
+        try {
+            setClue(
+                await v3FetchJumbleClue(v3AccessToken, {
+                    order: cur.sentenceId,
+                    difficulty: cur.difficulty,
+                    base: cur.progressiveBase,
+                    variant: cur.progressiveLevel,
+                }),
+            );
+        } catch (err) {
+            console.error("Error fetching clue:", err);
+            emitToast({ type: "error", title: "Hint unavailable", body: "Couldn't load a hint. Please try again." });
+        } finally {
+            setHintLoading(false);
+        }
+    }, [sentences, currentIndex, authReady, v3AccessToken]);
+
+    // 💡 on the board: open the ladder where the learner left it; the first
+    // tap goes straight to the sentence's shape.
+    const handleOpenHint = () => {
+        setHintOpen(true);
+        if (!clue && hintLevel === 0 && !hintLoading) void fetchClue();
+    };
 
     const handleRequestHalf = () => fetchHint(Math.min(hintLevel + 1, 2));
     const handleRequestFull = () => fetchHint(3);
@@ -656,6 +690,16 @@ export default function MainLayout() {
                             />
                         </div>
                         <button
+                            onClick={handleOpenHint}
+                            disabled={loading || submitting || !sentences[currentIndex]}
+                            aria-label="Get a hint"
+                            title="Get a hint"
+                            className="flex items-center gap-1 rounded-xl bg-surface-2 px-2 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-surface-3 disabled:opacity-50"
+                        >
+                            <Lightbulb className="h-4 w-4" />
+                            <span className="hidden sm:inline">Hint</span>
+                        </button>
+                        <button
                             onClick={speakSentence}
                             aria-label="Hear your sentence"
                             title="Hear your sentence"
@@ -733,10 +777,11 @@ export default function MainLayout() {
             {hintOpen && (
                 <JumbleHintCard
                     misses={wrongAttempts}
-                    promptVisible={hintLevel === 0 && !hintLoading}
                     hintLevel={hintLevel}
+                    clue={clue}
                     hint={hint}
                     loading={hintLoading}
+                    onRequestClue={fetchClue}
                     onRequestHalf={handleRequestHalf}
                     onRequestFull={handleRequestFull}
                     onDismiss={handleDismissHint}

@@ -23,7 +23,7 @@ with `node supabase/apply-migrations.mjs` ([[operations/runbook]]).
 |---|---|
 | Identity & progress | `profiles` (1:1 auth.users; created by trigger `on_auth_user_created`), `user_attributes` (xp, level, streak, combos, cursors, progressive_sets), `user_badges`, `activity`, `daily_usage` |
 | Catalogs | `levels`, `badges`, `feature_flags`, `app_settings` (JSON docs: jumble, pronunciation_timings, ai_partner_rewards, quotas, pro_trial, pro_invite) |
-| Content | `problems` (category jumble/pronunciation; difficulty; `sort_order`; progressive `base`/`variant`; `initial`/`final`), `problem_rewards` (XP once per problem per IST day) |
+| Content | `problems` (category jumble/pronunciation; difficulty; `sort_order`; progressive `base`/`variant`; `initial`/`final`), `problem_rewards` (XP once per problem per IST day), `problem_hints` (cached Jumble structure clue per sentence × language, D-043), `jumble_hint_uses` (highest hint level per learner × sentence × IST day) |
 | Practice | `pronunciation_attempts` (words JSON, audio_key in R2), `word_bank` |
 | AI Partner | `chat_sessions` (billing, talk-time, XP, lease, language/level/scenario/voice), `chat_messages`, `learner_memory` |
 | Premium | `pro_trial_applications`, `feedback`, `pro_invite_signups`, `subscriptions` |
@@ -37,7 +37,8 @@ with `node supabase/apply-migrations.mjs` ([[operations/runbook]]).
 | `level_for_xp`, `recompute_levels` | Level math; re-derive after admin edits |
 | `grant_badge` | One-off badges (onboarding) |
 | `leaderboard_rows(metric)` | Ranked rows for xp / streak / weekly |
-| `bump_daily_usage` | Free-tier counters (IST day) |
+| `bump_daily_usage` | Free-tier counters (IST day); with a cap it reserves atomically (-1 = full), a negative amount refunds |
+| `record_jumble_hint(user, problem, level)` | Keeps the highest Jumble hint level seen today (D-043) |
 | `gemini_lease_key`, `gemini_heartbeat_lease`, `gemini_release_lease`, `gemini_refresh_key_states`, `next_pacific_midnight` | Key pool ([[architecture/gemini-key-pool]]) |
 | `auth_email_allow` | Check-and-record auth email sends (3/address, 10/IP per hour) |
 | `ist_today`, `set_updated_at`, `handle_new_user` | Helpers / triggers |

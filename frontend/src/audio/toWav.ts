@@ -32,12 +32,12 @@ function encodeWav(samples: Float32Array, rate: number): Blob {
 
 export async function toWav16k(blob: Blob): Promise<Blob> {
   if (typeof window === "undefined" || blob.type === "audio/wav") return blob;
+  let ctx: AudioContext | null = null;
   try {
     const AC: typeof AudioContext =
       window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    const ctx = new AC();
+    ctx = new AC();
     const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
-    void ctx.close().catch(() => {});
     const length = Math.max(1, Math.ceil(decoded.duration * TARGET_RATE));
     const offline = new OfflineAudioContext(1, length, TARGET_RATE);
     const src = offline.createBufferSource();
@@ -49,5 +49,8 @@ export async function toWav16k(blob: Blob): Promise<Blob> {
   } catch (err) {
     console.warn("[toWav16k] conversion failed, uploading original", err);
     return blob;
+  } finally {
+    // Browsers cap live AudioContexts; a failed decode must not leak one.
+    void ctx?.close().catch(() => {});
   }
 }

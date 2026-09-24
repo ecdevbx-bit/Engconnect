@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import ShowcaseV4 from "@/components/ShowcaseV4";
+import { FLAG_LEARN, flagEnabled } from "@/server/viewer";
 
 const SITE_URL = "https://englishconnection.in";
 
@@ -48,7 +49,7 @@ export default async function Page() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
-      <ShowcaseV4 />
+      <ShowcaseV4 showLearn={await flagEnabled(FLAG_LEARN, false)} />
     </>
   );
 }

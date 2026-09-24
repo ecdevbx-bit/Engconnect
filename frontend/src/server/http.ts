@@ -1,5 +1,8 @@
 import "server-only";
 
+import * as Sentry from "@sentry/nextjs";
+import { after } from "next/server";
+
 // Response envelope shared with the frontend (lib/apiClient.ts):
 //   success → { success: true,  message, data }
 //   failure → { success: false, message, errorCode, traceId, timestamp }
@@ -34,9 +37,29 @@ export function ok<T>(data: T, message = "OK", status = 200): Response {
   return Response.json({ success: true, message, data }, { status, headers: { "Cache-Control": "no-store" } });
 }
 
+// Send queued Sentry events before Vercel freezes the function (the SDK's own
+// request wrapping isn't applied to Turbopack builds).
+function flushSentrySoon(): void {
+  try {
+    after(() => Sentry.flush(2000));
+  } catch {
+    // outside a request scope — nothing to wait for
+  }
+}
+
 export function errorResponse(err: unknown): Response {
   const traceId = crypto.randomUUID().slice(0, 8);
   if (err instanceof ApiFailure) {
+    // 5xx we answer on purpose (K.AI busy / at capacity / unavailable) are
+    // worth counting, not paging: one Sentry issue per code, as a warning.
+    if (err.status >= 500) {
+      Sentry.captureMessage(`API ${err.status} ${err.code}: ${err.message}`, {
+        level: "warning",
+        fingerprint: ["api-failure", err.code],
+        tags: { traceId, errorCode: err.code },
+      });
+      flushSentrySoon();
+    }
     return Response.json(
       {
         success: false,
@@ -50,6 +73,9 @@ export function errorResponse(err: unknown): Response {
     );
   }
   console.error(`[api] unhandled error trace=${traceId}`, err);
+  // The learner sees this traceId; searching it in Sentry finds the stack.
+  Sentry.captureException(err, { tags: { traceId } });
+  flushSentrySoon();
   return Response.json(
     {
       success: false,

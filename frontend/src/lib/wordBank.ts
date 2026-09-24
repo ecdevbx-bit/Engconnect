@@ -1,3 +1,5 @@
+import { readJsonSafe } from "./apiClient";
+import { freshAccessToken } from "./freshToken";
 import { getSessionId } from "./sessionId";
 import { handleSessionSuperseded, SESSION_SUPERSEDED_CODE } from "./sessionSupersede";
 
@@ -21,16 +23,22 @@ export type WordBankEntry = {
 };
 
 async function request<T>(path: string, accessToken: string, init: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}/api/word-bank${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      ...sessionHeaders(),
-      ...(init.headers ?? {}),
-    },
-    cache: "no-store",
-  });
-  const body = (await res.json()) as Envelope<T>;
+  const send = (token: string) =>
+    fetch(`${API_URL}/api/word-bank${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...sessionHeaders(),
+        ...(init.headers ?? {}),
+      },
+      cache: "no-store",
+    });
+  let res = await send(accessToken);
+  if (res.status === 401) {
+    const fresh = await freshAccessToken(accessToken);
+    if (fresh) res = await send(fresh);
+  }
+  const body = await readJsonSafe<Envelope<T>>(res);
   if (!res.ok || !body.success) {
     if (body.errorCode === SESSION_SUPERSEDED_CODE) handleSessionSuperseded();
     throw new Error(body.message ?? `word-bank ${init.method ?? "GET"} ${path} failed`);

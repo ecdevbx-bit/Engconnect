@@ -3,7 +3,7 @@ import "server-only";
 import { after } from "next/server";
 
 import { activeProblems, claimDailyReward, findProblem, parseDifficulty } from "../domain/problems";
-import { awardProgress, bumpUsage, getAttributes, isPro, setCursor, usageToday } from "../domain/users";
+import { awardProgress, bumpUsage, getAttributes, isPro, refundUsage, reserveUsage, setCursor, usageToday } from "../domain/users";
 import { scorePronunciation, speechStats } from "../gemini/scoring";
 import { requireUser } from "../guards";
 import { ApiFailure, fail, int, ok, readJson, str } from "../http";
@@ -120,18 +120,35 @@ export function registerPronunciationRoutes(r: Router) {
     // Never score silence — primed with the sentence, the model "hears" it anyway.
     // Not counted against the daily quota; the learner just tries again.
     const stats = mime === "audio/wav" ? speechStats(buf) : null;
+    if (mime === "audio/wav" && !stats) {
+      throw fail.badRequest("We couldn't read that recording. Please try again.", { audio: "unreadable" });
+    }
     if (stats && !stats.hasSpeech) {
       throw new ApiFailure(422, "NO_SPEECH", "We couldn't hear you — check your microphone and speak a little louder.");
     }
 
+    // Free quota is taken BEFORE scoring (each attempt is two model calls), and
+    // given back if scoring fails. Pro / unlimited are just counted afterwards.
+    const { pronunciationPerDifficultyPerDay: cap } = await getSettings("quotas");
+    const limited = cap > 0 && !(await isPro(u.id));
+    if (limited && !(await reserveUsage(u.id, bucket(d), cap))) {
+      throw fail.quota(`You've used today's free ${d} sentences. Try another level or come back tomorrow.`);
+    }
+
     const { data: prof } = await db().from("profiles").select("native_lang").eq("id", u.id).maybeSingle();
-    const score = await scorePronunciation({
-      userId: u.id,
-      expectedText: p.final,
-      audio: buf,
-      mimeType: mime,
-      nativeLang: (prof?.native_lang as string | undefined) ?? "",
-    });
+    let score: Awaited<ReturnType<typeof scorePronunciation>>;
+    try {
+      score = await scorePronunciation({
+        userId: u.id,
+        expectedText: p.final,
+        audio: buf,
+        mimeType: mime,
+        nativeLang: (prof?.native_lang as string | undefined) ?? "",
+      });
+    } catch (err) {
+      if (limited) await refundUsage(u.id, bucket(d));
+      throw err;
+    }
     const accuracyPercent = Math.floor(score.accuracy * 100);
     const baseXp = Math.round(BASE_XP[d] * score.accuracy);
     const paid = baseXp > 0 ? await claimDailyReward(u.id, p.id, baseXp) : false;
@@ -141,7 +158,7 @@ export function registerPronunciationRoutes(r: Router) {
     const list = await activeProblems("pronunciation", d);
     const idx = list.findIndex((x) => x.id === p.id);
     if (idx >= 0) await setCursor(u.id, bucket(d), (idx + 1) % list.length);
-    await bumpUsage(u.id, bucket(d));
+    if (!limited) await bumpUsage(u.id, bucket(d));
 
     const progress = await awardProgress({
       userId: u.id,

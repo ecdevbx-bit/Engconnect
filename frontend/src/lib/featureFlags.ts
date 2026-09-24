@@ -91,3 +91,11 @@ export const FLAG_AI_PARTNER = "englishconnection-ai-partner";
 export function useAIPartnerEnabled(): boolean {
   return useFlagWithDefault(FLAG_AI_PARTNER, false);
 }
+
+export const FLAG_LEARN = "englishconnection-learn";
+
+// Learn library (/learn). OFF by default: while the admin switch is off only
+// admins see it (the page itself checks on the server too).
+export function useLearnEnabled(): boolean {
+  return useFlagWithDefault(FLAG_LEARN, false);
+}

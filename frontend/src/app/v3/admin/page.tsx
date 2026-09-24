@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FLAG_LEARN, flagEnabled } from "@/server/viewer";
+
+import LearnToggleCard from "./LearnToggleCard";
 import { NotAdminError, requireAdmin } from "./problems/adminAuth";
 
 // /v3/admin — landing page linking every admin tool.
@@ -17,7 +20,7 @@ const TOOLS = [
   { href: "/v3/admin/jumble", title: "Jumble settings", body: "Bonus XP for completing a progressive set." },
   { href: "/v3/admin/levels", title: "Levels", body: "XP thresholds, titles and icons of the level ladder." },
   { href: "/v3/admin/badges", title: "Badges", body: "XP, streak, combo and progressive-set badge thresholds." },
-  { href: "/v3/admin/feature-flags", title: "Feature flags", body: "Turn Pronunciation, Word Bank, AI Partner, etc. on or off." },
+  { href: "/v3/admin/feature-flags", title: "Feature flags", body: "Turn Pronunciation, Word Bank, AI Partner, the Learn library, etc. on or off." },
   { href: "/v3/admin/pro-invite", title: "Pro invite link", body: "The public /pro link: on/off, dates, redemption cap, sign-ups." },
 ];
 
@@ -28,11 +31,13 @@ export default async function AdminHome() {
     if (err instanceof NotAdminError) redirect("/login");
     throw err;
   }
+  const learnOn = await flagEnabled(FLAG_LEARN, false);
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="mb-2 text-3xl font-extrabold text-heading">Admin</h1>
       <p className="mb-8 text-sm text-muted-foreground">Everything you can configure without a deploy.</p>
       <div className="grid gap-3 sm:grid-cols-2">
+        <LearnToggleCard initialOn={learnOn} />
         {TOOLS.map((t) => (
           <Link
             key={t.href}

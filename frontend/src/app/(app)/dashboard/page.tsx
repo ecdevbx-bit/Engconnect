@@ -19,6 +19,7 @@ import {
   TrainingShowcaseCarousel,
 } from "@/components/dashboard/TrainingShowcaseCards";
 import { ActivityStatsCarousel } from "@/components/dashboard/ActivityStatsCarousel";
+import LearnHomeCard from "@/components/dashboard/LearnHomeCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   v3FetchMyActivity,
@@ -238,6 +239,9 @@ export default function DashboardPage() {
         {/* Mobile (< md) — same cards, one full-width at a time, swipeable */}
         <TrainingShowcaseCarousel isPro={isPro} />
       </section>
+
+      {/* ── Learn library (free lessons) — only while the admin switch shows it ── */}
+      <LearnHomeCard />
 
       {/* ── Go Pro (mobile only, free users) — phones have no "Pro" navbar tab,
           so the home screen carries the way to buy or apply for Pro. Waits for

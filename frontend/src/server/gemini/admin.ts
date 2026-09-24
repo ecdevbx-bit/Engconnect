@@ -224,6 +224,24 @@ export async function resetKey(id: string) {
 }
 
 // Cheap validity probe: list models (does not consume generation quota).
+// Does Google itself reject this key right now? Used before believing a
+// browser's report that a key is invalid (a learner could otherwise disable
+// shared keys). Network trouble = "not proven" → false.
+export async function googleRejectsKey(id: string): Promise<boolean> {
+  const { data } = await db().from("gemini_api_keys").select("api_key").eq("id", id).maybeSingle();
+  if (!data) return false;
+  try {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1", {
+      headers: { "x-goog-api-key": data.api_key as string },
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    return res.status === 400 || res.status === 401 || res.status === 403;
+  } catch {
+    return false;
+  }
+}
+
 export async function testKey(id: string): Promise<{ ok: boolean; detail: string }> {
   const { data } = await db().from("gemini_api_keys").select("api_key").eq("id", id).single();
   if (!data) throw fail.notFound("Key not found.");

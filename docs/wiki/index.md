@@ -1,7 +1,7 @@
 ---
 title: Wiki index
 type: index
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # English Connection — Wiki index
@@ -14,7 +14,7 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | Page | What it covers |
 |---|---|
 | [[overview]] | What English Connection is, who it's for, the four trainers, tech at a glance |
-| [[features/jumble-words]] | Sentence unscrambling game: rounds, hints, progressive sets, XP rules |
+| [[features/jumble-words]] | Sentence unscrambling game: rounds, the hint ladder (sentence shape → words → full = ½ XP), progressive sets, XP rules |
 | [[features/pronunciation]] | Read-aloud coach: record → Gemini scores each word → feedback |
 | [[features/ai-partner]] | K.AI voice tutor on Gemini Live: language/level/mode/voice setup, hands-free talk + interruptions, captions, memory, caps |
 | [[features/k-ai-instructions]] | K.AI's instruction files: Beginner/Intermediate/Expert behaviour, practice modes, IELTS & interview material |
@@ -22,7 +22,8 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | [[features/progress-and-rewards]] | XP, levels, streaks, combos, badges, leaderboard |
 | [[features/premium]] | Pro: trial program, /pro invite link, quotas, Razorpay |
 | [[features/support]] | "Something wrong?" Help dropdown → ticket + email to the team (Resend) |
-| [[features/admin]] | Admin panel: Pro applications, support inbox, wiki & memory, Gemini keys, content, settings |
+| [[features/admin]] | Admin panel: Pro applications, support inbox, wiki & memory, Gemini keys, content, settings, Learn switch |
+| [[features/learn]] | Learn library: 39 visual grammar/speaking lessons, Pro-locked lessons, admin "show to everyone" switch |
 
 ## Architecture
 | Page | What it covers |
@@ -41,6 +42,7 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | [[operations/runbook]] | Run locally, apply migrations, add Gemini keys, common fixes |
 | [[operations/deployment]] | Vercel project, env vars, GitHub flow |
 | [[operations/credentials]] | Every secret/config value: where it lives, who provides it, status |
+| [[operations/monitoring]] | Sentry: what's reported, privacy filters, traceId lookup, source maps |
 
 ## Memory (outside the wiki)
 - `docs/memory/DECISIONS.md` — append-only decision log (why things are the way they are)
