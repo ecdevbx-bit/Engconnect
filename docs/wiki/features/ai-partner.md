@@ -61,6 +61,7 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
   we've talked about · Mistakes to keep an eye on · Words they've learnt · Next time), re-written
   after every conversation and sent to Gemini in the next session's locked prompt — K.AI follows up
   on last time ("Have you thought more about that Goa trip?"). Stored in Postgres only (no Redis).
+  A chat only counts once it's merged into memory; unmerged chats are retried (D-049).
 
 ## History & memory (Pro) — `/dashboard/ai-partner/history`
 - ChatGPT-style list of past conversations (Today / Yesterday / Previous 7 days / …) → transcript,

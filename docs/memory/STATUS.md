@@ -12,7 +12,7 @@
   **32/32**, `jumble-hints-probe` all ✓, `audit-guards-probe` all ✓, `sentry-check` ✓ (server error +
   browser tunnel event both arrived; source maps uploaded for the release).
 - GitHub `ecdevbx-bit/Engconnect` (gh logged in as `ecdevbx-bit`). Supabase `uycpxwajvhcigyhvepci`:
-  17 migrations applied (…1002000100 chat memory, …1002000200 turns/continue), RLS everywhere.
+  18 migrations applied (…1002000100 chat memory, …1002000200 turns/continue, …1002000300 memory merged), RLS everywhere.
 - Admin: **ec.devbx@gmail.com** → `/v3/admin` (Learn switch on top, Pro applications, Support inbox,
   Wiki & memory, Gemini keys, content, settings).
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
@@ -42,6 +42,7 @@
     `scripts/chat-memory-probe.mjs` all ✓ locally (a real K.AI session recalled the seeded chats).
     Privacy page mentions K.AI transcripts + memory. Production build ✓.
   - **K.AI voices cut to two** (D-048): Aoede (female, default) + Charon (male); old choices fall back to Aoede.
+  - Memory merge tracked separately and retried (D-049) after the first prod run dropped one chat.
 
 ## Next ⏭️
 0. Owner: try History & memory as a Pro account on a phone and desktop (I can't sign in through the browser

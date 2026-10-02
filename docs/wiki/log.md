@@ -164,3 +164,7 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-02] ui | K.AI voices cut to two
 - Aoede (female, default) + Charon (male); picker, landing tile and wiki updated ([[features/ai-partner]],
   [[architecture/gemini-live]], D-048).
+
+## [2026-10-02] fix | Memory merge tracked + retried
+- First prod run dropped one chat from the memory file → `memory_merged_at`, retry on failed compaction,
+  "never guess" rule for K.AI ([[features/ai-partner]], [[architecture/database]], D-049).

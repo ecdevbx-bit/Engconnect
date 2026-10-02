@@ -32,10 +32,12 @@ type Row = {
   status: string;
   digest: SessionDigest | null;
   digested_at: string | null;
+  memory_merged_at: string | null;
   digest_attempts: number;
 };
 
-const COLS = "id, title, summary, started_at, ended_at, billed_seconds, turns, scenario, language, level, status, digest, digested_at, digest_attempts";
+const COLS =
+  "id, title, summary, started_at, ended_at, billed_seconds, turns, scenario, language, level, status, digest, digested_at, memory_merged_at, digest_attempts";
 
 function item(r: Row) {
   return {
@@ -94,8 +96,9 @@ export function registerChatHistoryRoutes(r: Router) {
     const rows = must(await q, "load history") as Row[];
     const page = rows.slice(0, limit);
 
-    // Some finished chats never got their digest (tab closed) — catch up now.
-    if (page.some((x) => !x.digest && !x.digested_at && x.status !== "active" && (x.digest_attempts ?? 0) < 3)) {
+    // Some finished chats were never digested or never merged into memory
+    // (tab closed, server stopped) — catch up now.
+    if (page.some((x) => !x.memory_merged_at && x.status !== "active" && (x.digest_attempts ?? 0) < 3)) {
       after(async () => {
         try {
           await digestPendingSessions(u.id, 2);

@@ -98,7 +98,13 @@ try {
   check(detail.status === 200 && detail.data.messages.length === INTERVIEW.length && corrections.length > 0, "transcript + corrections for the interview chat", `${corrections.length} corrections`);
   corrections.slice(0, 4).forEach((m) => console.log(`   ✗ ${m.wrong}  →  ✓ ${m.correct}`));
 
-  const mem = await api("/chat/memory");
+  // The memory merge finishes a few seconds after the digest appears.
+  let mem = await api("/chat/memory");
+  for (let i = 0; i < 20 && mem.data?.sessions !== 2; i++) {
+    await sleep(5000);
+    if (i === 8) await api("/chat/history"); // nudge a catch-up if a merge was dropped
+    mem = await api("/chat/memory");
+  }
   const md = mem.data?.memoryMd ?? "";
   check(mem.data?.pro && md.includes("##") && /TCS|interview/i.test(md) && /Goa|trip/i.test(md) && mem.data.sessions === 2, "memory file covers both chats (and counts both)", `${md.length} chars, ${mem.data?.sessions} conversations`);
   console.log(md.split("\n").map((l) => `   │ ${l}`).join("\n"));
@@ -135,6 +141,12 @@ try {
   console.log("✗", e.message);
   failures++;
 } finally {
+  if (failures && userId) {
+    // Leave a trail before the throwaway user (and its rows) is deleted.
+    const rows = await rest(`chat_sessions?select=title,digested_at,memory_merged_at,digest_attempts&user_id=eq.${userId}`);
+    const [m] = await rest(`learner_memory?select=sessions,memory_md_sessions,memory_md_updated_at&user_id=eq.${userId}`);
+    console.log("   diagnostics:", JSON.stringify({ sessions: rows, memory: m }));
+  }
   if (userId) await fetch(`${SB}/auth/v1/admin/users/${userId}`, { method: "DELETE", headers: admin });
 }
 console.log(failures ? `\n${failures} check(s) failed` : "\nall checks passed");

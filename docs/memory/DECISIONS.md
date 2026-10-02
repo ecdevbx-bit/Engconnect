@@ -484,3 +484,14 @@
   picked as the male voice; Puck ("Upbeat") is the alternative — one line in `lib/aiPartnerOptions.ts`.
 - Picker shows "Female voice / Male voice". Old saved choices and unknown names fall back to Aoede (client
   `SessionSetup` + server `isKnownVoice`). The landing "Voices" tile reads the same list (now 2).
+
+## D-049 · A chat counts as remembered only once it is merged into memory — 2026-10-02
+- Follow-up to D-047 after the first production run: one of two chats was digested but never made it into
+  the memory file, and K.AI then guessed a wrong fact ("you work in HR"). "Digested" was the only marker, so a
+  failed compaction (model busy / bad output) or a server stopping between digest and merge was never retried.
+- `chat_sessions.memory_merged_at` (migration …1002000300) marks the second step; the claim and the catch-up
+  work on "not merged yet" (re-merging from the saved digest without re-digesting). For Pro, a failed
+  compaction now aborts the merge so the chat is retried (up to 3 attempts; only the last one settles for the
+  structured memory alone). A memory file without sections is a ModelOutputError → retried / next model.
+- K.AI's prompt: only say what's in the notes; if something isn't there, say you don't remember and ask.
+- The probe also waits for the merge (it runs a few seconds after the digest appears).

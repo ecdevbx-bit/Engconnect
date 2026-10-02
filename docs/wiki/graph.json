@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T12:31:13.892Z",
+  "generatedAt": "2026-10-02T12:41:09.918Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -696,6 +696,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-049",
+      "title": "A chat counts as remembered only once it is merged into memory",
+      "type": "decision",
+      "date": "2026-10-02",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -831,6 +839,11 @@
     {
       "source": "architecture/database",
       "target": "D-043",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/database",
+      "target": "D-049",
       "kind": "cites"
     },
     {
@@ -1086,6 +1099,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-047",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-049",
       "kind": "cites"
     },
     {
@@ -1699,6 +1717,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-049",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2036,6 +2059,11 @@
     {
       "source": "memory/status",
       "target": "D-048",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-049",
       "kind": "cites"
     },
     {

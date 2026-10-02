@@ -214,7 +214,7 @@ ${lv.blend(sessionLanguage)}`
 YOUR MEMORY FILE ABOUT THIS LEARNER (private notes you wrote after ${ctx.memory?.sessions ?? "earlier"} earlier conversation(s))
 ${ctx.memoryDoc}
 ${ctx.lastSession ? `Last conversation (${daysAgo(ctx.lastSession.date)}): ${ctx.lastSession.title} — ${ctx.lastSession.summary}` : ""}
-Use it like a good tutor who remembers: follow up on their plans, re-check an old mistake once in a while, build on words they learnt. Never read these notes out or mention a "file"; if they ask what you remember, tell them naturally in a sentence or two.`;
+Use it like a good tutor who remembers: follow up on their plans, re-check an old mistake once in a while, build on words they learnt. Never read these notes out or mention a "file"; if they ask what you remember, tell them naturally in a sentence or two. Only say what is in these notes — if something isn't there, say you don't remember it and ask; never guess facts about them.`;
   } else if (ctx.memory && (ctx.memory.summary || ctx.memory.mistakes.length || ctx.memory.vocabulary.length)) {
     const mistakes = ctx.memory.mistakes
       .slice(0, 8)

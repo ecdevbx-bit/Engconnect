@@ -6,6 +6,7 @@ import { isProRow, type ProfileRow } from "../domain/users";
 import { isAdminEmail } from "../guards";
 import { db } from "../supabase";
 import { env } from "../env";
+import { ModelOutputError } from "./keyPool";
 import { parseModelJson, TEXT_CALL_TIMEOUT_MS, withTextModel } from "./textModel";
 
 // K.AI memory (D-047) — what happens after a conversation ends:
@@ -88,7 +89,14 @@ const clip = (s: unknown, n: number) => (typeof s === "string" ? s.trim().slice(
 const list = (v: unknown, n: number, each: number) =>
   (Array.isArray(v) ? v : []).map((x) => clip(x, each)).filter(Boolean).slice(0, n);
 
-async function textCall<T>(userId: string, prompt: string, schema: object | null, maxOutputTokens: number): Promise<T> {
+async function textCall<T>(
+  userId: string,
+  prompt: string,
+  schema: object | null,
+  maxOutputTokens: number,
+  // Runs inside the model call: throw ModelOutputError to retry / try the next model.
+  check?: (result: T) => void,
+): Promise<T> {
   const { result } = await withTextModel(userId, env.geminiTextModel(), async (apiKey, model) => {
     const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: TEXT_CALL_TIMEOUT_MS } });
     const res = await ai.models.generateContent({
@@ -98,7 +106,9 @@ async function textCall<T>(userId: string, prompt: string, schema: object | null
         ? { responseMimeType: "application/json", responseSchema: schema, temperature: 0.2, maxOutputTokens }
         : { temperature: 0.2, maxOutputTokens },
     });
-    return (schema ? parseModelJson<T>(res) : ((res.text ?? "") as T));
+    const out = schema ? parseModelJson<T>(res) : ((res.text ?? "") as T);
+    check?.(out);
+    return out;
   });
   return result;
 }
@@ -125,31 +135,58 @@ export function chunkLines(lines: { id: number; text: string }[], maxChars = CHU
   return chunks;
 }
 
-// Take the conversation for digestion; false if another server has it, it's
-// done, still live, or has failed too often.
-async function claim(sessionId: string): Promise<{ user_id: string; started_at: string } | null> {
+// Take the conversation for processing; null if another server has it, it's
+// already merged into memory, still live, or has failed too often. A chat is
+// finished in two steps — digested, then merged into memory — and the claim
+// covers both, so a crash between them is retried by the catch-up.
+type Claimed = { user_id: string; started_at: string; digest: SessionDigest | null; digested: boolean; attempt: number };
+
+async function claim(sessionId: string): Promise<Claimed | null> {
   const { data: s } = await db()
     .from("chat_sessions")
-    .select("user_id, status, started_at, digested_at, digest_started_at, digest_attempts")
+    .select("user_id, status, started_at, digest, digested_at, memory_merged_at, digest_started_at, digest_attempts")
     .eq("id", sessionId)
     .maybeSingle();
-  if (!s || s.status === "active" || s.digested_at || (s.digest_attempts ?? 0) >= MAX_ATTEMPTS) return null;
+  if (!s || s.status === "active" || s.memory_merged_at || (s.digest_attempts ?? 0) >= MAX_ATTEMPTS) return null;
   if (s.digest_started_at && Date.now() - new Date(s.digest_started_at).getTime() < CLAIM_STALE_MS) return null;
+  const attempt = (s.digest_attempts ?? 0) + 1;
   let q = db()
     .from("chat_sessions")
-    .update({ digest_started_at: new Date().toISOString(), digest_attempts: (s.digest_attempts ?? 0) + 1 })
+    .update({ digest_started_at: new Date().toISOString(), digest_attempts: attempt })
     .eq("id", sessionId)
     .eq("digest_attempts", s.digest_attempts ?? 0)
-    .is("digested_at", null);
+    .is("memory_merged_at", null);
   q = s.digest_started_at ? q.eq("digest_started_at", s.digest_started_at) : q.is("digest_started_at", null);
   const { data } = await q.select("id");
-  return data?.length ? { user_id: s.user_id as string, started_at: s.started_at as string } : null;
+  return data?.length
+    ? {
+        user_id: s.user_id as string,
+        started_at: s.started_at as string,
+        digest: (s.digest as SessionDigest | null) ?? null,
+        digested: !!s.digested_at,
+        attempt,
+      }
+    : null;
 }
+
+const markMerged = (sessionId: string) =>
+  db().from("chat_sessions").update({ memory_merged_at: new Date().toISOString() }).eq("id", sessionId);
 
 /** Digest one finished conversation and fold it into the learner's memory. */
 export async function compileSessionMemory(userId: string, sessionId: string): Promise<void> {
   const claimed = await claim(sessionId);
   if (!claimed || claimed.user_id !== userId) return;
+
+  if (claimed.digested) {
+    // Digest written earlier, memory merge didn't finish — just merge now.
+    if (!claimed.digest) {
+      await markMerged(sessionId); // a too-short chat: nothing to remember
+      return;
+    }
+    const { data: existing } = await db().from("learner_memory").select("*").eq("user_id", userId).maybeSingle();
+    await mergeIntoMemory(userId, sessionId, claimed, existing, claimed.digest, "");
+    return;
+  }
 
   const { data: msgs } = await db()
     .from("chat_messages")
@@ -164,7 +201,7 @@ export async function compileSessionMemory(userId: string, sessionId: string): P
   if (rows.filter((m) => m.role === "user").length < 2 || learnerWords < 8) {
     await db()
       .from("chat_sessions")
-      .update({ digested_at: new Date().toISOString(), memory_compiled: true, turns: rows.length })
+      .update({ digested_at: new Date().toISOString(), memory_merged_at: new Date().toISOString(), memory_compiled: true, turns: rows.length })
       .eq("id", sessionId);
     return;
   }
@@ -242,13 +279,27 @@ ${material}`,
     })
     .eq("id", sessionId);
 
-  // Fold the digest into the learner's memory. Two conversations can finish at
-  // the same moment (an /end and a catch-up), so the write is optimistic: it
-  // only lands if learner_memory hasn't changed since we read it; otherwise
-  // re-read and merge again (a lost update would silently drop a whole chat).
+  await mergeIntoMemory(userId, sessionId, claimed, existing, digest, learnerSummary);
+}
+
+// Fold a digest into the learner's memory. Two conversations can finish at the
+// same moment (an /end and a catch-up), so the write is optimistic: it only
+// lands if learner_memory hasn't changed since we read it; otherwise re-read
+// and merge again (a lost update would silently drop a whole chat). For Pro, a
+// failed memory-file compaction aborts the merge so the chat is retried — only
+// the last attempt settles for the structured memory alone.
+async function mergeIntoMemory(
+  userId: string,
+  sessionId: string,
+  claimed: Claimed,
+  existing: MemoryRow,
+  digest: SessionDigest,
+  learnerSummary: string,
+): Promise<void> {
   const { data: prof } = await db().from("profiles").select("*").eq("id", userId).maybeSingle();
   const profile = prof as ProfileRow | null;
   const pro = !!profile && (isProRow(profile) || isAdminEmail(profile.email));
+  const lastAttempt = claimed.attempt >= MAX_ATTEMPTS;
 
   let current = existing;
   for (let attempt = 0; attempt < 4; attempt++) {
@@ -258,13 +309,15 @@ ${material}`,
     }
     const row = await mergedMemory(userId, current, digest, learnerSummary, {
       pro,
+      requireFile: pro && !lastAttempt,
       when: claimed.started_at,
       sessionId,
       learnerName: profile?.name ?? "",
     });
+    let landed = false;
     if (!current) {
       const { data: inserted } = await db().from("learner_memory").upsert(row, { onConflict: "user_id", ignoreDuplicates: true }).select("user_id");
-      if (inserted?.length) return;
+      landed = !!inserted?.length;
     } else {
       const { data: updated } = await db()
         .from("learner_memory")
@@ -272,7 +325,11 @@ ${material}`,
         .eq("user_id", userId)
         .eq("updated_at", current.updated_at as string)
         .select("user_id");
-      if (updated?.length) return;
+      landed = !!updated?.length;
+    }
+    if (landed) {
+      await markMerged(sessionId);
+      return;
     }
   }
   console.warn("[memory] gave up merging after repeated concurrent updates", sessionId);
@@ -285,7 +342,7 @@ async function mergedMemory(
   existing: MemoryRow,
   digest: SessionDigest,
   learnerSummary: string,
-  o: { pro: boolean; when: string; sessionId: string; learnerName: string },
+  o: { pro: boolean; requireFile: boolean; when: string; sessionId: string; learnerName: string },
 ) {
   // Structured memory (everyone): recurring mistakes + words, as before.
   const now = new Date().toISOString();
@@ -317,7 +374,9 @@ async function mergedMemory(
       sessionId: o.sessionId,
       learnerName: o.learnerName,
     }).catch((err) => {
-      console.warn("[memory] compaction failed, keeping the previous file:", (err as Error)?.message?.slice(0, 160));
+      // Not on the last attempt: abort, so the chat stays unmerged and is retried.
+      if (o.requireFile) throw err;
+      console.warn("[memory] compaction failed on the last attempt, keeping the previous file:", (err as Error)?.message?.slice(0, 160));
       return undefined;
     });
   }
@@ -388,20 +447,22 @@ Newest conversation (${a.when.slice(0, 10)}):
 ${JSON.stringify(a.digest)}`,
     null,
     1200,
+    (out) => {
+      if (!String(out).includes("## ")) throw new ModelOutputError("memory file without sections");
+    },
   );
   const clean = md.replace(/^```(?:markdown|md)?\s*/i, "").replace(/```\s*$/, "").trim();
-  if (!clean.includes("##")) throw new Error("memory file without sections");
   return clean.slice(0, MEMORY_MD_MAX);
 }
 
-/** Catch-up: digest a few finished conversations that never got one (tab closed, server busy). */
+/** Catch-up: finish a few conversations that were never digested or never merged into memory (tab closed, server busy or stopped). */
 export async function digestPendingSessions(userId: string, max = 2): Promise<void> {
   const { data } = await db()
     .from("chat_sessions")
     .select("id")
     .eq("user_id", userId)
     .neq("status", "active")
-    .is("digested_at", null)
+    .is("memory_merged_at", null)
     .lt("digest_attempts", MAX_ATTEMPTS)
     .order("started_at", { ascending: false })
     .limit(max);
