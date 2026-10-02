@@ -168,3 +168,6 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-02] fix | Memory merge tracked + retried
 - First prod run dropped one chat from the memory file → `memory_merged_at`, retry on failed compaction,
   "never guess" rule for K.AI ([[features/ai-partner]], [[architecture/database]], D-049).
+
+## [2026-10-02] ops | Session 4 live
+- `16a981e` + `ff1268a` READY; prod smoke 32/32; chat-memory-probe all ✓ on production ([[operations/runbook]]).

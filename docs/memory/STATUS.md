@@ -8,6 +8,8 @@
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
   `frontend`, pnpm 11 via explicit commands — D-022). Auto-deploys on push to `main`.
+  Session 4: `16a981e` (memory + voices) + `ff1268a` (merge retry) READY — production smoke **32/32**,
+  `chat-memory-probe` all ✓ on prod (K.AI recalled job, TCS interview and Goa trip).
   Session 3: `0856583` (features + fixes) and `1513925` (raw-path API dispatch) READY; production smoke
   **32/32**, `jumble-hints-probe` all ✓, `audit-guards-probe` all ✓, `sentry-check` ✓ (server error +
   browser tunnel event both arrived; source maps uploaded for the release).
