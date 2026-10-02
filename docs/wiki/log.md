@@ -151,3 +151,16 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
   jumble-hints and audit-guards probes ✓, Sentry receives server errors (traceId tag) and browser events
   through `/monitoring` (EU region `r=de`), source maps uploaded ([[operations/monitoring]]).
 - API entry now dispatches from the raw URL path (single decode) ([[architecture/api]]).
+
+## [2026-10-02] ops | Project moved to Desktop\ENG
+- Repo now at `C:\Users\abhic\Desktop\ENG` (was OneDrive). pnpm packages reinstalled for the new path;
+  stale temp worktrees pruned; git remote/auth unchanged.
+
+## [2026-10-02] feature | K.AI history + memory file (Pro)
+- Chunk → digest → compacted Markdown memory file, fed to Gemini in the locked prompt; ChatGPT-style
+  history with continue/delete; "What K.AI remembers" with clear. Postgres only, no Redis
+  ([[features/ai-partner]], [[architecture/api]], [[architecture/database]], D-047).
+
+## [2026-10-02] ui | K.AI voices cut to two
+- Aoede (female, default) + Charon (male); picker, landing tile and wiki updated ([[features/ai-partner]],
+  [[architecture/gemini-live]], D-048).

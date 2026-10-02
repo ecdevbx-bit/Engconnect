@@ -41,26 +41,12 @@ export const AI_PARTNER_SCENARIOS = [
   { id: "Grammar Workout", label: "🎯 Grammar workout", hint: "Tenses and common mistakes" },
 ] as const;
 
-// Gemini Live prebuilt voices with Google's own character descriptions.
+// K.AI's voices — one female, one male (D-048; was 18). Gemini Live prebuilt
+// voices with Google's own character descriptions. Any other saved/requested
+// voice falls back to DEFAULT_AI_PARTNER_VOICE (server: isKnownVoice).
 export const AI_PARTNER_VOICES = [
   { id: "Aoede", feel: "Breezy", tone: "female" },
-  { id: "Kore", feel: "Firm", tone: "female" },
-  { id: "Leda", feel: "Youthful", tone: "female" },
-  { id: "Zephyr", feel: "Bright", tone: "female" },
-  { id: "Callirrhoe", feel: "Easy-going", tone: "female" },
-  { id: "Autonoe", feel: "Bright", tone: "female" },
-  { id: "Despina", feel: "Smooth", tone: "female" },
-  { id: "Sulafat", feel: "Warm", tone: "female" },
-  { id: "Erinome", feel: "Clear", tone: "female" },
-  { id: "Laomedeia", feel: "Upbeat", tone: "female" },
-  { id: "Puck", feel: "Upbeat", tone: "male" },
   { id: "Charon", feel: "Informative", tone: "male" },
-  { id: "Fenrir", feel: "Excitable", tone: "male" },
-  { id: "Orus", feel: "Firm", tone: "male" },
-  { id: "Achird", feel: "Friendly", tone: "male" },
-  { id: "Gacrux", feel: "Mature", tone: "male" },
-  { id: "Umbriel", feel: "Easy-going", tone: "male" },
-  { id: "Iapetus", feel: "Clear", tone: "male" },
 ] as const;
 
 export const DEFAULT_AI_PARTNER_VOICE = "Aoede";

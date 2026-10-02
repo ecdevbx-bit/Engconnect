@@ -6,7 +6,7 @@ import { awardProgress, getProfile, isProRow, type ProfileRow } from "../domain/
 import { googleRejectsKey } from "../gemini/admin";
 import { heartbeatLease, releaseLease, classifyGeminiError, type Outcome } from "../gemini/keyPool";
 import { grantLiveSession, LIVE_LEASE_TTL_SECONDS, type LiveGrant } from "../gemini/liveToken";
-import { compileSessionMemory } from "../gemini/memory";
+import { compileSessionMemory, digestPendingSessions } from "../gemini/memory";
 import { LEVEL_INSTRUCTIONS, normalizeLevel } from "../gemini/instructions/levels";
 import { buildKickoff, buildSystemPrompt, type LearnerContext } from "../gemini/tutorPrompt";
 import { isAdminEmail, requireUser, type AuthedUser } from "../guards";
@@ -50,7 +50,12 @@ type SessionRow = {
   milestones_awarded: number;
   xp_awarded: number;
   key_reports: number;
+  turns: number;
+  continued_from: string | null;
 };
+
+// Chat history + memory are Pro features (D-047); admins preview them.
+export const memoryPro = (u: AuthedUser, p: ProfileRow) => isProRow(p) || u.isAdmin;
 
 const STALE_AFTER_SECONDS = 150;
 
@@ -113,9 +118,58 @@ async function loadSession(userId: string, id: string): Promise<SessionRow> {
   return s;
 }
 
-async function learnerContext(profile: ProfileRow, level: string): Promise<LearnerContext> {
+async function learnerContext(
+  profile: ProfileRow,
+  level: string,
+  opts: { pro?: boolean; continueFrom?: string | null } = {},
+): Promise<LearnerContext> {
   const { data: mem } = await db().from("learner_memory").select("*").eq("user_id", profile.id).maybeSingle();
+
+  // Pro (D-047): the memory file, the last digested conversation, and — for
+  // "Continue this conversation" — that chat's digest plus where it stopped.
+  let lastSession: LearnerContext["lastSession"] = null;
+  let continuation: LearnerContext["continuation"] = null;
+  if (opts.pro) {
+    const { data: last } = await db()
+      .from("chat_sessions")
+      .select("title, summary, started_at")
+      .eq("user_id", profile.id)
+      .not("digest", "is", null)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (last?.title) lastSession = { title: last.title as string, summary: (last.summary as string) ?? "", date: last.started_at as string };
+
+    if (opts.continueFrom) {
+      const { data: prev } = await db()
+        .from("chat_sessions")
+        .select("id, title, summary, started_at")
+        .eq("id", opts.continueFrom)
+        .eq("user_id", profile.id)
+        .maybeSingle();
+      if (prev) {
+        const { data: tail } = await db()
+          .from("chat_messages")
+          .select("role, body")
+          .eq("session_id", prev.id)
+          .order("id", { ascending: false })
+          .limit(8);
+        continuation = {
+          title: (prev.title as string) || "our last conversation",
+          summary: (prev.summary as string) || "",
+          date: prev.started_at as string,
+          lines: (tail ?? [])
+            .reverse()
+            .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), text: String(m.body).slice(0, 300) })),
+        };
+      }
+    }
+  }
+
   return {
+    memoryDoc: opts.pro ? ((mem?.memory_md as string | undefined) ?? "") : "",
+    lastSession,
+    continuation,
     name: profile.name,
     location: profile.location,
     nativeLang: profile.native_lang,
@@ -237,6 +291,7 @@ async function applyProgress(
           billed_seconds: billed,
           speaking_seconds: speaking,
           user_words: userWords,
+          turns: (s.turns ?? 0) + turns.length,
           ...(pt ? { prompt_tokens: pt } : {}),
           ...(rt ? { response_tokens: rt } : {}),
           ...(final ? { status: "ended", ended_at: new Date().toISOString(), end_reason: String(body.reason ?? "ended").slice(0, 60) } : {}),
@@ -337,7 +392,20 @@ export function registerChatRoutes(r: Router) {
     const level = normalizeLevel(typeof body.level === "string" ? body.level.trim() : "");
     const scenario = pick(body.scenario, isKnownScenario, "General Conversation");
     const voice = pick(body.voice, isKnownVoice, DEFAULT_AI_PARTNER_VOICE);
-    const ctx = await learnerContext(profile, level);
+    const pro = memoryPro(u, profile);
+    // "Continue this conversation" (Pro): only one of the learner's own, finished chats.
+    let continuedFrom: string | null = null;
+    if (pro && typeof body.continueFrom === "string" && UUID_RE.test(body.continueFrom)) {
+      const { data: prev } = await db()
+        .from("chat_sessions")
+        .select("id")
+        .eq("id", body.continueFrom)
+        .eq("user_id", u.id)
+        .neq("status", "active")
+        .maybeSingle();
+      continuedFrom = (prev?.id as string | undefined) ?? null;
+    }
+    const ctx = await learnerContext(profile, level, { pro, continueFrom: continuedFrom });
     const materialSeed = 1 + Math.floor(Math.random() * 2_000_000_000);
     const systemPrompt = buildSystemPrompt(ctx, language, scenario, materialSeed);
     const budget = usage.cap > 0 ? usage.remaining : rewards.sessionSeconds;
@@ -351,7 +419,7 @@ export function registerChatRoutes(r: Router) {
     });
     const created = await db()
       .from("chat_sessions")
-      .insert({ user_id: u.id, language, level, scenario, voice, material_seed: materialSeed, model: grant.model, lease_id: grant.leaseId })
+      .insert({ user_id: u.id, language, level, scenario, voice, material_seed: materialSeed, model: grant.model, lease_id: grant.leaseId, continued_from: continuedFrom })
       .select("id")
       .single();
     if (created.error) {
@@ -366,6 +434,16 @@ export function registerChatRoutes(r: Router) {
 
     // Combo for AI Partner = milestones reached in this conversation.
     await awardProgress({ userId: u.id, game: "ai-partner", xp: 0, combo: "reset", log: false });
+
+    // Earlier conversations whose tab vanished never ran their /end digest —
+    // catch up in the background so history and memory stay complete.
+    after(async () => {
+      try {
+        await digestPendingSessions(u.id, 2);
+      } catch (err) {
+        console.warn("[memory] catch-up failed:", err instanceof Error ? err.message : err);
+      }
+    });
 
     return ok({
       sessionID: session.id,
@@ -442,7 +520,12 @@ export function registerChatRoutes(r: Router) {
 
     const grant = await grantLiveSession({
       userId: u.id,
-      systemPrompt: buildSystemPrompt(await learnerContext(profile, normalizeLevel(s.level)), s.language, s.scenario, s.material_seed),
+      systemPrompt: buildSystemPrompt(
+        await learnerContext(profile, normalizeLevel(s.level), { pro: memoryPro(u, profile), continueFrom: s.continued_from }),
+        s.language,
+        s.scenario,
+        s.material_seed,
+      ),
       sessionSeconds: left,
       exclude,
       voice: isKnownVoice(s.voice) ? s.voice : DEFAULT_AI_PARTNER_VOICE,

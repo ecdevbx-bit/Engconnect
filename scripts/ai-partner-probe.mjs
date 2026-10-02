@@ -63,7 +63,7 @@ try {
   token = (await fetch(`${SB}/auth/v1/token?grant_type=password`, { method: "POST", headers: { apikey: PUB, "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) }).then((r) => r.json())).access_token;
   await api("/session/start", { method: "POST" });
 
-  const s = await api("/chat/sessions", { method: "POST", body: JSON.stringify({ language: LANGUAGE, level: LEVEL, scenario: SCENARIO, voice: "Sulafat" }) });
+  const s = await api("/chat/sessions", { method: "POST", body: JSON.stringify({ language: LANGUAGE, level: LEVEL, scenario: SCENARIO, voice: "Charon" }) });
   if (!s.success) throw new Error(`session: ${s.message}`);
   console.log(`session ${s.data.sessionID} · ${s.data.language} · ${s.data.level} · ${s.data.scenario} · ${s.data.live.model}`);
   console.log(`kickoff: ${s.data.live.kickoff}`);

@@ -41,10 +41,14 @@ D-043) · `GET /game/jumble/hint` (level 1–3, logged; level 3 ⇒ half XP) · 
 |---|---|
 | `GET /chat/access` | `{enabled}` |
 | `GET /chat/usage` | `{pro, usedSeconds, capSeconds, remainingSeconds, rewards}` |
-| `POST /chat/sessions` `{language, level, scenario, voice}` (validated vs `lib/aiPartnerOptions.ts`) | `{sessionID, language, level, rewards, aiUsedSeconds, aiCapSeconds, live:{token, wsUrl, model, apiVersion, expiresAt, kickoff}}` |
+| `POST /chat/sessions` `{language, level, scenario, voice, continueFrom?}` (validated vs `lib/aiPartnerOptions.ts`; `continueFrom` = own finished chat, Pro) | `{sessionID, language, level, rewards, aiUsedSeconds, aiCapSeconds, live:{token, wsUrl, model, apiVersion, expiresAt, kickoff}}` |
 | `POST /chat/sessions/:id/progress` `{speakingSeconds, turns[], usage}` | speech_progress payload + `{capReached, sessionActive, usedSeconds, capSeconds, remainingSeconds}` |
 | `POST /chat/sessions/:id/reconnect` `{keyFailed, detail, closeCode}` | `{live}` (new token, maybe another key) |
-| `POST /chat/sessions/:id/end` (also `DELETE /chat/sessions/:id`) | final progress; releases key; compiles memory |
+| `POST /chat/sessions/:id/end` (also `DELETE /chat/sessions/:id`) | final progress; releases key; digests the chat + updates memory (after the response) |
+| `GET /chat/history?limit=&before=` | `{locked, total, sessions[{id, title, summary, startedAt, endedAt, minutes, turns, mode, language, level, status, digest: ready/pending/skipped}], nextBefore}` — Pro; non-Pro gets `locked:true` + `total` |
+| `GET /chat/history/:id` | `{session, messages[{role, text, at}], digest{summary, topics, facts, mistakes, vocabulary, nextTime}}` — Pro (`403 PRO_REQUIRED`) |
+| `DELETE /chat/history/:id` | `{deleted}` — anyone, own finished chats (`409 SESSION_ACTIVE` if live) |
+| `GET /chat/memory` · `DELETE /chat/memory` | `{pro, memoryMd, updatedAt, sessions, mistakes, vocabulary}` · `{cleared}` (anyone) |
 
 **Premium** — `GET /trial/status` · `POST /trial/apply` · `POST /feedback` · `GET /pro-link` (public) ·
 `GET /payments/plans` · `POST /payments/subscriptions` · `GET /payments/subscription` ·

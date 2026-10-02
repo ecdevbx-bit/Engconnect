@@ -43,10 +43,10 @@ Text parts in `modelTurn` are internal reasoning on native-audio models → neve
 - Reply watchdog: if nothing comes back in 15 s, the mic unlocks.
 
 ## Voices
-All 18 prebuilt voices offered in the UI return audio on this model (probe 2026-09-22): Aoede, Puck,
-Charon, Kore, Fenrir, Leda, Orus, Zephyr, Callirrhoe, Autonoe, Despina, Sulafat, Achird, Gacrux,
-Umbriel, Iapetus, Erinome, Laomedeia. An unknown name closes the socket with 1007 — hence server
-validation.
+The app offers two prebuilt voices: **Aoede** (female, default) and **Charon** (male) — D-048. All 18
+prebuilt voices returned audio on this model in the 2026-09-22 probe (`scripts/gemini-voice-probe.mjs`),
+so swapping one is a one-line change in `lib/aiPartnerOptions.ts`. An unknown name closes the socket
+with 1007 — hence server validation (`isKnownVoice`, fallback Aoede).
 
 ## Verified (2026-09-22, scratch probes)
 Token mint ✓ · setupComplete ✓ · spoken greeting (14 audio chunks) + transcript ✓ · resumption

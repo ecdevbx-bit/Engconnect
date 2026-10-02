@@ -3,13 +3,13 @@ title: Knowledge graph
 type: meta
 tags: [graph, memory]
 links: [index, meta/how-this-wiki-works]
-updated: 2026-09-24
+updated: 2026-10-02
 ---
 
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(73 nodes · 257 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(75 nodes · 268 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -103,6 +103,7 @@ flowchart LR
   features_ai_partner --> features_premium
   features_ai_partner --> features_progress_and_rewards
   features_ai_partner --> architecture_api
+  features_ai_partner --> architecture_database
   features_jumble_words --> features_progress_and_rewards
   features_jumble_words --> features_premium
   features_jumble_words --> architecture_gemini_key_pool
@@ -181,25 +182,25 @@ flowchart LR
 |---|---|
 | [[architecture/api]] | D-043 |
 | [[architecture/auth]] | D-008, D-024, D-025, D-020, D-009, D-023 |
-| [[architecture/database]] | D-043, D-013 |
+| [[architecture/database]] | D-043, D-047, D-013 |
 | [[architecture/gemini-key-pool]] | D-040, D-027, D-011 |
-| [[architecture/gemini-live]] | D-026, D-039 |
+| [[architecture/gemini-live]] | D-026, D-039, D-048 |
 | [[architecture/storage-r2]] | D-036 |
 | [[architecture/system]] | D-002 |
 | [[features/admin]] | D-023, D-018, D-042, D-031 |
-| [[features/ai-partner]] | D-026, D-032, D-039, D-033 |
+| [[features/ai-partner]] | D-026, D-032, D-048, D-039, D-047, D-033 |
 | [[features/jumble-words]] | D-043 |
 | [[features/k-ai-instructions]] | D-032 |
 | [[features/learn]] | D-042 |
 | [[features/premium]] | D-033, D-010 |
 | [[features/pronunciation]] | D-038, D-035, D-036 |
 | [[features/support]] | D-029, D-034 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023, D-044 |
 | [[operations/deployment]] | D-022 |
 | [[operations/monitoring]] | D-044 |
-| [[operations/runbook]] | D-039, D-038, D-043, D-045, D-044, D-040, D-009 |
+| [[operations/runbook]] | D-039, D-038, D-043, D-045, D-047, D-044, D-040, D-009 |
 | [[overview]] | D-046, D-041 |
 
 ## Decisions (from docs/memory/DECISIONS.md)
@@ -251,6 +252,8 @@ flowchart LR
 | D-044 | Sentry for errors (errors only, privacy-first, EU region) | active | [[log]] [[operations/credentials]] [[operations/monitoring]] [[operations/runbook]] [[memory/status]] |
 | D-045 | Code-audit hardening (2026-09-24) | active | [[log]] [[operations/runbook]] [[memory/status]] |
 | D-046 | Landing explains the product with figures, not text | active | [[log]] [[overview]] [[memory/status]] |
+| D-047 | K.AI memory for Pro: chat history + a compacted memory file (Postgres, no Redis) | active | [[architecture/database]] [[features/ai-partner]] [[log]] [[operations/runbook]] [[memory/status]] |
+| D-048 | K.AI has two voices: Aoede (female) and Charon (male) | active | [[architecture/gemini-live]] [[features/ai-partner]] [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

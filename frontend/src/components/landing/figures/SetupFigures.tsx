@@ -165,33 +165,27 @@ export function ModeGrid() {
   );
 }
 
-/* ── Voices: one equaliser bar per voice, grouped female / male ──────────── */
+/* ── Voices: one live equaliser per voice (female / male) ──────────────── */
 
 export function VoiceBars() {
-  const female = AI_PARTNER_VOICES.filter((v) => v.tone === "female").length;
-  const male = AI_PARTNER_VOICES.length - female;
   return (
     <div
       data-fig
       role="img"
-      aria-label={`${AI_PARTNER_VOICES.length} voices for K.AI: ${female} female and ${male} male.`}
-      className="grid w-full grid-cols-[minmax(0,var(--f))_minmax(0,var(--m))] gap-4"
-      style={cssVars({ "--f": `${female}fr`, "--m": `${male}fr` })}
+      aria-label={`K.AI's voices: ${AI_PARTNER_VOICES.map((v) => `${v.id} (${v.tone})`).join(" and ")}.`}
+      className="grid w-full grid-cols-2 gap-4"
     >
-      {[
-        { label: `${female} female`, n: female, seed: 4, tone: "text-primary" },
-        { label: `${male} male`, n: male, seed: 8, tone: "text-heading/60" },
-      ].map((g) => (
-        <div key={g.label} className="flex flex-col gap-3">
+      {AI_PARTNER_VOICES.map((v, i) => (
+        <div key={v.id} className="flex flex-col gap-3">
           <Wave
-            n={g.n}
-            seed={g.seed}
+            n={9}
+            seed={4 + i * 4}
             live
             spread
-            className={`vb-wave ${g.tone}`}
+            className={`vb-wave ${v.tone === "female" ? "text-primary" : "text-heading/60"}`}
             style={cssVars({ "--wh": "88px", "--bw": "8px", "--sp": "1100ms" })}
           />
-          <span className="lp-tag border-t border-border pt-2 text-body">{g.label}</span>
+          <span className="lp-tag border-t border-border pt-2 text-body">{v.tone === "female" ? "Female" : "Male"}</span>
         </div>
       ))}
     </div>

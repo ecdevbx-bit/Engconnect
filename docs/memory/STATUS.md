@@ -3,7 +3,7 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-09-24 (session 3).
+> Last updated: 2026-10-02 (session 4). Repo now lives at `C:\Users\abhic\Desktop\ENG` (moved from OneDrive).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
@@ -12,7 +12,7 @@
   **32/32**, `jumble-hints-probe` all ✓, `audit-guards-probe` all ✓, `sentry-check` ✓ (server error +
   browser tunnel event both arrived; source maps uploaded for the release).
 - GitHub `ecdevbx-bit/Engconnect` (gh logged in as `ecdevbx-bit`). Supabase `uycpxwajvhcigyhvepci`:
-  15 migrations applied (…0924000100 learn+hints, …0924000200 session guards), RLS everywhere.
+  17 migrations applied (…1002000100 chat memory, …1002000200 turns/continue), RLS everywhere.
 - Admin: **ec.devbx@gmail.com** → `/v3/admin` (Learn switch on top, Pro applications, Support inbox,
   Wiki & memory, Gemini keys, content, settings).
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
@@ -35,7 +35,17 @@
   - **Landing explained with figures** (~1,000 → ~470 words), scroll-swipe kept, Learn link when public (D-046).
   - Login honours a safe `?next=` path (Learn "Sign in" returns to the lesson).
 
+- Session 4 (2026-10-02):
+  - **K.AI memory for Pro** (D-047): chunk → digest → compacted Markdown memory file, fed to Gemini in the
+    locked prompt; ChatGPT-style **History** (`/dashboard/ai-partner/history`: list by date → transcript,
+    corrections, words, continue, delete) + **What K.AI remembers** (view / clear). Postgres only, no Redis.
+    `scripts/chat-memory-probe.mjs` all ✓ locally (a real K.AI session recalled the seeded chats).
+    Privacy page mentions K.AI transcripts + memory. Production build ✓.
+  - **K.AI voices cut to two** (D-048): Aoede (female, default) + Charon (male); old choices fall back to Aoede.
+
 ## Next ⏭️
+0. Owner: try History & memory as a Pro account on a phone and desktop (I can't sign in through the browser
+   myself — Supabase sign-in is an outside identity provider).
 1. **Owner: read the Learn lessons** (admin → open /learn), then flip the switch ON. Simplifications to
    eyeball: "feel badly" / "Who did call you?" marked ✗; may 50 % vs might 35 % on the certainty scale;
    British schwa examples; "the Ganga"; "click a photo" labelled Indian English; IELTS timings.
@@ -45,8 +55,8 @@
 4. Not fixed from the audit (low): leaderboard RPC capped at 1,000 rows by PostgREST (rank missing past
    1,000 learners); streak board ranks stored streaks that never reset by themselves. A malformed
    %-escape in an /api URL gets an HTML 500 from Next.js itself on Vercel (before our code) — harmless.
-5. Not built yet: post-session review card (talk ratio, mistakes, IELTS band), "What K.AI remembers"
-   drawer, "Practise this lesson with K.AI" deep link (K.AI grammar focus from a Learn lesson),
+5. Not built yet: post-session review card (talk ratio, IELTS band — the digest now has the mistakes),
+   "Practise this lesson with K.AI" deep link (K.AI grammar focus from a Learn lesson),
    admin switch for single-active-session (D-009 confuses testers), CAPTCHA on sign-up (needs keys).
 6. Lint debt: 49 React-compiler errors in old files (mostly `/showcase/*` previews, some game components)
    — build doesn't depend on them.
@@ -81,3 +91,6 @@
 - Test data: probes create throwaway users via the admin API and delete them; the audit probe starts one
   real K.AI session.
 - A leftover `next start` can keep port 3000 busy on Windows — find it with Get-CimInstance.
+- After moving the repo, pnpm refuses to reuse node_modules without a TTY → `CI=true npx -y pnpm@11.0.8 install`.
+- The Claude desktop preview for this session reads `C:\Users\abhic\Desktop\ENGAI\.claude\launch.json`
+  (session started there): use its `eng-dev` entry, which runs this repo's frontend by absolute path.

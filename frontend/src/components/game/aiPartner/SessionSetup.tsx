@@ -149,7 +149,7 @@ export default function SessionSetup({
 
       <div className="space-y-2">
         <Label>K.AI&apos;s voice</Label>
-        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2">
           {AI_PARTNER_VOICES.map((v) => (
             <button
               key={v.id}
@@ -157,15 +157,15 @@ export default function SessionSetup({
               onClick={() => set({ voice: v.id })}
               aria-pressed={value.voice === v.id}
               className={cn(
-                "rounded-lg border px-2 py-1.5 text-left transition-colors",
+                "min-h-11 rounded-lg border px-3 py-2 text-left transition-colors",
                 value.voice === v.id
                   ? "border-primary/60 bg-primary/15 text-heading"
                   : "border-white/[0.06] bg-surface-3/40 text-muted-foreground hover:text-heading",
               )}
             >
-              <span className="block text-[12px] font-bold">{v.id}</span>
-              <span className="block text-[10px] opacity-80">
-                {v.feel} · {v.tone === "female" ? "♀" : "♂"}
+              <span className="block text-[13px] font-bold">{v.tone === "female" ? "Female voice" : "Male voice"}</span>
+              <span className="block text-[11px] opacity-80">
+                {v.id} · {v.feel}
               </span>
             </button>
           ))}

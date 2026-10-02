@@ -39,6 +39,7 @@ Checks: `npx tsc --noEmit` · `npx -y pnpm@11.0.8 lint` · `npx -y pnpm@11.0.8 b
 | `node scripts/tail-prod-logs.mjs` | Streams production runtime logs for 4 min — reproduce the bug while it runs (how the Gemini 503s were found) |
 | `node scripts/jumble-hints-probe.mjs [url]` | Jumble hint ladder with a Hindi-speaking throwaway account: structure clue + meaning (cached on the 2nd call), word hints, half XP after the full sentence (D-043) |
 | `node scripts/audit-guards-probe.mjs [url]` | The audit guards (D-045): a browser can't mark shared keys invalid, ended K.AI sessions aren't billed, crafted/silent WAVs rejected without using quota, bad ids → 4xx. Starts one real K.AI session |
+| `node scripts/chat-memory-probe.mjs [url]` | K.AI history + memory (D-047) with a throwaway Pro learner: seeded chats → digests, chunks, corrections, memory file; a real K.AI session must recall them; continue link; free-user lock; clear + delete. Starts two real K.AI sessions |
 | `node scripts/sentry-check.mjs [url]` | Proves production reports to Sentry: a deliberate API error (internal-key-only `POST /api/debug/sentry`) must show up tagged with its traceId, and a test event through the `/monitoring` tunnel must arrive (D-044) |
 | `node scripts/sentry-setup.mjs` | Sentry project + DSN + Vercel env (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`) — idempotent (D-044, [[operations/monitoring]]) |
 | `node scripts/vercel-setup.mjs` | Creates/links the Vercel project, sets env vars, triggers a deploy |

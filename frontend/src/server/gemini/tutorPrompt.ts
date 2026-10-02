@@ -129,7 +129,18 @@ export type LearnerContext = {
     vocabulary: { word: string; meaning?: string }[];
     sessions: number;
   } | null;
+  /** Pro (D-047): K.AI's compacted Markdown memory file about this learner. */
+  memoryDoc?: string;
+  /** Pro: the learner's most recent finished conversation (digest title + summary). */
+  lastSession?: { title: string; summary: string; date: string } | null;
+  /** Pro "Continue this conversation": what happened + where it stopped. */
+  continuation?: { title: string; summary: string; date: string; lines: { role: "user" | "assistant"; text: string }[] } | null;
 };
+
+function daysAgo(iso: string): string {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  return d <= 0 ? "earlier today" : d === 1 ? "yesterday" : `${d} days ago`;
+}
 
 const STATUS_LABEL: Record<string, string> = {
   student: "student",
@@ -197,7 +208,14 @@ ${lv.blend(sessionLanguage)}`
   ].filter(Boolean);
 
   let memory = "";
-  if (ctx.memory && (ctx.memory.summary || ctx.memory.mistakes.length || ctx.memory.vocabulary.length)) {
+  if (ctx.memoryDoc) {
+    // Pro: the memory file K.AI wrote after earlier conversations (D-047).
+    memory = `
+YOUR MEMORY FILE ABOUT THIS LEARNER (private notes you wrote after ${ctx.memory?.sessions ?? "earlier"} earlier conversation(s))
+${ctx.memoryDoc}
+${ctx.lastSession ? `Last conversation (${daysAgo(ctx.lastSession.date)}): ${ctx.lastSession.title} — ${ctx.lastSession.summary}` : ""}
+Use it like a good tutor who remembers: follow up on their plans, re-check an old mistake once in a while, build on words they learnt. Never read these notes out or mention a "file"; if they ask what you remember, tell them naturally in a sentence or two.`;
+  } else if (ctx.memory && (ctx.memory.summary || ctx.memory.mistakes.length || ctx.memory.vocabulary.length)) {
     const mistakes = ctx.memory.mistakes
       .slice(0, 8)
       .map((m) => `- said "${m.wrong}" → should be "${m.correct}"${m.why ? ` (${m.why})` : ""}`)
@@ -222,6 +240,16 @@ LEARNER
 ${profileLines.join("\n")}
 ${firstName ? `Address them as ${firstName} now and then (not every turn).` : "You don't know their name yet — ask for it warmly in your greeting and use it afterwards."}
 ${memory}
+${
+  ctx.continuation
+    ? `
+THIS SESSION CONTINUES AN EARLIER CONVERSATION ("${ctx.continuation.title}", ${daysAgo(ctx.continuation.date)})
+What happened: ${ctx.continuation.summary}
+Where it stopped:
+${ctx.continuation.lines.map((l) => `${l.role === "user" ? "Learner" : "K.AI"}: ${l.text}`).join("\n")}
+Pick up from there — same topic, same thread.`
+    : ""
+}
 
 LEVEL: ${lv.title}
 Voice and pace:
@@ -275,10 +303,14 @@ export function buildKickoff(ctx: LearnerContext, sessionLanguage: string, scena
   const levelId = normalizeLevel(ctx.level);
   const tag = `[Session start — ${lang}, level: ${levelId}, mode: ${scenario}]`;
   const style = LEVEL_INSTRUCTIONS[levelId].greeting;
+  if (ctx.continuation) {
+    return `${tag} Welcome ${firstName || "the learner"} back in under 2 short sentences and pick up the conversation "${ctx.continuation.title}" where it stopped, with one question about it. ${style}`;
+  }
   if (!firstName) {
     return `${tag} Greet the learner warmly in under 2 short sentences, introduce yourself as K.AI ("kaa-ee"), ask their name, ${mode}. ${style}`;
   }
+  const followUp = ctx.lastSession ? ` If it fits, ask one quick follow-up about last time ("${ctx.lastSession.title}") before moving on.` : "";
   return `${tag} Greet ${firstName} by name in under 2 short sentences${
     returning ? ", say it's good to see them again" : ", say you're glad they're here"
-  }, ${mode}. ${style}`;
+  }, ${mode}.${followUp} ${style}`;
 }

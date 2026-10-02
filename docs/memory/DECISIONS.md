@@ -449,3 +449,38 @@
   figure has `role="img"` + a full `aria-label`. The old live demos (LazyDemos, PlatformInsights) no longer
   load on the landing — lighter page. No images added, no new dependencies.
 - The landing shows a "Learn" link (header + footer) only while the Learn library is public (D-042).
+
+## D-047 · K.AI memory for Pro: chat history + a compacted memory file (Postgres, no Redis) — 2026-10-02
+- Owner: "for Pro it should show previous chats like ChatGPT … store the conversation in the database and feed
+  it to the AI memory, which processes it, stores it in chunks, compacts it and sends the md file to Google so
+  it remembers what they talked about"; suggested "Redis or something".
+- **No Redis.** Every K.AI line is already saved in Postgres (`chat_messages`, via the 20 s heartbeat); reads
+  happen once per session start / history view. Redis would add a second store, cost and consistency work
+  for no latency or scale gain at this size. Supabase Postgres holds all layers.
+- Layers (Karpathy LLM-OS memory): raw `chat_messages` → long chats split into ~3,500-char chunks, each
+  summarised (`chat_session_chunks`) → one **digest** per conversation on `chat_sessions` (title, summary,
+  topics, facts the learner shared, corrections, words, next-time tip) → one **memory file** per learner
+  (`learner_memory.memory_md`, Markdown, fixed sections, < 350 words / 3,000 chars) re-compacted by the text
+  model after every conversation. Free learners keep the lighter structured memory (summary, mistakes, words).
+- Runs after `/end` (`after()`), plus a catch-up for chats whose tab vanished (on session start and when
+  History opens). A per-conversation claim (`digest_started_at`, ≤ 3 attempts) stops double work; the memory
+  write is optimistic on `learner_memory.updated_at` and re-merges on conflict (a lost update dropped a chat
+  in testing). No secrets in memory (phone/email/addresses/IDs are excluded by instruction).
+- Feeding Gemini: for Pro, the memory file + the last conversation's title/summary go into the session's
+  **locked system prompt** (inside the ephemeral token); the kickoff asks one follow-up about last time.
+  "Continue this conversation" (`POST /chat/sessions {continueFrom}`, `chat_sessions.continued_from`) adds that
+  chat's digest + its last 8 lines so K.AI picks up the thread; reconnects rebuild the same prompt.
+- History (Pro): `/dashboard/ai-partner/history` — ChatGPT-style list grouped by date → transcript, digest,
+  continue, delete; tab "What K.AI remembers" shows the file and can clear it. API `/chat/history[/:id]`,
+  `/chat/memory` (`server/routes/chatHistory.ts`). Non-Pro: list locked (count shown), but anyone can delete
+  their chats or clear their memory. Privacy page now mentions stored transcripts + memory.
+- Verified 2026-10-02 (`scripts/chat-memory-probe.mjs`, all ✓): digests in ~12 s, a 120-line chat → 4 chunks,
+  correct corrections, memory file covering both chats; a fresh real K.AI session opened with "Have you thought
+  more about that Goa trip itinerary?" and recalled the learner's job and TCS interview.
+
+## D-048 · K.AI has two voices: Aoede (female) and Charon (male) — 2026-10-02
+- Supersedes the voice part of D-026 (18 voices). Owner: "remove all the voice options, keep Aoede as female
+  and one good male voice". Charon ("Informative" in Google's descriptions — calm and clear for learners) was
+  picked as the male voice; Puck ("Upbeat") is the alternative — one line in `lib/aiPartnerOptions.ts`.
+- Picker shows "Female voice / Male voice". Old saved choices and unknown names fall back to Aoede (client
+  `SessionSetup` + server `isKnownVoice`). The landing "Voices" tile reads the same list (now 2).

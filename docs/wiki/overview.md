@@ -37,7 +37,7 @@ on every screen for reporting problems ([[features/support]]).
 signed-in users are redirected to the dashboard). **Explained with figures, not text** (D-046, ~470
 words): animated live-call hero, a 3-step "How it works" flow diagram, the scroll-driven **swipe**
 (`components/landing/ScrollSwipe.tsx`) carrying a K.AI call timeline, jumble chips and a pronunciation
-figure, setup tiles (levels, 14 languages, 6 modes, 18 voices), progress widgets, one-line reviews, and
+figure, setup tiles (levels, 14 languages, 6 modes, 2 voices), progress widgets, one-line reviews, and
 Free vs Pro drawn on the same scale. Figures live in `components/landing/figures/` (HTML/SVG + CSS,
 `role="img"` + `aria-label`), animated by `landing/FigurePlayer.tsx` only while on screen. Glass style and
 lightness from D-041. A "Learn" link appears when the Learn library is public ([[features/learn]]).

@@ -4,6 +4,7 @@ import { Router } from "../router";
 import { registerAccountRoutes } from "./account";
 import { registerAdminRoutes } from "./admin";
 import { registerChatRoutes } from "./chat";
+import { registerChatHistoryRoutes } from "./chatHistory";
 import { registerJumbleRoutes } from "./jumble";
 import { registerPremiumRoutes } from "./premium";
 import { registerPronunciationRoutes } from "./pronunciation";
@@ -19,6 +20,7 @@ registerUserRoutes(api); //         /users/*, /levels, /leaderboard, /flags, /st
 registerJumbleRoutes(api); //       /game/jumble/*
 registerPronunciationRoutes(api); // /pronunciation/*, /word-bank/*
 registerChatRoutes(api); //         /chat/*  (AI Partner on Gemini Live)
+registerChatHistoryRoutes(api); //  /chat/history, /chat/memory (Pro history + memory file)
 registerPremiumRoutes(api); //      /trial/*, /feedback, /pro-link, /payments/*
 registerSupportRoutes(api); //      /support, /admin/support (tickets → email via Resend)
 registerAdminRoutes(api); //        /admin/*  (INTERNAL_API_KEY or admin user)

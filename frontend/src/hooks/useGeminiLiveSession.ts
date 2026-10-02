@@ -149,6 +149,8 @@ export type GeminiLiveOptions = UseV3ChatSessionOptions & {
   // Session setup picked on the start card (see lib/aiPartnerOptions.ts).
   scenario?: string;
   voice?: string;
+  /** Pro: id of a past conversation this session continues (D-047). */
+  continueFrom?: string | null;
 };
 
 export function useGeminiLiveSession({
@@ -158,6 +160,7 @@ export function useGeminiLiveSession({
   level,
   scenario,
   voice,
+  continueFrom,
 }: GeminiLiveOptions): UseV3ChatSessionResult & { mic: LiveMic; isAiSpeaking: boolean } {
   const dispatch = useAppDispatch();
 
@@ -642,7 +645,7 @@ export function useGeminiLiveSession({
       try {
         const res = await v3Fetch<CreateResponse>("/chat/sessions", accessToken, {
           method: "POST",
-          body: { language: nativeLanguage, level, scenario, voice },
+          body: { language: nativeLanguage, level, scenario, voice, ...(continueFrom ? { continueFrom } : {}) },
         });
         if (cancelled) {
           // Left the screen while the session was being created: end it now

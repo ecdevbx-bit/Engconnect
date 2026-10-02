@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-24T11:25:22.429Z",
+  "generatedAt": "2026-10-02T12:31:13.892Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -308,7 +308,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-09-24",
+      "updated": "2026-10-02",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -680,6 +680,22 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-047",
+      "title": "K.AI memory for Pro: chat history + a compacted memory file (Postgres, no Redis)",
+      "type": "decision",
+      "date": "2026-10-02",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-048",
+      "title": "K.AI has two voices: Aoede (female) and Charon (male)",
+      "type": "decision",
+      "date": "2026-10-02",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -819,6 +835,11 @@
     },
     {
       "source": "architecture/database",
+      "target": "D-047",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/database",
       "target": "D-013",
       "kind": "cites"
     },
@@ -885,6 +906,11 @@
     {
       "source": "architecture/gemini-live",
       "target": "D-039",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/gemini-live",
+      "target": "D-048",
       "kind": "cites"
     },
     {
@@ -1034,6 +1060,11 @@
     },
     {
       "source": "features/ai-partner",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "features/ai-partner",
       "target": "D-026",
       "kind": "cites"
     },
@@ -1044,7 +1075,17 @@
     },
     {
       "source": "features/ai-partner",
+      "target": "D-048",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
       "target": "D-039",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-047",
       "kind": "cites"
     },
     {
@@ -1494,6 +1535,11 @@
     },
     {
       "source": "log",
+      "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "log",
       "target": "D-008",
       "kind": "cites"
     },
@@ -1640,6 +1686,16 @@
     {
       "source": "log",
       "target": "D-046",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-047",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-048",
       "kind": "cites"
     },
     {
@@ -1810,6 +1866,11 @@
     {
       "source": "operations/runbook",
       "target": "D-045",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/runbook",
+      "target": "D-047",
       "kind": "cites"
     },
     {
@@ -1965,6 +2026,16 @@
     {
       "source": "memory/status",
       "target": "D-046",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-047",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-048",
       "kind": "cites"
     },
     {

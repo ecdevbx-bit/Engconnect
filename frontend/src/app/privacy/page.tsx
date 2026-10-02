@@ -42,6 +42,7 @@ export default function PrivacyPage() {
             <><strong className="text-heading">Account details</strong> — name, email address, and password (stored hashed) when you sign up.</>,
             <><strong className="text-heading">Learning data</strong> — your lessons, scores, XP, levels, streaks, badges, and progress.</>,
             <><strong className="text-heading">Audio</strong> — voice recordings you submit for pronunciation feedback, processed to score your speech.</>,
+            <><strong className="text-heading">Conversations with K.AI</strong> — the text transcript of your voice practice (not the audio). It is summarised so K.AI remembers your progress; for Pro members K.AI also keeps a short memory note about you. You can delete any conversation or clear K.AI&apos;s memory under AI Partner → History &amp; memory.</>,
             <><strong className="text-heading">Usage & device data</strong> — app interactions, device type, and basic analytics to improve the Service.</>,
           ]}
         />

@@ -8,7 +8,8 @@ import { useSession } from "@/lib/session";
 import { storageSeen } from "@/lib/safeStorage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, History } from "lucide-react";
+import Link from "next/link";
 import { useNextStep } from "nextstepjs";
 import { cn } from "@/lib/utils";
 import {
@@ -161,6 +162,14 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
   const lang = setup.language;
   const langLabel = lang === "English" ? "English" : `${lang} + English`;
 
+  // "Continue this conversation" from History (Pro, D-047): /dashboard/ai-partner?continue=<id>.
+  // Captured once — the server checks it's the learner's own finished chat.
+  const continueParam = useSearchParams()?.get("continue") ?? "";
+  const [continueFrom, setContinueFrom] = useState<string | null>(() =>
+    /^[0-9a-f-]{36}$/i.test(continueParam) ? continueParam : null,
+  );
+  const memoryPro = session?.user?.isPro === true || session?.user?.isAdmin === true;
+
   const [secondsLeft, setSecondsLeft] = useState(DEFAULT_TOTAL_SECONDS);
   const [started, setStarted] = useState(false);
   // AI-Partner time usage for the current window (Pro: daily, free: weekly),
@@ -217,6 +226,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     level: setup.level,
     scenario: setup.scenario,
     voice: setup.voice,
+    continueFrom: memoryPro ? continueFrom : null,
   });
 
   // Total session length comes from the admin-configured rewards.
@@ -388,10 +398,13 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     setSessionBudget(budget);
     setSecondsLeft(budget);
     setStarted(true);
+    // The continue link has done its job; a refresh shouldn't repeat it.
+    if (continueFrom && typeof window !== "undefined") window.history.replaceState(null, "", "/dashboard/ai-partner");
   };
 
   const handleRetry = () => {
     primeAudio();
+    setContinueFrom(null);
     setEndedAck(false);
     setStarted(false);
     setTimeout(() => {
@@ -507,6 +520,36 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     return (
       <div className="flex min-h-[calc(100dvh-10rem)] items-center justify-center py-3">
         <div className="c-box w-full max-w-2xl rounded-2xl px-6 py-6 text-center sm:px-12 sm:py-7">
+          {/* Past conversations + what K.AI remembers (Pro; others see the Pro card there). */}
+          <div className="-mt-2 mb-2 flex justify-end sm:-mr-6">
+            <Link
+              href="/dashboard/ai-partner/history"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2 px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+            >
+              <History className="h-4 w-4" />
+              History &amp; memory
+            </Link>
+          </div>
+
+          {continueFrom && memoryPro && (
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.08] px-4 py-3 text-left">
+              <p className="text-[13px] text-heading">
+                <span className="font-semibold">Continuing an earlier conversation.</span>{" "}
+                <span className="text-muted-foreground">K.AI picks up where you left off.</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setContinueFrom(null);
+                  window.history.replaceState(null, "", "/dashboard/ai-partner");
+                }}
+                className="min-h-11 shrink-0 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:text-heading"
+              >
+                Start fresh
+              </button>
+            </div>
+          )}
+
           {/* Mascot + intro copy side by side on EVERY view (mascot left, text
               adjacent). The mascot scales down on phones (!w/!h override the
               component's inline size) so the row fits a narrow screen. */}
@@ -659,6 +702,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
           type="button"
           onClick={() => {
             setEndedAck(false);
+            setContinueFrom(null);
             setStarted(false);
           }}
           title="Change language, mode or voice (starts a new conversation)"
