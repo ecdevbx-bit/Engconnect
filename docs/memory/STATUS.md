@@ -57,7 +57,7 @@
   the hedge helps but Google's capacity is the limit. Sometimes the scorer leaves out the native-script
   respelling for a missed word (field is optional now) — watch.
 - **Sign-out feedback (D-058)**: a "Signing out…" cover is painted before the page changes (owner: "still slow,
-  it does not show"). Verified locally on a phone-size screen. Not committed yet.
+  it does not show"). Verified locally on a phone-size screen. Deployed `4dcc761` READY; production smoke **32/32**.
 - **K.AI call rebuilt (D-054)**: ~10 % of K.AI replies were being cut off (one loud mic frame = barge-in) →
   sustained barge-in (220 ms, relative to the learner's level); +200 ms turn-end pauses; browser auto-gain OFF
   + our voice-keyed gain (background TV was boosted); mic held open through mute/reconnects + iOS
