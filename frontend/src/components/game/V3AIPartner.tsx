@@ -7,7 +7,7 @@
 import { useSession } from "@/lib/session";
 import { storageSeen } from "@/lib/safeStorage";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HelpCircle, History } from "lucide-react";
 import Link from "next/link";
 import { useNextStep } from "nextstepjs";
@@ -24,13 +24,12 @@ import { useSfx, type SfxCue } from "@/hooks/useSfx";
 import MicLevelRing from "./voiceAgent/MicLevelRing";
 import { stateColor, type AgentState } from "./voiceAgent/agentConfig";
 import {
-  FaFlag,
   FaHourglassHalf,
   FaMicrophone,
   FaMicrophoneSlash,
   FaRobot,
 } from "react-icons/fa6";
-import { FiAlertCircle, FiClock } from "react-icons/fi";
+import { FiAlertCircle } from "react-icons/fi";
 
 import { useGeminiLiveSession } from "@/hooks/useGeminiLiveSession";
 import { v3FetchAIUsage, type V3AIUsage } from "@/lib/v3Chat";
@@ -51,29 +50,6 @@ import SessionSetup, {
 // Fallback session length used until the per-session rewards config
 // arrives. Admin can tune the real value via /v3/admin/ai-partner.
 const DEFAULT_TOTAL_SECONDS = 10 * 60;
-
-const TIPS = [
-  {
-    title: "Speak naturally",
-    body: "Don't worry about mistakes. I'm here to help you improve.",
-    icon: FaRobot,
-  },
-  {
-    title: "Short & clear is great",
-    body: "Keep your answers simple and to the point.",
-    icon: FiClock,
-  },
-  {
-    title: "Take your time",
-    body: "Think before you speak. Fluency comes with practice.",
-    icon: FaHourglassHalf,
-  },
-  {
-    title: "Report any issues",
-    body: "Help us improve your experience.",
-    icon: FaFlag,
-  },
-];
 
 // Start-card tiles. The XP copy is built from the admin's reward config
 // (returned by /chat/usage) so it can never drift from what's awarded.
@@ -133,14 +109,6 @@ function formatMinutesLeft(seconds: number) {
   return `${mins} min`;
 }
 
-function getMotivation(secondsLeft: number, total: number): { label: string; sub: string } {
-  if (secondsLeft === 0) return { label: "Session complete! 🎉", sub: "Great job today." };
-  const ratio = total > 0 ? secondsLeft / total : 0;
-  if (ratio > 0.66) return { label: "Keep going! 💪", sub: "You're doing great." };
-  if (ratio > 0.33) return { label: "Almost halfway! 🔥", sub: "Stay focused." };
-  return { label: "Last stretch! ⚡", sub: "Finish strong." };
-}
-
 export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: string }) {
   const { data: session } = useSession();
   const user = fromSessionUser(session?.user);
@@ -178,8 +146,6 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
   // Set true once the user acknowledges the "session ended" notice — hides the
   // blocking overlay while everything stays frozen until they restart.
   const [endedAck, setEndedAck] = useState(false);
-  // Index of the single "Tips from K.AI" card shown; rotates every 10s.
-  const [tipIndex, setTipIndex] = useState(0);
   const [celebrating, setCelebrating] = useState(false);
   // Onboarding is asked-again on /ai-partner if it wasn't completed
   // — but the user can choose to skip and just chat. The skip lives
@@ -216,6 +182,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     aiCapSeconds,
     aiLimitReached,
     isAiSpeaking,
+    // One-line live caption: the learner's words as they speak, K.AI's words
+    // as they are heard (D-054).
+    caption,
     // Hands-free mic (D-039): opens by itself when the call connects, Gemini's
     // voice detection takes the turns, the learner can only mute/unmute.
     mic,
@@ -242,8 +211,12 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     [rewards],
   );
 
-  const motivation = getMotivation(secondsLeft, totalSeconds);
   const isMicActive = mic.open && !mic.muted;
+  // XP earned in this session so far (first milestone + the recurring ones).
+  const sessionXp =
+    speechProgress.milestonesAwarded === 0
+      ? 0
+      : speechProgress.thresholdXp + Math.max(0, speechProgress.milestonesAwarded - 1) * speechProgress.recurringXp;
   const toggleMute = mic.toggleMute;
 
   // ── Daily/weekly AI-time cap ─────────────────────────────────────────
@@ -296,7 +269,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
         ? "Muted"
         : isMicActive
           ? "Listening…"
-          : "Connecting…";
+          : isConnected && mic.error
+            ? "Mic off"
+            : "Connecting…";
 
   // Mascot mood: engaged while the user speaks, otherwise it reflects the
   // mood of K.AI's latest reply (cheap keyword detection). Thinking is shown
@@ -361,12 +336,6 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     setSessionBudget(remaining);
     setSecondsLeft(remaining);
   }, [started, aiCapSeconds, aiUsedSeconds, usage]);
-
-  // Rotate the single K.AI tip every 10 seconds.
-  useEffect(() => {
-    const id = setInterval(() => setTipIndex((i) => (i + 1) % TIPS.length), 10_000);
-    return () => clearInterval(id);
-  }, []);
 
   // Fetch remaining AI time whenever we're on the start card (not in a session),
   // so "X min left" is current — including right after a session ends.
@@ -563,61 +532,28 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
               </p>
               <h1 className="mt-1 text-2xl font-bold text-gradient sm:mt-2 sm:text-4xl">Meet K.AI</h1>
               <p className="mt-2 max-w-md text-[13px] leading-5 text-muted-foreground sm:mt-3 sm:text-[14px] sm:leading-6">
-                Your personal AI partner for spoken English. Have a real,
-                judgement-free conversation — K.AI listens, replies, and helps you
-                improve as you go.
+                Talk in English, judgement-free. K.AI listens, fixes your mistakes
+                and keeps you talking.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-2.5 text-left">
+          {/* How it works, in three chips (the time left is under Start). */}
+          <ul className="mt-4 flex flex-wrap justify-center gap-2 text-left">
             {buildInstructions(usage?.rewards).map((item) => {
               const Icon = item.icon;
               return (
-                <div
+                <li
                   key={item.title}
-                  className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-surface-2/40 px-3 py-2.5 sm:items-start sm:gap-3 sm:px-4 sm:py-3"
+                  title={item.body}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-surface-2/40 px-3 py-1.5 text-[12px] font-semibold text-heading"
                 >
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary sm:h-9 sm:w-9">
-                    <Icon className="text-[15px] sm:text-[16px]" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-bold text-heading">{item.title}</p>
-                    {/* Sub-text is hidden on phones to keep the whole card on one
-                        screen; shown from sm upward. */}
-                    <p className="mt-0.5 hidden text-[12px] leading-5 text-muted-foreground sm:block">
-                      {item.body}
-                    </p>
-                  </div>
-                </div>
+                  <Icon className="text-[13px] text-primary" />
+                  {item.title}
+                </li>
               );
             })}
-
-            {/* 4th tile: remaining AI-Partner time for the current window
-                (Pro: daily, free: weekly). Replaces the old static "10 minutes"
-                tile — this is the "good place to show" the remaining time. */}
-            <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-surface-2/40 px-3 py-2.5 sm:items-start sm:gap-3 sm:px-4 sm:py-3">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary sm:h-9 sm:w-9">
-                <FiClock className="text-[15px] sm:text-[16px]" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[13px] font-bold text-heading">
-                  {usage
-                    ? usage.capSeconds > 0
-                      ? `${formatMinutesLeft(usage.remainingSeconds)} left ${usage.pro ? "today" : "this week"}`
-                      : "Unlimited time"
-                    : "Your time"}
-                </p>
-                <p className="mt-0.5 hidden text-[12px] leading-5 text-muted-foreground sm:block">
-                  {usage
-                    ? usage.capSeconds > 0
-                      ? `Out of ${formatMinutesLeft(usage.capSeconds)} — resets ${usage.pro ? "daily" : "weekly"}.`
-                      : "You're Pro — practise as long as you like."
-                    : "Checking your remaining time…"}
-                </p>
-              </div>
-            </div>
-          </div>
+          </ul>
 
           {/* Session setup: language, level, practice mode, voice. */}
           <SessionSetup value={setup} onChange={updateSetup} profileLang={profileLang} />
@@ -676,27 +612,19 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
             ? `Level up! Now level ${speechProgress.currentLevel}`
             : "Keep speaking!"
         }
-        sublabel={`You've earned ${
-          speechProgress.milestonesAwarded === 0
-            ? 0
-            : speechProgress.thresholdXp +
-              Math.max(0, speechProgress.milestonesAwarded - 1) * speechProgress.recurringXp
-        } XP in this session so far.`}
+        sublabel={`You've earned ${sessionXp} XP in this session so far.`}
         onDone={() => setCelebrating(false)}
       />
 
       {/* Compact header — title and the how-to-play replay trigger.
           Mirrors Jumble Words. */}
-      <div id="aip-tour-title" className="mb-2 flex shrink-0 flex-wrap items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <FaRobot className="h-4 w-4" />
-        </span>
-        <h1 className="text-2xl font-bold text-heading">AI Partner</h1>
+      <div id="aip-tour-title" className="mb-2 flex shrink-0 items-center gap-2">
+        <h1 className="text-lg font-bold text-heading">AI Partner</h1>
 
         {/* Current setup + a way back to the setup card (settings are baked
             into this conversation, so changing them starts a new one). */}
-        <span className="hidden min-w-0 truncate rounded-full border border-white/[0.06] bg-surface-2/60 px-3 py-1 text-[11px] font-semibold text-muted-foreground lg:inline">
-          {setupSummary(setup)}
+        <span className="hidden min-w-0 truncate text-[12px] text-muted-foreground md:inline">
+          · {setupSummary(setup)}
         </span>
         <button
           type="button"
@@ -706,7 +634,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
             setStarted(false);
           }}
           title="Change language, mode or voice (starts a new conversation)"
-          className="rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+          className="ml-auto rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
         >
           Change setup
         </button>
@@ -716,10 +644,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
           onClick={handleStartTour}
           aria-label="Show how to play"
           title="How to play"
-          className="ml-auto flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+          className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.06] bg-surface-2 text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
         >
           <HelpCircle className="h-4 w-4" />
-          <span className="hidden sm:inline">How to play</span>
         </button>
       </div>
 
@@ -849,8 +776,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                       </span>
                     </span>
 
-                    <span className="hidden text-[11px] font-semibold text-muted-foreground md:inline">
-                      {motivation.label}
+                    {/* Talk-time + XP this session (the full card is in the xl side rail). */}
+                    <span className="text-[11px] font-semibold text-muted-foreground xl:hidden">
+                      🎤 {formatTime(speechProgress.totalSeconds)} · +{sessionXp} XP
                     </span>
                   </div>
                 </div>
@@ -867,24 +795,6 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                   />
                 </div>
               </div>
-
-              {/* Compact stats on phones/tablet — the full card (with mascot)
-                  lives in the xl side-rail. */}
-              {accessToken && (
-                <div className="shrink-0 xl:hidden">
-                  <SpeechProgressCard
-                    compact
-                    totalSeconds={speechProgress.totalSeconds}
-                    milestonesAwarded={speechProgress.milestonesAwarded}
-                    thresholdSeconds={speechProgress.thresholdSeconds}
-                    thresholdXp={speechProgress.thresholdXp}
-                    recurringInterval={speechProgress.recurringInterval}
-                    recurringXp={speechProgress.recurringXp}
-                    nextMilestoneAt={speechProgress.nextMilestoneAt}
-                    nextMilestoneXp={speechProgress.nextMilestoneXp}
-                  />
-                </div>
-              )}
 
               <div
                 id="aip-tour-messages"
@@ -993,35 +903,40 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                 ) : (
                   <>
                     <div className="flex items-center gap-3">
-                      {/* Read-only "input" showing the live transcript / status.
-                          Voice-only — it is NOT an editable field (never an
-                          <input>/<textarea>); the user can't type here. */}
+                      {/* Live caption (read-only, never an input): the learner's
+                          words while they speak, K.AI's words as they're heard;
+                          otherwise the call status. */}
                       <div
                         aria-live="polite"
-                        className="flex min-h-[48px] flex-1 items-center overflow-hidden rounded-full border border-white/[0.06] bg-surface-2/60 px-4 py-2"
+                        className="flex min-h-[48px] flex-1 items-center overflow-hidden rounded-2xl border border-white/[0.06] bg-surface-2/60 px-4 py-2"
                       >
-                        <p
-                          className={cn(
-                            "line-clamp-2 select-none text-[14px] leading-5",
-                            isMicActive && mic.transcript
-                              ? "text-heading"
-                              : "text-muted-foreground"
-                          )}
-                        >
-                          {!isConnected
-                            ? "Connecting to K.AI…"
-                            : mic.muted
-                              ? "You're muted — tap the mic to talk"
-                              : mic.starting
-                                ? "Getting the mic ready…"
-                                : mic.transcript
-                                  ? mic.transcript
-                                  : isAiSpeaking
-                                    ? "K.AI is speaking — just talk to interrupt"
-                                    : isAiTyping
-                                      ? "K.AI is thinking…"
-                                      : "Listening… just talk"}
-                        </p>
+                        {isConnected && caption ? (
+                          <p className="line-clamp-2 select-none text-[14px] leading-5 text-heading">
+                            <span
+                              className={cn(
+                                "mr-1.5 text-[11px] font-bold uppercase tracking-wide",
+                                caption.who === "kai" ? "text-primary" : "text-muted-foreground"
+                              )}
+                            >
+                              {caption.who === "kai" ? "K.AI" : "You"}
+                            </span>
+                            {caption.text}
+                          </p>
+                        ) : (
+                          <p className="line-clamp-2 select-none text-[14px] leading-5 text-muted-foreground">
+                            {!isConnected
+                              ? "Connecting to K.AI…"
+                              : mic.muted
+                                ? "You're muted — tap the mic to talk"
+                                : mic.error
+                                  ? "Mic off"
+                                  : mic.starting
+                                  ? "Getting the mic ready…"
+                                  : isAiTyping
+                                    ? "K.AI is thinking…"
+                                    : "Listening… just talk"}
+                          </p>
+                        )}
                       </div>
 
                       {/* Mute button — the only control in a hands-free call. */}
@@ -1088,27 +1003,6 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                 </>
               )}
 
-              <Panel title="TIPS FROM K.AI">
-                {(() => {
-                  const tip = TIPS[tipIndex];
-                  const Icon = tip.icon;
-                  return (
-                    // key={tipIndex} re-mounts so each rotated tip fades in.
-                    <div
-                      key={tipIndex}
-                      className="animate-in fade-in flex min-h-[3.25rem] items-start gap-4 duration-500"
-                    >
-                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                        <Icon className="text-[18px]" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[14px] font-extrabold text-heading">{tip.title}</p>
-                        <p className="mt-1 text-[13px] leading-6 text-muted-foreground">{tip.body}</p>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </Panel>
             </aside>
           </div>
         </div>
@@ -1117,24 +1011,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
   );
 }
 
-// Cycled while K.AI is thinking — we never show Gemini's raw reasoning, just
-// a friendly status that it's working on a reply.
-const THINKING_PHRASES = [
-  "Thinking…",
-  "Preparing a personalised response…",
-  "Putting my thoughts together…",
-];
-
+// K.AI is working on a reply (Gemini's reasoning is never shown).
 function TypingIndicator() {
-  const [phraseIdx, setPhraseIdx] = useState(0);
-  useEffect(() => {
-    const t = setInterval(
-      () => setPhraseIdx((i) => (i + 1) % THINKING_PHRASES.length),
-      2200,
-    );
-    return () => clearInterval(t);
-  }, []);
-
   return (
     <div className="flex items-end gap-3">
       <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-surface-2 border border-white/[0.06]">
@@ -1156,22 +1034,9 @@ function TypingIndicator() {
               style={{ animationDelay: "300ms" }}
             />
           </div>
-          <span className="text-xs font-medium text-muted-foreground">
-            {THINKING_PHRASES[phraseIdx]}
-          </span>
+          <span className="text-xs font-medium text-muted-foreground">Thinking…</span>
         </div>
       </div>
     </div>
-  );
-}
-
-function Panel({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="c-box rounded-xl px-5 py-5">
-      <h3 className="text-[15px] font-extrabold uppercase tracking-[0.08em] text-gradient">
-        {title}
-      </h3>
-      <div className="mt-5">{children}</div>
-    </section>
   );
 }

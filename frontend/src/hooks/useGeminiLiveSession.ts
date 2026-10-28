@@ -20,11 +20,18 @@
 //   4. Socket trouble: a plain drop resumes the same Gemini session with its
 //      resumption handle; a quota/key failure asks our server for a token on
 //      ANOTHER key and replays the recent conversation as context.
+//   5. D-054: the mic stays open for the whole call (mute and reconnects only
+//      stop sending), so phones never switch audio mode mid-call; K.AI's words
+//      are revealed in step with its voice (Gemini sends them seconds early);
+//      the learner's words show while they speak (desktop preview, see
+//      audio/speechPreview.ts); a barge-in must be loud AND sustained, so a
+//      cough, a "mm" or K.AI's own echo no longer cuts K.AI off.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { MicPcmStream } from "@/audio/micPcmStream";
 import { PcmPlayer } from "@/audio/pcmPlayer";
+import { SpeechPreview, speechPreviewSupported } from "@/audio/speechPreview";
 import { ApiError, v3Fetch } from "@/lib/apiClient";
 import { notifyBadgeAwards } from "@/lib/badgeAward";
 import { getSessionId } from "@/lib/sessionId";
@@ -45,12 +52,21 @@ const HEARTBEAT_MS = 20_000;
 const REPLY_TIMEOUT_MS = 15_000;
 const MAX_RECONNECTS = 4;
 const HISTORY_REPLAY_TURNS = 12;
-// Echo gate: while K.AI's audio plays, a mic frame only counts as the learner
-// barging in above this level (RMS 0–1; K.AI's echo after the browser's echo
-// cancellation sits well below it). Once they barge in, frames pass for a while.
+// Echo gate: while K.AI's audio plays, mic frames are sent as silence unless
+// the learner is barging in — louder than BARGE_IN_RMS and than half their own
+// usual level, for BARGE_CONFIRM_MS in a row (one loud frame used to be enough,
+// so a cough, a "mm", a door or K.AI's own echo at the start of a reply cut
+// K.AI off — ~10 % of its replies in October). Once confirmed, frames pass
+// for BARGE_HOLD_MS so Gemini hears the learner and interrupts K.AI.
 const BARGE_IN_RMS = 0.05;
+const BARGE_VOICE_SHARE = 0.5;
+const BARGE_CONFIRM_MS = 220;
 const BARGE_HOLD_MS = 1500;
-const POLL_MS = 200;
+const POLL_MS = 100;
+// Caption pieces are shown this far ahead of their audio (reading lag).
+const CAPTION_LEAD_S = 0.08;
+// A learner preview only counts if the mic's voice gate was open this recently.
+const PREVIEW_VOICE_MS = 800;
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
 // Fire-and-forget end for a session id (keepalive survives page unload).
@@ -86,6 +102,28 @@ type ProgressResponse = ServerSpeechProgress & {
 type Turn = { role: "user" | "assistant"; text: string };
 
 type ConnectMode = "fresh" | "resume" | "replay";
+
+// A piece of K.AI's caption waiting for its audio (`at` on the player's clock;
+// NaN = its audio hasn't arrived yet).
+type CaptionPiece = { bubbleId: string; text: string; at: number };
+
+export type LiveCaption = { who: "you" | "kai"; text: string } | null;
+
+// iOS Safari (16.4+): keep the audio session in call mode for the whole
+// conversation instead of letting it flip when the mic opens.
+function setAudioSession(type: "play-and-record" | "auto") {
+  const nav = navigator as unknown as { audioSession?: { type: string } };
+  try {
+    if (nav.audioSession) nav.audioSession.type = type;
+  } catch {
+    /* unsupported */
+  }
+}
+
+function captionTail(text: string, words = 14): string {
+  const w = text.trim().split(/\s+/);
+  return w.length > words ? `…${w.slice(-words).join(" ")}` : text.trim();
+}
 
 // Gemini Live server message (only the fields we use).
 type LiveMessage = {
@@ -161,7 +199,7 @@ export function useGeminiLiveSession({
   scenario,
   voice,
   continueFrom,
-}: GeminiLiveOptions): UseV3ChatSessionResult & { mic: LiveMic; isAiSpeaking: boolean } {
+}: GeminiLiveOptions): UseV3ChatSessionResult & { mic: LiveMic; isAiSpeaking: boolean; caption: LiveCaption } {
   const dispatch = useAppDispatch();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -182,6 +220,7 @@ export function useGeminiLiveSession({
   const [muted, setMuted] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [micError, setMicError] = useState<string | null>(null);
+  const [caption, setCaption] = useState<LiveCaption>(null);
 
   const playerRef = useRef<PcmPlayer | null>(null);
   if (playerRef.current === null) playerRef.current = new PcmPlayer();
@@ -198,6 +237,7 @@ export function useGeminiLiveSession({
   const mutedRef = useRef(false);
   const micBusyRef = useRef(false);
   const bargeUntilRef = useRef(0);
+  const bargeMsRef = useRef(0);
   const speakingMsRef = useRef(0);
   const usageRef = useRef({ promptTokens: 0, responseTokens: 0 });
   const pendingTurnsRef = useRef<Turn[]>([]);
@@ -211,6 +251,17 @@ export function useGeminiLiveSession({
   // Lets callbacks declared before close() (progress, reconnect) end the session.
   const closeRef = useRef<() => void>(() => {});
   const speakingPollRef = useRef<number | null>(null);
+  // K.AI's caption pieces not yet heard, and what each bubble has shown so far.
+  const captionQueueRef = useRef<CaptionPiece[]>([]);
+  const revealedRef = useRef(new Map<string, string>());
+  const streamingIdRef = useRef<string | null>(null);
+  const turnDoneRef = useRef(true);
+  // Desktop live preview of the learner's words (null where unsupported).
+  const previewRef = useRef<SpeechPreview | null>(null);
+  const previewBubbleRef = useRef(false);
+  const previewTextRef = useRef("");
+  const lastRevealedIdRef = useRef<string | null>(null);
+  const captionKeyRef = useRef("");
 
   useEffect(() => {
     tokenRef.current = accessToken;
@@ -259,17 +310,27 @@ export function useGeminiLiveSession({
   const commitUser = useCallback(() => {
     const u = userTextRef.current.trim();
     if (u) remember("user", u);
+    // A bubble that only ever held the desktop preview (Gemini heard nothing
+    // it counted, e.g. background speech) is removed.
+    const id = userBubbleRef.current;
+    if (!u && id && previewBubbleRef.current) setMessages((prev) => prev.filter((m) => m.id !== id));
+    previewBubbleRef.current = false;
+    previewTextRef.current = "";
     userTextRef.current = "";
     userBubbleRef.current = null;
     setTranscript("");
+    previewRef.current?.reset();
   }, []);
 
-  const commitAssistant = useCallback(() => {
-    const a = assistantTextRef.current.trim();
+  // `spokenOnly`: K.AI was interrupted — keep only the words it actually said.
+  const commitAssistant = useCallback((spokenOnly = false) => {
+    // After turnComplete the bubble is still being revealed (streamingIdRef).
+    const id = assistantBubbleRef.current ?? (spokenOnly ? streamingIdRef.current : null);
+    const a = (spokenOnly ? (id ? revealedRef.current.get(id) ?? "" : "") : assistantTextRef.current).trim();
     if (a) remember("assistant", a);
+    if (spokenOnly) captionQueueRef.current = captionQueueRef.current.filter((p) => p.bubbleId !== id);
     assistantTextRef.current = "";
     assistantBubbleRef.current = null;
-    setStreamingId(null);
   }, []);
 
   const commitTurns = useCallback(() => {
@@ -434,11 +495,26 @@ export function useGeminiLiveSession({
     setMicError(null);
     const mic = new MicPcmStream();
     micRef.current = mic;
-    mic.gate = (rms) => {
-      if (!playerRef.current?.isPlaying()) return true;
+    mic.gate = (rms, frameMs) => {
+      if (!playerRef.current?.isPlaying()) {
+        bargeMsRef.current = 0;
+        return true;
+      }
       const now = performance.now();
-      if (rms > BARGE_IN_RMS) bargeUntilRef.current = now + BARGE_HOLD_MS;
-      return now < bargeUntilRef.current;
+      if (now < bargeUntilRef.current) return true;
+      if (rms > Math.max(BARGE_IN_RMS, mic.voiceLevel * BARGE_VOICE_SHARE)) bargeMsRef.current += frameMs;
+      else bargeMsRef.current = Math.max(0, bargeMsRef.current - frameMs * 2);
+      if (bargeMsRef.current < BARGE_CONFIRM_MS) return false;
+      bargeMsRef.current = 0;
+      bargeUntilRef.current = now + BARGE_HOLD_MS;
+      // Gemini only reports `interrupted` while it is still generating; once
+      // the reply is complete, stop the rest of its playback ourselves.
+      if (turnDoneRef.current) {
+        playerRef.current?.flush();
+        const id = streamingIdRef.current;
+        captionQueueRef.current = captionQueueRef.current.filter((p) => p.bubbleId !== id);
+      }
+      return true;
     };
     try {
       await mic.start((b64) => send({ realtimeInput: { audio: { mimeType: mic.mimeType, data: b64 } } }));
@@ -446,7 +522,9 @@ export function useGeminiLiveSession({
         mic.stop(); // closed/muted while we were waiting for permission
         return;
       }
+      mic.paused = mutedRef.current;
       setMicOpen(true);
+      if (!mutedRef.current) previewRef.current?.start();
     } catch (err) {
       mic.stop();
       if (micRef.current === mic) micRef.current = null;
@@ -464,30 +542,37 @@ export function useGeminiLiveSession({
     }
   }, [send]);
 
-  // Release the mic (a held mic keeps Bluetooth headsets in call mode).
-  // `announce` tells Gemini the audio paused, so it wraps up the current turn.
-  const closeMic = useCallback(
-    (announce: boolean) => {
-      const mic = micRef.current;
-      micRef.current = null;
-      mic?.stop();
-      if (announce && mic) send({ realtimeInput: { audioStreamEnd: true } });
-      setMicOpen(false);
-    },
-    [send],
-  );
+  // Release the mic — only when the conversation ends. Mute and reconnects
+  // keep it open: releasing it switched phones out of call audio, so K.AI's
+  // voice changed volume / jumped between speaker and earpiece (D-054).
+  const closeMic = useCallback(() => {
+    const mic = micRef.current;
+    micRef.current = null;
+    mic?.stop();
+    previewRef.current?.stop();
+    setMicOpen(false);
+  }, []);
 
   const toggleMute = useCallback(() => {
+    const mic = micRef.current;
     if (mutedRef.current) {
       mutedRef.current = false;
       setMuted(false);
-      void openMic();
+      if (mic) {
+        mic.paused = false;
+        previewRef.current?.start();
+      } else void openMic();
     } else {
       mutedRef.current = true;
       setMuted(true);
-      closeMic(true);
+      if (mic) {
+        mic.paused = true;
+        // Tell Gemini the audio paused, so it wraps up the current turn.
+        send({ realtimeInput: { audioStreamEnd: true } });
+      }
+      previewRef.current?.stop();
     }
-  }, [openMic, closeMic]);
+  }, [openMic, send]);
 
   // Socket handlers use only refs + stable callbacks. They are (re)bound in an
   // effect after every render (never during render) so they see fresh closures.
@@ -495,8 +580,7 @@ export function useGeminiLiveSession({
     handleCloseRef.current = (ev: CloseEvent) => {
       setIsConnected(false);
       clearReplyTimer();
-      // The mic reopens once the replacement socket is set up.
-      closeMic(false);
+      // The mic stays open; its audio is dropped until the replacement socket is up.
       if (closedRef.current) return;
       const reason = ev.reason || "";
       console.warn(`${LOG} socket closed`, ev.code, reason);
@@ -549,20 +633,23 @@ export function useGeminiLiveSession({
       if (!sc) return;
 
       if (sc.inputTranscription?.text) {
+        // Gemini's transcript replaces the desktop preview for this utterance.
         userTextRef.current += sc.inputTranscription.text;
+        previewBubbleRef.current = false;
         const text = userTextRef.current.trim();
         setTranscript(text);
         if (text) {
           if (!userBubbleRef.current) userBubbleRef.current = crypto.randomUUID();
           upsertBubble(userBubbleRef.current, "user", text);
+          setCaption({ who: "you", text: captionTail(text) });
         }
       }
 
       // The learner talked over K.AI: Gemini stopped generating — silence the
-      // queued audio now and close K.AI's (partial) bubble.
+      // queued audio now and close K.AI's bubble at the words it actually said.
       if (sc.interrupted) {
         playerRef.current?.flush();
-        commitAssistant();
+        commitAssistant(true);
       }
 
       if (sc.modelTurn?.parts) {
@@ -572,8 +659,14 @@ export function useGeminiLiveSession({
             clearReplyTimer();
             setIsAiTyping(false);
             // K.AI is answering → the learner's utterance is complete.
-            if (userTextRef.current) commitUser();
-            playerRef.current?.enqueueBase64Pcm(data);
+            if (userTextRef.current || previewBubbleRef.current) commitUser();
+            const player = playerRef.current;
+            if (player) {
+              player.enqueueBase64Pcm(data);
+              // Caption text that arrived before its audio belongs to this chunk.
+              const at = player.lastChunkStart();
+              for (const p of captionQueueRef.current) if (Number.isNaN(p.at)) p.at = at;
+            }
           }
           // Text parts on native-audio models are internal reasoning — never shown.
         }
@@ -582,21 +675,81 @@ export function useGeminiLiveSession({
       if (sc.outputTranscription?.text) {
         clearReplyTimer();
         setIsAiTyping(false);
-        if (userTextRef.current) commitUser();
+        if (userTextRef.current || previewBubbleRef.current) commitUser();
         assistantTextRef.current += sc.outputTranscription.text;
-        if (!assistantBubbleRef.current) {
-          assistantBubbleRef.current = crypto.randomUUID();
-          setStreamingId(assistantBubbleRef.current);
-        }
-        upsertBubble(assistantBubbleRef.current, "assistant", assistantTextRef.current.trim());
+        if (!assistantBubbleRef.current) assistantBubbleRef.current = crypto.randomUUID();
+        turnDoneRef.current = false;
+        // Shown when its audio plays (the tick below), not when it arrives.
+        const at = playerRef.current?.lastChunkStart() || Number.NaN;
+        captionQueueRef.current.push({ bubbleId: assistantBubbleRef.current, text: sc.outputTranscription.text, at });
       }
 
       if (sc.turnComplete) {
         clearReplyTimer();
         setIsAiTyping(false);
         commitTurns();
+        turnDoneRef.current = true;
         reconnectsRef.current = 0; // a healthy exchange resets the retry budget
       }
+    };
+  });
+
+  // ── captions ─────────────────────────────────────────────────────
+
+  // Move K.AI's caption pieces whose audio is now playing into their bubble,
+  // and work out the one-line live caption. Runs every POLL_MS (refs only).
+  const revealCaptions = (playing: boolean) => {
+    const clock = playerRef.current?.clock() ?? 0;
+    const q = captionQueueRef.current;
+    const changed = new Set<string>();
+    while (q.length) {
+      const p = q[0];
+      // No audio for this text (text-only reply, or audio never came): show it once the turn is over.
+      const due = Number.isNaN(p.at) ? turnDoneRef.current && !playing : p.at <= clock + CAPTION_LEAD_S;
+      if (!due) break;
+      q.shift();
+      revealedRef.current.set(p.bubbleId, (revealedRef.current.get(p.bubbleId) ?? "") + p.text);
+      lastRevealedIdRef.current = p.bubbleId;
+      changed.add(p.bubbleId);
+    }
+    for (const id of changed) upsertBubble(id, "assistant", (revealedRef.current.get(id) ?? "").trim());
+    if (revealedRef.current.size > 20) {
+      // Only recent bubbles can still change.
+      const keep = new Set([...q.map((p) => p.bubbleId), lastRevealedIdRef.current]);
+      for (const id of [...revealedRef.current.keys()]) if (!keep.has(id)) revealedRef.current.delete(id);
+    }
+
+    const sid = q[0]?.bubbleId ?? assistantBubbleRef.current ?? null;
+    if (sid !== streamingIdRef.current) {
+      streamingIdRef.current = sid;
+      setStreamingId(sid);
+    }
+
+    const learner = (userTextRef.current || previewTextRef.current).trim();
+    const kai = playing && lastRevealedIdRef.current ? revealedRef.current.get(lastRevealedIdRef.current) ?? "" : "";
+    const next: LiveCaption = learner && !playing ? { who: "you", text: captionTail(learner) } : kai.trim() ? { who: "kai", text: captionTail(kai) } : null;
+    const key = next ? `${next.who}:${next.text}` : "";
+    if (key !== captionKeyRef.current) {
+      captionKeyRef.current = key;
+      setCaption(next);
+    }
+  };
+
+  // Desktop preview of the learner's words (audio/speechPreview.ts). Only
+  // while our own voice gate hears a near voice, so a TV isn't captioned.
+  const onPreviewRef = useRef<(text: string) => void>(() => {});
+  useEffect(() => {
+    onPreviewRef.current = (text: string) => {
+      const mic = micRef.current;
+      if (!text || userTextRef.current || !mic || mutedRef.current) return;
+      const now = performance.now();
+      if (now - mic.lastVoiceAt > PREVIEW_VOICE_MS) return;
+      if (playerRef.current?.isPlaying() && now > bargeUntilRef.current) return;
+      if (!userBubbleRef.current) userBubbleRef.current = crypto.randomUUID();
+      previewBubbleRef.current = true;
+      previewTextRef.current = text;
+      upsertBubble(userBubbleRef.current, "user", text);
+      setTranscript(text);
     };
   });
 
@@ -610,7 +763,13 @@ export function useGeminiLiveSession({
     heartbeatRef.current = null;
     if (speakingPollRef.current !== null) window.clearInterval(speakingPollRef.current);
     speakingPollRef.current = null;
-    closeMic(false);
+    closeMic();
+    setAudioSession("auto");
+    captionQueueRef.current = [];
+    revealedRef.current.clear();
+    streamingIdRef.current = null;
+    setStreamingId(null);
+    setCaption(null);
     setMicStarting(false);
     // The next conversation starts unmuted.
     mutedRef.current = false;
@@ -640,6 +799,10 @@ export function useGeminiLiveSession({
     pendingTurnsRef.current = [];
     historyRef.current = [];
     resumeHandleRef.current = null;
+    captionQueueRef.current = [];
+    revealedRef.current.clear();
+    setAudioSession("play-and-record");
+    previewRef.current = speechPreviewSupported() ? new SpeechPreview((t) => onPreviewRef.current(t)) : null;
 
     (async () => {
       try {
@@ -672,6 +835,7 @@ export function useGeminiLiveSession({
           if (mic && !mutedRef.current && !playing && performance.now() - mic.lastVoiceAt < POLL_MS + 100) {
             speakingMsRef.current += POLL_MS;
           }
+          revealCaptions(playing);
         }, POLL_MS);
       } catch (err) {
         if (cancelled) return;
@@ -736,6 +900,7 @@ export function useGeminiLiveSession({
     aiCapSeconds,
     aiLimitReached,
     isAiSpeaking,
+    caption,
     mic: {
       open: micOpen,
       starting: micStarting,

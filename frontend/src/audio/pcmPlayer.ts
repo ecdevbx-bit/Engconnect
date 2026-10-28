@@ -13,6 +13,10 @@
 //     chunk that arrives a little late doesn't cut the audio (each cut is a
 //     click). Every underrun grows the lead, up to MAX_LEAD_S;
 //   * a chunk that starts after a gap fades in over a few ms.
+//
+// Captions (D-054): Gemini sends K.AI's words seconds before they are heard,
+// so callers stamp each caption piece with `lastChunkStart()` and reveal it
+// once `clock()` gets there — the text then appears as K.AI says it.
 
 const DEFAULT_SAMPLE_RATE = 24000; // Gemini Live default for output audio
 const LOG = "[pcm]";
@@ -29,6 +33,7 @@ export class PcmPlayer {
   // Live/scheduled chunk sources, tracked so flush() (barge-in) can stop them.
   private sources: AudioBufferSourceNode[] = [];
   private lead = LEAD_S;
+  private lastStart = 0;
 
   constructor(private readonly sampleRate: number = DEFAULT_SAMPLE_RATE) {
     console.log(`${LOG} ctor sampleRate=${sampleRate}`);
@@ -37,6 +42,16 @@ export class PcmPlayer {
   /** Live analyser tapping K.AI's voice — read by the agent visualizers. */
   getAnalyser(): AnalyserNode | null {
     return this.analyser;
+  }
+
+  /** Audio clock (seconds); 0 before the first chunk. */
+  clock(): number {
+    return this.ctx?.currentTime ?? 0;
+  }
+
+  /** When the most recently queued chunk starts playing, on `clock()`'s timeline (0 = nothing queued). */
+  lastChunkStart(): number {
+    return this.sources.length ? this.lastStart : 0;
   }
 
   /** True while any scheduled chunk is still playing (K.AI audibly speaking). */
@@ -125,6 +140,7 @@ export class PcmPlayer {
 
       const startAt = gap ? ctx.currentTime + this.lead : this.nextTime;
       source.start(startAt);
+      this.lastStart = startAt;
       this.sources.push(source);
       source.onended = () => {
         this.sources = this.sources.filter((s) => s !== source);

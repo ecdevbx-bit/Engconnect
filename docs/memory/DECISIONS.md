@@ -547,3 +547,37 @@
   first word. Checked: the browser accepts a 24 kHz context; not yet listened to on a real device.
 - Not fixable in code: Bluetooth headsets drop to the low-quality "call" profile while the mic is open
   (hands-free keeps it open), which can sound noisy.
+
+## D-054 · K.AI call rebuilt around the audio clock: synced captions, stable audio route, sturdier barge-in — 2026-10-28
+- Owner: "still it's catching background"; "it should show realtime … when it's transcribing, and a caption
+  too"; "when I mute, the AI's voice goes down, like it moves from speaker to normal mode"; "it sometimes
+  interrupts in between — find out why"; "remove the clutter in the UI"; "rethink the architecture".
+- Evidence (30 days, `chat_messages`): **~10 % of K.AI's replies ended mid-sentence** (cut off), a third of
+  them followed by a ≤ 2-word learner line ("what", "yes"); learners wrote "you say only the first word and
+  then you don't say the rest"; background speech was transcribed as the learner (Korean "응", German "nein",
+  Spanish lines). Timing probe: Gemini sends the learner's transcript only **after** the turn (~1.4 s after
+  they stop, in one piece) and K.AI's whole transcript within ~1 s while its audio lasts ~6 s.
+- Interruptions: one 8 ms mic frame over RMS 0.05 used to open the echo gate for 1.5 s — a cough, a "mm",
+  a door or K.AI's own echo at the start of a reply was enough, and Gemini (START_OF_ACTIVITY_INTERRUPTS)
+  stopped K.AI. Now a barge-in must stay above max(0.05, ½ × the learner's own level) for 220 ms; then the
+  held-back onset is let through too. After Gemini finishes generating it no longer sends `interrupted`, so
+  a confirmed barge-in during the rest of the playback stops it locally. Turn-end pauses +200 ms
+  (Beginner 1700 / Intermediate 1300 / Expert 1000 ms) so a thinking pause isn't taken as "done".
+- Background (partly supersedes D-052's tuning): the browser's **auto gain control is off** — it raised the
+  room whenever the learner paused, so a TV reached nearly the learner's level. Our own gain (×1–6, keyed to
+  the learner's learned level only, target RMS 0.1) keeps quiet mics usable; `voiceIsolation` is requested
+  where supported. Gate thresholds unchanged (simulation: soft learner after a loud one 93 % kept).
+- Mute / audio route (supersedes D-039's "mute = release mic"): the mic stays open for the whole call —
+  mute and reconnects only stop sending (`MicPcmStream.paused`, `audioStreamEnd` on mute). Releasing it
+  switched phones out of call audio, changing K.AI's volume/route. iOS 16.4+: `navigator.audioSession` is
+  set to play-and-record for the call. Trade-off: the mic indicator stays on while muted (nothing is sent).
+- Captions: K.AI's text pieces are stamped with the player's clock (`PcmPlayer.lastChunkStart()`) and
+  revealed as that audio plays (bubble + a one-line live caption in the mic bar); when interrupted, only the
+  words actually said are kept. Learner: on desktop (non-touch) browsers with the Web Speech API, an interim
+  preview (`audio/speechPreview.ts`, en-IN) is shown while they speak — only while our voice gate hears a
+  near voice — and replaced by Gemini's transcript, which is the one saved. Not on phones: the recogniser
+  competes for the mic and can switch the audio mode. Privacy page mentions it.
+- UI: tips panel, rotating "thinking" phrases, the motivation label and the phone stats card removed;
+  talk-time + XP is one line in the status bar; slimmer header; start card's four tiles → three chips.
+- Verified locally: K.AI's greeting appeared word by word over ~9 s in step with its audio. Not verified:
+  real mic behaviour (the preview pane blocks the mic) — owner to test on phone + laptop.

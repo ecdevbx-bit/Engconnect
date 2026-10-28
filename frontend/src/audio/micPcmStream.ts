@@ -15,6 +15,13 @@
 //     than the learner, so frames well below the learner's own level (or just
 //     above the room's noise) are sent as silence too. Audio is held back
 //     LOOKAHEAD_MS so the gate can open before a word's first sound.
+//   * D-054: the browser's automatic gain control is OFF — it turned the room
+//     up whenever the learner paused, so a TV across the room reached almost
+//     the learner's own level and slipped past the gate. Instead, frames that
+//     pass are amplified by a gain keyed to the learner's voice level only
+//     (never to the room), so quiet mics still reach Gemini at a usable level.
+//   * `paused` (mute) stops sending without releasing the mic: releasing it
+//     switched phones out of call audio, so K.AI's volume/speaker changed.
 
 const WORKLET_SOURCE = `
 class PCMRecorder extends AudioWorkletProcessor {
@@ -49,6 +56,9 @@ const BG_VOICE_SHARE = 0.25; // ≈ 12 dB under the learner's own voice
 const BG_OPEN_MS = 24; // a click or tap shorter than this doesn't open it
 const BG_HOLD_MS = 450; // stays open through the gaps between words
 const LOOKAHEAD_MS = 120;
+// Voice-keyed gain: bring the learner's voice to about TARGET_RMS, ×1…MAX_GAIN.
+const TARGET_RMS = 0.1;
+const MAX_GAIN = 6;
 
 function toBase64(bytes: Uint8Array): string {
   let bin = "";
@@ -69,7 +79,10 @@ export class MicPcmStream {
   private pendingSamples = 0;
   private onChunk: ((b64: string) => void) | null = null;
   lastVoiceAt = 0;
-  gate: ((rms: number) => boolean) | null = null;
+  // Per-frame veto (echo gate). Frames it rejects are sent as silence.
+  gate: ((rms: number, frameMs: number) => boolean) | null = null;
+  // Muted: frames are dropped (nothing is sent), the mic stays open.
+  paused = false;
   // Set false before start() to send every frame (no background-voice gate).
   rejectBackground = true;
   sampleRate = 16000;
@@ -81,9 +94,15 @@ export class MicPcmStream {
   private openUntilMs = -1;
   private delayed: { frame: Int16Array; open: boolean; pass: boolean }[] = [];
   private delayedSamples = 0;
+  private passing = true;
 
   getAnalyser(): AnalyserNode | null {
     return this.analyser;
+  }
+
+  /** The learner's learned speaking level (RMS 0–1). */
+  get voiceLevel(): number {
+    return this.voiceRms;
   }
 
   get mimeType(): string {
@@ -92,9 +111,17 @@ export class MicPcmStream {
 
   async start(onChunk: (b64: string) => void): Promise<void> {
     this.onChunk = onChunk;
-    // Echo cancellation matters: K.AI speaks through the same device.
+    // Echo cancellation matters: K.AI speaks through the same device. Gain
+    // control is ours (see the header); voice isolation where the browser has it.
+    const supported = navigator.mediaDevices.getSupportedConstraints() as Record<string, boolean>;
     this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      audio: {
+        channelCount: 1,
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: false,
+        ...(supported.voiceIsolation ? { voiceIsolation: true } : {}),
+      } as MediaTrackConstraints,
     });
     const AC: typeof AudioContext =
       window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -118,11 +145,23 @@ export class MicPcmStream {
       let sum = 0;
       for (let i = 0; i < raw.length; i++) sum += (raw[i] / 32768) ** 2;
       const rms = Math.sqrt(sum / Math.max(1, raw.length));
-      const pass = !this.gate || this.gate(rms);
-      const open = this.rejectBackground ? this.nearVoice(rms, (raw.length * 1000) / this.sampleRate, pass) : true;
-      if (open && rms > VOICE_RMS) this.lastVoiceAt = performance.now();
-      // Opening also lets through the held-back audio just before it (the onset).
+      if (this.paused) {
+        // Drop what was held back too, so unmuting never sends stale audio.
+        this.delayed = [];
+        this.delayedSamples = 0;
+        this.pending = [];
+        this.pendingSamples = 0;
+        return;
+      }
+      const frameMs = (raw.length * 1000) / this.sampleRate;
+      const pass = !this.gate || this.gate(rms, frameMs);
+      const open = this.rejectBackground ? this.nearVoice(rms, frameMs, pass) : true;
+      if (open && pass && rms > VOICE_RMS) this.lastVoiceAt = performance.now();
+      // Opening also lets through the held-back audio just before it (the onset);
+      // so does the echo gate letting a barge-in through.
       if (open) for (const d of this.delayed) d.open = true;
+      if (pass && !this.passing) for (const d of this.delayed) d.pass = true;
+      this.passing = pass;
       this.delayed.push({ frame: raw, open, pass });
       this.delayedSamples += raw.length;
       while (this.delayed.length && this.delayedSamples - this.delayed[0].frame.length >= lookaheadSamples) {
@@ -189,10 +228,18 @@ export class MicPcmStream {
 
   private emit(d: { frame: Int16Array; open: boolean; pass: boolean }, chunkSamples: number): void {
     this.delayedSamples -= d.frame.length;
-    const frame = d.open && d.pass ? d.frame : new Int16Array(d.frame.length);
+    const frame = d.open && d.pass ? this.amplify(d.frame) : new Int16Array(d.frame.length);
     this.pending.push(frame);
     this.pendingSamples += frame.length;
     if (this.pendingSamples >= chunkSamples) this.flush();
+  }
+
+  private amplify(frame: Int16Array): Int16Array {
+    const gain = this.rejectBackground ? Math.min(MAX_GAIN, Math.max(1, TARGET_RMS / Math.max(1e-4, this.voiceRms))) : 1;
+    if (gain <= 1.01) return frame;
+    const out = new Int16Array(frame.length);
+    for (let i = 0; i < frame.length; i++) out[i] = Math.max(-32768, Math.min(32767, Math.round(frame[i] * gain)));
+    return out;
   }
 
   private flush(): void {
@@ -208,8 +255,7 @@ export class MicPcmStream {
     this.onChunk(toBase64(new Uint8Array(merged.buffer)));
   }
 
-  // Release the mic straight away (a held mic keeps Bluetooth headsets in
-  // their muffled "call" profile, which would make K.AI's reply sound bad).
+  // Release the mic (end of the conversation).
   stop(): void {
     for (const d of this.delayed) this.emit(d, Infinity);
     this.delayed = [];

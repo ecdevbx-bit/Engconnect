@@ -62,7 +62,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
     greeting:
       "Speak extra slowly and gently in the greeting. Tell them it's okay to make mistakes and that you'll go slowly together.",
     // Beginners stop to search for words — give them time before K.AI answers.
-    pauseMs: 1500,
+    pauseMs: 1700,
   },
 
   // ── INTERMEDIATE ──────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
       `* Keep the 70/30 balance: mostly English, ${language} for warmth and quick clarifications only.`,
     replyLength: "1–2 short spoken sentences, under 25 words, ending with one open question or task.",
     greeting: "Greet them naturally and get them talking about something real in their life.",
-    pauseMs: 1100,
+    pauseMs: 1300,
   },
 
   // ── EXPERT ────────────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
       `* Use English almost entirely. Use ${language} only if they are clearly stuck or ask for a translation.`,
     replyLength: "1–2 natural sentences, under 30 words, ending with a thought-provoking question.",
     greeting: "Greet them confidently and open with an interesting question.",
-    pauseMs: 800,
+    pauseMs: 1000,
   },
 };
 

@@ -181,3 +181,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-28] build | AI Partner background-voice gate + K.AI full form (D-052)
 
 ## [2026-10-28] build | K.AI shorter replies + voice player crackle fixes (D-053)
+
+## [2026-10-28] build | K.AI call: synced captions, mic held through mute, sturdier barge-in, AGC off, less clutter (D-054, [[features/ai-partner]])

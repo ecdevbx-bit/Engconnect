@@ -33,9 +33,15 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 4. **Start session** → K.AI greets by name (and opens the chosen practice mode).
 5. **Just talk — hands-free, like GPT voice mode** (D-039): the mic opens by itself when the call
    connects; K.AI answers when the learner pauses (longer pause allowed for Beginners); talking over
-   K.AI interrupts it. The only control is **mute** (mic button or Space). Live captions show both sides.
+   K.AI interrupts it. The only control is **mute** (mic button or Space). Mute keeps the mic open and
+   just stops sending, so a phone never switches audio mode mid-call (K.AI's volume used to drop) (D-054).
+   **Live captions** (D-054): K.AI's words appear as they are spoken (bubble + one-line caption in the
+   mic bar), not seconds early; on a computer the learner's own words show while they talk (browser
+   speech preview), on phones when they pause. Talking over K.AI only interrupts it if it's a real,
+   sustained voice — a cough, "mm" or K.AI's own echo no longer cuts it off.
    Background voices (TV, people across the room) are filtered out: only a voice near the mic reaches
-   K.AI, and K.AI is told to ignore side speech (D-052). A background voice as loud as the learner
+   K.AI, and K.AI is told to ignore side speech (D-052). The browser's auto-gain is off (it turned the
+   room up between the learner's words); our own gain follows the learner's voice only (D-054). A background voice as loud as the learner
    still gets through.
    K.AI keeps replies short (under 20/25/30 words by level) and hands the turn back with one open
    question, so the learner does most of the talking (D-053). The player buffers ~120 ms so network
@@ -93,9 +99,9 @@ Free **20 min / week** (resets Monday IST) · Pro **20 min / day** (IST, D-033) 
 per learner (a new one closes the old). All admin-editable (`/v3/admin/ai-partner`).
 
 ## Code map
-UI `frontend/src/components/game/V3AIPartner.tsx` (unchanged render tree) · hook
+UI `frontend/src/components/game/V3AIPartner.tsx` · hook
 `src/hooks/useGeminiLiveSession.ts` · mic `src/audio/micPcmStream.ts` · player
-`src/audio/pcmPlayer.ts` · API `src/server/routes/chat.ts` · token `src/server/gemini/liveToken.ts` ·
+`src/audio/pcmPlayer.ts` (audio clock for captions) · learner caption preview `src/audio/speechPreview.ts` · API `src/server/routes/chat.ts` · token `src/server/gemini/liveToken.ts` ·
 memory pipeline `src/server/gemini/memory.ts` · history/memory API `src/server/routes/chatHistory.ts` ·
 history UI `src/app/(app)/dashboard/ai-partner/history/` + `src/components/aiPartnerHistory/` ·
 client `src/lib/v3ChatHistory.ts`.

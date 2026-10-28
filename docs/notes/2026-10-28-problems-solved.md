@@ -72,6 +72,32 @@ Technical details: `docs/memory/DECISIONS.md` (D-050 … D-053) and `docs/wiki/l
   If the noise only happens on Bluetooth, that's the cause.
 - **Still to do (owner):** listen on a phone and a laptop.
 
+## 9. K.AI cut itself off mid-sentence ("sometimes it interrupts in between")
+- **What the chats showed:** about 1 in 10 of K.AI's replies in October stopped mid-sentence. Learners even
+  said "you say only the first word and then you don't say the rest".
+- **Why:** any single loud sound (a cough, "mm", a door, or K.AI's own voice coming back from the speaker)
+  counted as the learner talking over K.AI, so K.AI stopped.
+- **Fix:** only a real voice that lasts about a quarter of a second, and is loud compared with the
+  learner's normal level, interrupts K.AI. K.AI also waits 0.2 s longer before deciding the learner has
+  finished, so thinking pauses aren't cut. (D-054)
+
+## 10. Background voices still getting through
+- **Why:** the phone/laptop's automatic volume boost turned the room up every time the learner paused, so
+  a TV became almost as loud as the learner. Some chats even had Korean, German and Spanish lines from TVs.
+- **Fix:** the automatic boost is off; the app now boosts only the learner's own voice level. (D-054)
+
+## 11. Mute changed K.AI's volume / speaker
+- **Why:** mute switched the microphone off completely, and phones then left "call audio" mode.
+- **Fix:** mute now keeps the mic on but sends nothing, so the sound stays the same. The mic light stays on
+  while muted. (D-054)
+
+## 12. Captions weren't real time; screen was cluttered
+- **Why:** Google sends K.AI's full text about 5 seconds before it's spoken, and sends the learner's words
+  only after they stop talking.
+- **Fix:** K.AI's words now appear as it says them (in the chat and as a caption line above the mic). On a
+  computer, the learner's words appear while they speak; on phones they appear when they pause. Tips panel,
+  extra cards and rotating "thinking" texts removed. (D-054)
+
 ---
 
 ## Health checks done

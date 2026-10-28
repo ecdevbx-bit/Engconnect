@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T14:08:40.966Z",
+  "generatedAt": "2026-10-28T14:59:01.656Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -736,6 +736,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-054",
+      "title": "K.AI call rebuilt around the audio clock: synced captions, stable audio route, sturdier barge-in",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1136,6 +1144,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-039",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-054",
       "kind": "cites"
     },
     {
@@ -1794,6 +1807,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-054",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2084,6 +2102,16 @@
       "kind": "supersedes"
     },
     {
+      "source": "D-054",
+      "target": "D-052",
+      "kind": "supersedes"
+    },
+    {
+      "source": "D-054",
+      "target": "D-039",
+      "kind": "supersedes"
+    },
+    {
       "source": "memory/status",
       "target": "D-022",
       "kind": "cites"
@@ -2111,6 +2139,11 @@
     {
       "source": "memory/status",
       "target": "D-053",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-054",
       "kind": "cites"
     },
     {

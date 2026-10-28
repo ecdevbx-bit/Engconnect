@@ -42,6 +42,13 @@
   voice player got crackle fixes (24 kHz context, jitter buffer, fade-in) (D-053). Deployed `6f047ef` READY;
   production smoke **32/32**. Owner to listen on a phone + laptop.
 - Plain-English notes of everything fixed this session: `docs/notes/2026-10-28-problems-solved.md`.
+- **K.AI call rebuilt (D-054)**: ~10 % of K.AI replies were being cut off (one loud mic frame = barge-in) →
+  sustained barge-in (220 ms, relative to the learner's level); +200 ms turn-end pauses; browser auto-gain OFF
+  + our voice-keyed gain (background TV was boosted); mic held open through mute/reconnects + iOS
+  audioSession (mute used to change K.AI's volume/route); captions revealed on the audio clock; desktop
+  live preview of the learner's words (Web Speech, display only); UI decluttered. Typecheck ✓, local check:
+  greeting revealed word by word in sync. **Not committed yet**; real-mic behaviour needs the owner's phone +
+  laptop test.
 - Supabase usage is far under free limits (17 MB DB, ~53 MAU, 0 storage, ~5k REST requests/day) — no Pro needed yet.
 - `DNS-RECORDS-englishconnection.in.txt` (repo root, untracked) = handout with the 4 Resend records + steps.
 
