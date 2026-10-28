@@ -506,3 +506,14 @@
 - Trade-off: emails are not verified, and forgot-password still can't send. Undo once a sender works:
   Resend domain `englishconnection.in` is added (id 221eae2a…, 4 DNS records pending at GoDaddy), or Gmail
   SMTP for ec.devbx@gmail.com (needs an app password). Then set `mailer_autoconfirm = false` again.
+
+## D-051 · englishconnection.in is the site URL; every serving host is on the auth allow-list — 2026-10-28
+- Owner: "sometimes I have to log in two times using Google … it goes back to the home screen".
+- The domain now serves this app (Vercel), but Supabase only allowed `engconnect-beta.vercel.app`. In 24 h,
+  35 of 51 Google sign-ins started on `englishconnection.in` (28) or `www.` (7); GoTrue swapped the unlisted
+  `redirect_to` for the site URL, so the learner landed on the Vercel home page signed out (the PKCE verifier
+  cookie lives on the other host) and the second try — now on the Vercel host — worked.
+- Now: `site_url = https://englishconnection.in`; allow-list = englishconnection.in, www, the Vercel URL,
+  localhost, previews. Verified via `auth.flow_state.referrer` for each host. `configure-auth.mjs` carries
+  the same list and keeps `mailer_autoconfirm` on unless `REQUIRE_EMAIL_CONFIRM=1` (D-050).
+- Suggested, not done: redirect `www` → apex in Vercel so there is one host.

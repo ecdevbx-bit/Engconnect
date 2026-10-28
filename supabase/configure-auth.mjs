@@ -23,13 +23,18 @@ const token = process.env.SUPABASE_ACCESS_TOKEN || (creds.match(/(sbp_[A-Za-z0-9
 const ref = process.env.SUPABASE_PROJECT_REF || (creds.match(/https:\/\/([a-z0-9]+)\.supabase\.co/) ?? [])[1];
 if (!token || !ref) throw new Error("Need SUPABASE_ACCESS_TOKEN + SUPABASE_PROJECT_REF");
 
-const SITE_URL = process.env.SITE_URL || "https://engconnect-beta.vercel.app";
-const ALLOW = [
+const SITE_URL = process.env.SITE_URL || "https://englishconnection.in";
+// Every host the app is served from must be listed: a Google sign-in started
+// on an unlisted host is sent back to SITE_URL's home page signed out (D-051).
+const ALLOW = [...new Set([
   `${SITE_URL}/**`,
+  "https://englishconnection.in/**",
+  "https://www.englishconnection.in/**",
+  "https://engconnect-beta.vercel.app/**",
   "http://localhost:3000/**",
   // Vercel preview deployments of project "engconnect" in team "engconnect"
   "https://engconnect-*-engconnect.vercel.app/**",
-].join(",");
+])].join(",");
 
 const shell = (title, body, cta, href) => `<!doctype html><html><body style="margin:0;background:#0b0e14;font-family:Arial,Helvetica,sans-serif">
 <table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 12px"><tr><td align="center">
@@ -48,7 +53,9 @@ const config = {
   site_url: SITE_URL,
   uri_allow_list: ALLOW,
   password_min_length: 8,
-  mailer_autoconfirm: false,
+  // Confirmation stays off until auth email can be delivered (D-050);
+  // set REQUIRE_EMAIL_CONFIRM=1 to turn it back on.
+  mailer_autoconfirm: process.env.REQUIRE_EMAIL_CONFIRM !== "1",
   mailer_secure_email_change_enabled: true,
 };
 

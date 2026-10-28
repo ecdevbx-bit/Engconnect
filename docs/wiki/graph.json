@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T08:15:11.193Z",
+  "generatedAt": "2026-10-28T09:35:49.690Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -712,6 +712,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-051",
+      "title": "englishconnection.in is the site URL; every serving host is on the auth allow-list",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -817,6 +825,11 @@
     {
       "source": "architecture/auth",
       "target": "D-020",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-051",
       "kind": "cites"
     },
     {
@@ -1740,6 +1753,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-051",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2042,6 +2060,11 @@
     {
       "source": "memory/status",
       "target": "D-050",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-051",
       "kind": "cites"
     },
     {

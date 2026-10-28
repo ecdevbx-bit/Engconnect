@@ -39,8 +39,9 @@ All configuration is applied by `node supabase/configure-auth.mjs` (idempotent).
   sign-ups failed and password reset still fails. Pending: DNS for `englishconnection.in` at GoDaddy, or Gmail SMTP.
 
 ## Settings
-Site URL `https://engconnect-beta.vercel.app`; redirect allow-list = production, Vercel previews
-(`https://engconnect-*-engconnect.vercel.app/**`), `http://localhost:3000/**`; password ≥ 8
+Site URL `https://englishconnection.in` (D-051); redirect allow-list = englishconnection.in, www, the Vercel URL,
+Vercel previews (`https://engconnect-*-engconnect.vercel.app/**`), `http://localhost:3000/**` — **every host the app
+is served from must be listed** or Google sign-in lands signed out on the site URL's home page; password ≥ 8
 (our API also requires a letter and a number); email confirmation **off** for now (D-050).
 
 ## Sessions

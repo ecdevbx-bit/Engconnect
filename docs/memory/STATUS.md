@@ -25,6 +25,8 @@
   sign-up). **Email confirmation switched OFF** in Supabase; `LoginForm` signs in right after sign-up (D-050).
   Verified: live API sign-up → password login → session ✓; local UI sign-up → dashboard ✓.
   Deployed `df4ed96` READY; production smoke **32/32**.
+- **Google sign-in needed two tries** (35/51 in 24 h started on englishconnection.in/www, not allow-listed).
+  Site URL → englishconnection.in, both hosts allow-listed (D-051); verified via `auth.flow_state.referrer`.
 - Supabase health: all services ACTIVE_HEALTHY, 17 MB, 18/60 connections, no Postgres errors. PostgREST
   "Thread killed by timeout manager" (~1k/day) is benign idle-connection noise.
 - Advisors: 4 WARN security (handle_new_user executable, 4 functions w/o search_path, leaked-password check),
