@@ -51,7 +51,11 @@
 - **Pronunciation faster (D-057)**: short answers (detail only for missed words), scorer
   `gemini-3-flash-preview` (thinking LOW), hedged across models, friendly "busy" when all fail, parallel DB
   work. Locally 5.2–6.6 s per attempt while Google's lite models were 503'ing (was 15–25 s).
-  D-055…D-057 being committed and deployed now.
+  Deployed `a444c80` READY (functions confirmed in `bom1`); production smoke **32/32**. Production timings:
+  K.AI start 0.73 s server (was 4.7–5.9 s), first word 2.8–3.3 s (was ~7.5 s), `/chat/usage` 0.15 s (was
+  1.4–1.8 s); pronunciation 5.4–19 s while Google's models were slow (single calls 10–15 s, several 504) —
+  the hedge helps but Google's capacity is the limit. Sometimes the scorer leaves out the native-script
+  respelling for a missed word (field is optional now) — watch.
 - **K.AI call rebuilt (D-054)**: ~10 % of K.AI replies were being cut off (one loud mic frame = barge-in) →
   sustained barge-in (220 ms, relative to the learner's level); +200 ms turn-end pauses; browser auto-gain OFF
   + our voice-keyed gain (background TV was boosted); mic held open through mute/reconnects + iOS
