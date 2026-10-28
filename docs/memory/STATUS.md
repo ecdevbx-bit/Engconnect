@@ -47,8 +47,8 @@
   + our voice-keyed gain (background TV was boosted); mic held open through mute/reconnects + iOS
   audioSession (mute used to change K.AI's volume/route); captions revealed on the audio clock; desktop
   live preview of the learner's words (Web Speech, display only); UI decluttered. Typecheck ✓, local check:
-  greeting revealed word by word in sync. **Not committed yet**; real-mic behaviour needs the owner's phone +
-  laptop test.
+  greeting revealed word by word in sync. Deployed `4a1e99b` READY; production smoke **32/32**. Real-mic
+  behaviour still needs the owner's phone + laptop test.
 - Supabase usage is far under free limits (17 MB DB, ~53 MAU, 0 storage, ~5k REST requests/day) — no Pro needed yet.
 - `DNS-RECORDS-englishconnection.in.txt` (repo root, untracked) = handout with the 4 Resend records + steps.
 
