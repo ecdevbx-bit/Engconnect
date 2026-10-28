@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T15:54:59.382Z",
+  "generatedAt": "2026-10-28T16:05:28.341Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -762,6 +762,14 @@
     {
       "id": "D-057",
       "title": "Pronunciation scoring: short answers, gemini-3-flash-preview first, hedged across models",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-058",
+      "title": "Sign-out shows a \"Signing out…\" cover at once",
       "type": "decision",
       "date": "2026-10-28",
       "status": "active",
@@ -1866,6 +1874,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-058",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2208,6 +2221,11 @@
     {
       "source": "memory/status",
       "target": "D-057",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-058",
       "kind": "cites"
     },
     {

@@ -52,6 +52,8 @@ is served from must be listed** or Google sign-in lands signed out on the site U
 - **Sign-out is instant** (D-055): `signOut()` deletes the `sb-<ref>-auth-token` cookies at once and
   reloads the page; the session is revoked on Supabase in the background (`keepalive` POST
   `/auth/v1/logout?scope=local`). It used to wait 0.3–1.5 s on supabase-js with nothing on screen.
+  A full-screen "Signing out…" cover (plain DOM) is painted first: until the next page has downloaded,
+  the browser keeps showing the old one, and on phones the tap looked like it did nothing.
 - Signed-in visitors of `/` are sent to `/dashboard` by `src/proxy.ts`, so the landing is a static,
   CDN-cached page (`revalidate = 60`), not rendered per visit (~0.9 s before the first byte).
 - Cookies last 400 days, and the server refreshes an expired access token (checked 2026-10-28 against

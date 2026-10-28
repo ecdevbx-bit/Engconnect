@@ -10,7 +10,6 @@ import { useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useSession, signOut as nextAuthSignOut } from "@/lib/session";
 
-import { emitToast } from "@/lib/toast";
 import { fromSessionUser, type DisplayUser } from "@/lib/displayUser";
 import { Button } from "@/components/ui/button";
 import AccountDropdown from "./AccountDropdown";
@@ -39,8 +38,7 @@ export default function AccountChip({ size = "md" }: { size?: "sm" | "md" }) {
 
   function handleSignOut() {
     setOpen(false);
-    // Instant: cookies cleared now, the landing page loads next (lib/session.tsx).
-    emitToast({ type: "info", title: "Signing out…", body: "See you soon!" });
+    // Instant: a "Signing out…" cover, cookies cleared, the landing loads next (lib/session.tsx).
     void nextAuthSignOut({ callbackUrl: "/" });
   }
 

@@ -635,3 +635,14 @@
 - Locally (lite models still 503'ing): 3 of 4 attempts in 5.2–6.6 s with the swapped word caught; one failed
   when every model failed at once. Jumble clues and memory keep `GEMINI_TEXT_MODEL` without hedging.
 
+## D-058 · Sign-out shows a "Signing out…" cover at once — 2026-10-28
+- Owner, after D-055 was live: "sign out still is slow — it does not show". The cookies were already cleared
+  and the page change started at once, but the browser keeps showing the old page until the landing has
+  downloaded (TTFB ~0.5 s, more on a phone network), and the "Signing out…" toast was lost in the page change
+  — so nothing seemed to happen.
+- `signOut()` now paints a full-screen cover (plain DOM, top z-index) and waits two frames (or 80 ms in a
+  background tab, where frames never fire) before clearing cookies and navigating. The toast is gone.
+  Locally on a phone-size screen: cover within 5 ms of the tap, page change at 85 ms, landed signed out.
+- Checked on the way: the account menu opens in ~9 ms (a delay seen in the hidden preview pane was its
+  1-fps throttling, not the app).
+

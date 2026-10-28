@@ -199,7 +199,17 @@ export function useSession(): Ctx {
 // (keepalive, so the request survives the page change). Waiting for
 // supabase-js first cost 0.3–1.5 s with nothing happening on screen.
 // Always a full page load, so no in-memory session survives in this tab.
+// A full-screen "Signing out…" cover is painted first: until the next page has
+// downloaded the browser keeps showing the old one, and on a phone that looked
+// like the button did nothing.
 export async function signOut(opts: { callbackUrl?: string } = {}): Promise<void> {
+  showSigningOut();
+  // Two frames so it is painted; the timer covers background tabs, where
+  // animation frames never fire (a superseded session signs out there too).
+  await new Promise<void>((r) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => r()));
+    setTimeout(r, 80);
+  });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const token = liveAccessToken;
@@ -221,6 +231,19 @@ export async function signOut(opts: { callbackUrl?: string } = {}): Promise<void
     }
   }
   window.location.replace(opts.callbackUrl ?? "/");
+}
+
+// Plain DOM (not React), so it shows even if the app is busy re-rendering.
+function showSigningOut(): void {
+  if (document.getElementById("ec-signing-out")) return;
+  const el = document.createElement("div");
+  el.id = "ec-signing-out";
+  el.setAttribute("role", "status");
+  el.style.cssText =
+    "position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(11,14,20,.92);color:#ecedf6;font:600 15px system-ui,sans-serif";
+  el.innerHTML =
+    '<span style="width:28px;height:28px;border:3px solid rgba(255,255,255,.2);border-top-color:#f59e0b;border-radius:50%;animation:ec-spin .7s linear infinite"></span>Signing out…<style>@keyframes ec-spin{to{transform:rotate(360deg)}}</style>';
+  document.body.appendChild(el);
 }
 
 export async function signInWithGoogle(next = "/dashboard"): Promise<void> {
