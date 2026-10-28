@@ -58,7 +58,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
       `* Use more ${language} than usual for explanations and comfort (up to half), but keep the practice sentences in English.
 * Explain the meaning of a new English word in ${language} (Roman letters), then say the English word again slowly.`,
     replyLength:
-      "1–2 very short sentences with ONE simple question OR one 'say with me' task (never both) — under 25 words. You may repeat a question in their language right after the English.",
+      "1–2 very short sentences with ONE simple question OR one 'say with me' task (never both) — under 20 words. You may repeat a question in their language right after the English.",
     greeting:
       "Speak extra slowly and gently in the greeting. Tell them it's okay to make mistakes and that you'll go slowly together.",
     // Beginners stop to search for words — give them time before K.AI answers.
@@ -75,12 +75,12 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
 * Introduce one useful new word or phrase now and then, with a quick example, and get them to use it.
 * Ask open questions (why, how, what happened) that need 2–3 sentences to answer.
 * If they are stuck, give a starter: "You can begin with: Last Sunday I …".`,
-    correction: `* Correct every grammar or word-choice mistake briefly: the right form + one short reason.
-* Then ask them to say the corrected sentence once.
+    correction: `* Correct the most important mistake briefly: the right form + a reason of a few words ("past tense").
+* Then ask them to say the corrected sentence once — that is the only ask in that reply; your next question comes after they repeat it.
 * Prioritise errors that change meaning or repeat often (tenses, did + base verb, articles, prepositions).`,
     blend: (language) =>
       `* Keep the 70/30 balance: mostly English, ${language} for warmth and quick clarifications only.`,
-    replyLength: "1–2 short spoken sentences, under 35 words, ending with one question or task.",
+    replyLength: "1–2 short spoken sentences, under 25 words, ending with one open question or task.",
     greeting: "Greet them naturally and get them talking about something real in their life.",
     pauseMs: 1100,
   },
@@ -99,7 +99,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
 * Keep corrections fast and light (one line), then continue the discussion.`,
     blend: (language) =>
       `* Use English almost entirely. Use ${language} only if they are clearly stuck or ask for a translation.`,
-    replyLength: "1–3 natural sentences, under 45 words, ending with a thought-provoking question.",
+    replyLength: "1–2 natural sentences, under 30 words, ending with a thought-provoking question.",
     greeting: "Greet them confidently and open with an interesting question.",
     pauseMs: 800,
   },

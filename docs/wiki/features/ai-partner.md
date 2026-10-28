@@ -37,6 +37,9 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
    Background voices (TV, people across the room) are filtered out: only a voice near the mic reaches
    K.AI, and K.AI is told to ignore side speech (D-052). A background voice as loud as the learner
    still gets through.
+   K.AI keeps replies short (under 20/25/30 words by level) and hands the turn back with one open
+   question, so the learner does most of the talking (D-053). The player buffers ~120 ms so network
+   jitter doesn't crackle.
 6. Status reads **Listening… / Thinking… / Speaking… / Muted**.
 7. Talk-time earns XP (**+10 after 15 s of speaking, then +30 per extra minute**), shown on the
    "Speak to earn" card with celebrations.

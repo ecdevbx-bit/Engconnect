@@ -9,7 +9,7 @@ updated: 2026-10-28
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(79 nodes · 281 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(80 nodes · 284 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -188,14 +188,14 @@ flowchart LR
 | [[architecture/storage-r2]] | D-036 |
 | [[architecture/system]] | D-002 |
 | [[features/admin]] | D-023, D-018, D-042, D-031 |
-| [[features/ai-partner]] | D-026, D-032, D-048, D-039, D-052, D-047, D-049, D-033 |
+| [[features/ai-partner]] | D-026, D-032, D-048, D-039, D-052, D-053, D-047, D-049, D-033 |
 | [[features/jumble-words]] | D-043 |
 | [[features/k-ai-instructions]] | D-032 |
 | [[features/learn]] | D-042 |
 | [[features/premium]] | D-033, D-010 |
 | [[features/pronunciation]] | D-038, D-035, D-036 |
 | [[features/support]] | D-029, D-034 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023, D-044 |
 | [[operations/deployment]] | D-022 |
@@ -258,6 +258,7 @@ flowchart LR
 | D-050 | Email confirmation switched off until auth email can be delivered | active | [[architecture/auth]] [[log]] [[memory/status]] |
 | D-051 | englishconnection.in is the site URL; every serving host is on the auth allow-list | active | [[architecture/auth]] [[log]] [[memory/status]] |
 | D-052 | AI Partner ignores background voices; K.AI = "Kanchan AI" | active | [[features/ai-partner]] [[log]] [[memory/status]] |
+| D-053 | K.AI talks less; crackle fixes in the voice player | active | [[features/ai-partner]] [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

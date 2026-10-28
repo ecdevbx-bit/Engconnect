@@ -4,9 +4,22 @@
 // PCM (mono). We decode → convert to Float32 → schedule on the AudioContext
 // timeline using a running `nextTime` cursor so consecutive chunks play
 // seamlessly without restarting for every frame.
+//
+// Crackle fixes (D-053):
+//   * the AudioContext runs at the stream's own rate (24 kHz) when the browser
+//     allows it, so the output is resampled once as a stream instead of chunk
+//     by chunk (per-chunk resampling clicks at every chunk boundary);
+//   * a small jitter buffer: after a gap, playback starts LEAD_S ahead, so a
+//     chunk that arrives a little late doesn't cut the audio (each cut is a
+//     click). Every underrun grows the lead, up to MAX_LEAD_S;
+//   * a chunk that starts after a gap fades in over a few ms.
 
 const DEFAULT_SAMPLE_RATE = 24000; // Gemini Live default for output audio
 const LOG = "[pcm]";
+const LEAD_S = 0.12;
+const LEAD_STEP_S = 0.04;
+const MAX_LEAD_S = 0.3;
+const FADE_S = 0.004;
 
 export class PcmPlayer {
   private ctx: AudioContext | null = null;
@@ -15,6 +28,7 @@ export class PcmPlayer {
   private chunkCount = 0;
   // Live/scheduled chunk sources, tracked so flush() (barge-in) can stop them.
   private sources: AudioBufferSourceNode[] = [];
+  private lead = LEAD_S;
 
   constructor(private readonly sampleRate: number = DEFAULT_SAMPLE_RATE) {
     console.log(`${LOG} ctor sampleRate=${sampleRate}`);
@@ -45,7 +59,11 @@ export class PcmPlayer {
       const AC: typeof AudioContext =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      this.ctx = new AC();
+      try {
+        this.ctx = new AC({ sampleRate: this.sampleRate });
+      } catch {
+        this.ctx = new AC();
+      }
       this.nextTime = 0;
       this.analyser = null;
       console.log(
@@ -87,6 +105,17 @@ export class PcmPlayer {
       const float32 = new Float32Array(int16.length);
       for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
 
+      // Behind the clock = the queue ran dry. If it ran dry under a second ago
+      // that was an underrun mid-reply, so keep a bigger cushion from now on.
+      const gap = this.nextTime < ctx.currentTime + 0.005;
+      if (gap && this.nextTime > 0 && ctx.currentTime - this.nextTime < 1) {
+        this.lead = Math.min(MAX_LEAD_S, this.lead + LEAD_STEP_S);
+      }
+      if (gap) {
+        const fade = Math.min(float32.length, Math.round(FADE_S * this.sampleRate));
+        for (let i = 0; i < fade; i++) float32[i] *= i / fade;
+      }
+
       const buffer = ctx.createBuffer(1, float32.length, this.sampleRate);
       buffer.getChannelData(0).set(float32);
 
@@ -94,7 +123,7 @@ export class PcmPlayer {
       source.buffer = buffer;
       source.connect(this.analyser ?? ctx.destination);
 
-      const startAt = Math.max(this.nextTime, ctx.currentTime);
+      const startAt = gap ? ctx.currentTime + this.lead : this.nextTime;
       source.start(startAt);
       this.sources.push(source);
       source.onended = () => {
@@ -128,7 +157,8 @@ export class PcmPlayer {
       }
     }
     this.sources = [];
-    this.nextTime = this.ctx ? this.ctx.currentTime : 0;
+    // 0 = "idle", so the next reply isn't mistaken for an underrun.
+    this.nextTime = 0;
   }
 
   stop(): void {

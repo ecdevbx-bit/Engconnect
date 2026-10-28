@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T12:44:41.679Z",
+  "generatedAt": "2026-10-28T13:01:36.660Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -728,6 +728,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-053",
+      "title": "K.AI talks less; crackle fixes in the voice player",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1133,6 +1141,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-052",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-053",
       "kind": "cites"
     },
     {
@@ -1776,6 +1789,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-053",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2088,6 +2106,11 @@
     {
       "source": "memory/status",
       "target": "D-052",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-053",
       "kind": "cites"
     },
     {

@@ -179,3 +179,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 - englishconnection.in/www weren't on the Supabase allow-list → sign-ins landed signed out on the Vercel home page. Site URL now englishconnection.in, both hosts allowed (D-051, [[architecture/auth]]).
 
 ## [2026-10-28] build | AI Partner background-voice gate + K.AI full form (D-052)
+
+## [2026-10-28] build | K.AI shorter replies + voice player crackle fixes (D-053)

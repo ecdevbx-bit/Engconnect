@@ -532,3 +532,18 @@
 - "Chats run out at 10 minutes": checked 30 days of sessions. No fixed cut. Gemini's ~10-min connection
   resets resume on the same lease, and sessions ran up to 30 min. Chats end when the allowance runs out
   (free 1200 s/week, Pro 1800 s/day, admin → AI Partner); `sessionSeconds` 600 only applies when uncapped.
+
+## D-053 · K.AI talks less; crackle fixes in the voice player — 2026-10-28
+- Owner: "K.AI should speak a little less and prompt the user to speak more, it will save tokens"; "there's some
+  noise when the AI speaks".
+- Prompt: reply caps cut (Beginner < 20 words, Intermediate < 25, Expert < 30, 1–2 sentences), a hard-limit
+  rule with a sample short reply, a "LET THEM TALK" section (open questions, ask for more instead of filling
+  the gap, no lectures/stories), one ask per reply, one correct version, don't quote the mistake back.
+  `ai-partner-probe.mjs` (text turns): replies went from 34–46 words to ~15–35. One run in five gave a wrong
+  fix ("since two years"); re-runs were correct — model variance, the "fully correct English" rule stays.
+- `audio/pcmPlayer.ts`: AudioContext at 24 kHz (Gemini's rate; falls back to the device rate) so audio is
+  resampled once as a stream, not per chunk; 120 ms jitter buffer after a gap (+40 ms per underrun, max
+  300 ms) so late network chunks don't cut the audio; 4 ms fade-in after a gap. Adds ~120 ms before K.AI's
+  first word. Checked: the browser accepts a 24 kHz context; not yet listened to on a real device.
+- Not fixable in code: Bluetooth headsets drop to the low-quality "call" profile while the mic is open
+  (hands-free keeps it open), which can sound noisy.
