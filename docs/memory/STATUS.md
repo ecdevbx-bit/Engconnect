@@ -23,7 +23,8 @@
 ## Session 5 (2026-10-28) 🔧
 - Found email sign-ups and password resets failing for real learners (Resend 550 → Supabase rolled back the
   sign-up). **Email confirmation switched OFF** in Supabase; `LoginForm` signs in right after sign-up (D-050).
-  Verified: live API sign-up → password login → session ✓; local UI sign-up → dashboard ✓. Not yet deployed.
+  Verified: live API sign-up → password login → session ✓; local UI sign-up → dashboard ✓.
+  Deployed `df4ed96` READY; production smoke **32/32**.
 - Supabase health: all services ACTIVE_HEALTHY, 17 MB, 18/60 connections, no Postgres errors. PostgREST
   "Thread killed by timeout manager" (~1k/day) is benign idle-connection noise.
 - Advisors: 4 WARN security (handle_new_user executable, 4 functions w/o search_path, leaked-password check),
