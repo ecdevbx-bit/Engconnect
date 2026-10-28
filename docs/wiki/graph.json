@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T12:47:12.066Z",
+  "generatedAt": "2026-10-28T08:03:44.544Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -24,7 +24,7 @@
         "email",
         "resend"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-10-28",
       "path": "docs/wiki/architecture/auth.md"
     },
     {
@@ -308,7 +308,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-10-02",
+      "updated": "2026-10-28",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -704,6 +704,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-050",
+      "title": "Email confirmation switched off until auth email can be delivered",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -794,6 +802,11 @@
     {
       "source": "architecture/auth",
       "target": "D-024",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-050",
       "kind": "cites"
     },
     {
@@ -1722,6 +1735,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-050",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2019,6 +2037,11 @@
     {
       "source": "memory/status",
       "target": "D-044",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-050",
       "kind": "cites"
     },
     {

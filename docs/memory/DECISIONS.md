@@ -495,3 +495,14 @@
   structured memory alone). A memory file without sections is a ModelOutputError → retried / next model.
 - K.AI's prompt: only say what's in the notes; if something isn't there, say you don't remember and ask.
 - The probe also waits for the merge (it runs a few seconds after the digest appears).
+
+## D-050 · Email confirmation switched off until auth email can be delivered — 2026-10-28
+- Supabase auth logs showed every email sign-up (13 on 2026-10-27/28) and password reset failing with
+  `gomail: could not send email 1: 550` — Resend refuses to send from `onboarding@resend.dev` to anyone but
+  the account owner (D-025). Supabase rolls the sign-up back, so learners then hit "Invalid login credentials".
+- Owner chose to switch confirmation off (`mailer_autoconfirm = true`, via the Management API) as a stopgap.
+  `LoginForm` now signs the learner in right after a successful sign-up and only shows "check your inbox"
+  if that sign-in reports UNCONFIRMED, so the same code works when confirmation is back on.
+- Trade-off: emails are not verified, and forgot-password still can't send. Undo once a sender works:
+  Resend domain `englishconnection.in` is added (id 221eae2a…, 4 DNS records pending at GoDaddy), or Gmail
+  SMTP for ec.devbx@gmail.com (needs an app password). Then set `mailer_autoconfirm = false` again.

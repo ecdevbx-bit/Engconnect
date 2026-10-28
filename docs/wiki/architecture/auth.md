@@ -3,7 +3,7 @@ title: Authentication
 type: architecture
 tags: [auth, supabase, google, email, resend]
 links: [architecture/api, operations/credentials, features/premium, features/support]
-updated: 2026-09-22
+updated: 2026-10-28
 ---
 
 # Authentication — Supabase Auth only
@@ -20,6 +20,8 @@ All configuration is applied by `node supabase/configure-auth.mjs` (idempotent).
 - **Email sign-up**: `POST /api/account/signup` (rate-limited) → `supabase.auth.signUp` → Supabase
   emails a branded link → `/auth/confirm` (client page; handles `?token_hash`, the default template's
   `#access_token` fragment, and `?code`) → `POST /api/session/start` → signed in.
+- ⚠️ **Since 2026-10-28 confirmation is OFF** (`mailer_autoconfirm`, D-050): sign-up creates a confirmed
+  account and `LoginForm` signs the learner straight in; the inbox card only shows if sign-in says UNCONFIRMED.
 - **Email sign-in**: `supabase.auth.signInWithPassword` in the browser → `POST /api/session/start`.
 - **Forgot password**: `POST /api/account/reset` → email → `/auth/confirm` (type recovery) →
   `/reset-password` → `updateUser({password})`.
@@ -33,10 +35,13 @@ All configuration is applied by `node supabase/configure-auth.mjs` (idempotent).
   address. To email real learners: add a domain in Resend, add its DNS records, then re-run
   `configure-auth.mjs` with `SMTP_FROM=noreply@<domain>` (and update `SUPPORT_EMAIL_FROM`).
 
+- **Sending is broken until a sender works** (D-050): Resend rejects every non-owner recipient with 550, so
+  sign-ups failed and password reset still fails. Pending: DNS for `englishconnection.in` at GoDaddy, or Gmail SMTP.
+
 ## Settings
 Site URL `https://engconnect-beta.vercel.app`; redirect allow-list = production, Vercel previews
 (`https://engconnect-*-engconnect.vercel.app/**`), `http://localhost:3000/**`; password ≥ 8
-(our API also requires a letter and a number); email confirmation required.
+(our API also requires a letter and a number); email confirmation **off** for now (D-050).
 
 ## Sessions
 - `@supabase/ssr` keeps the session in cookies; `src/proxy.ts` refreshes it on page requests.

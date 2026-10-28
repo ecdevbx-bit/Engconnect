@@ -3,7 +3,7 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-10-02 (session 4). Repo now lives at `C:\Users\abhic\Desktop\ENG` (moved from OneDrive).
+> Last updated: 2026-10-28 (session 5). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
@@ -19,6 +19,17 @@
   Wiki & memory, Gemini keys, content, settings).
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
   (wiki: operations/monitoring, D-044). **Verified working in production 2026-09-24** (`scripts/sentry-check.mjs`).
+
+## Session 5 (2026-10-28) 🔧
+- Found email sign-ups and password resets failing for real learners (Resend 550 → Supabase rolled back the
+  sign-up). **Email confirmation switched OFF** in Supabase; `LoginForm` signs in right after sign-up (D-050).
+  Verified: live API sign-up → password login → session ✓; local UI sign-up → dashboard ✓. Not yet deployed.
+- Supabase health: all services ACTIVE_HEALTHY, 17 MB, 18/60 connections, no Postgres errors. PostgREST
+  "Thread killed by timeout manager" (~1k/day) is benign idle-connection noise.
+- Advisors: 4 WARN security (handle_new_user executable, 4 functions w/o search_path, leaked-password check),
+  12 WARN `auth_rls_initplan` performance — not fixed yet.
+- Gemini text lane: every free key ~20 requests/day with 504 DEADLINE_EXCEEDED errors; paid key never used —
+  not investigated yet.
 
 ## Done ✅
 - Sessions 1–2: backend, auth, K.AI on Gemini Live (hands-free), key pool, pronunciation scoring (strict,
@@ -67,6 +78,8 @@
    site — fine once the domain moves to this app; until then the Vercel URL pages canonicalise away.
 
 ## Blocked on the owner 🙋
+- **Email sending** (D-050): add the 4 Resend DNS records for `englishconnection.in` at GoDaddy, or a Gmail app
+  password for ec.devbx@gmail.com → then turn email confirmation back on.
 - Resend: a verified domain. Optional: Razorpay, custom domain move, R2 (only if keeping recordings).
 - Security hygiene: tokens pasted in chat (Vercel, Supabase access, Resend, **Sentry**) — rotate and update
   `credentials.txt` + Vercel env. Swap Vercel's `SENTRY_AUTH_TOKEN` for a Sentry **org** token (the API

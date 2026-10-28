@@ -171,3 +171,6 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 
 ## [2026-10-02] ops | Session 4 live
 - `16a981e` + `ff1268a` READY; prod smoke 32/32; chat-memory-probe all ✓ on production ([[operations/runbook]]).
+
+## [2026-10-28] fix | Email sign-up unblocked
+- Every email sign-up/reset failed (Resend 550 → Supabase rolled back the user); confirmation switched off and `LoginForm` signs in after sign-up (D-050, [[architecture/auth]]). Resend domain `englishconnection.in` added, DNS pending.

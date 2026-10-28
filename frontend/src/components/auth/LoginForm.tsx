@@ -105,8 +105,20 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
         setError(res.message);
       } else {
         const res = await accountRequest("signup", { email, password, name });
-        if (res.ok) setSentTo(email.trim().toLowerCase());
-        else setError(res.message || "Sign-up failed. Please try again.");
+        if (!res.ok) {
+          setError(res.message || "Sign-up failed. Please try again.");
+          return;
+        }
+        // While email confirmation is off in Supabase (D-050) the new account
+        // can sign in straight away; with confirmation on this returns
+        // UNCONFIRMED and we fall back to the "check your inbox" card.
+        const signIn = await signInWithPassword(email, password);
+        if (signIn.ok) {
+          router.replace(afterLogin);
+          router.refresh();
+          return;
+        }
+        setSentTo(email.trim().toLowerCase());
       }
     } finally {
       setBusy(false);
