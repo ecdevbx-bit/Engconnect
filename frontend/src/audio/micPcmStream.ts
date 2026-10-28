@@ -9,7 +9,12 @@
 //   * optional `gate`: frames it rejects are sent as silence (zeros) instead —
 //     the hands-free AI Partner uses it so K.AI's own voice leaking from the
 //     speaker can't count as the learner talking (the stream never pauses, so
-//     Gemini's voice detection keeps seeing a continuous signal).
+//     Gemini's voice detection keeps seeing a continuous signal);
+//   * background-voice gate (D-052, on by default): only a voice close to the
+//     mic gets through — a TV or people talking across the room are quieter
+//     than the learner, so frames well below the learner's own level (or just
+//     above the room's noise) are sent as silence too. Audio is held back
+//     LOOKAHEAD_MS so the gate can open before a word's first sound.
 
 const WORKLET_SOURCE = `
 class PCMRecorder extends AudioWorkletProcessor {
@@ -33,6 +38,18 @@ const CHUNK_MS = 100;
 // RMS (0–1) above which a frame counts as the learner speaking.
 const VOICE_RMS = 0.02;
 
+// Background-voice gate. Threshold = the largest of BG_MIN_RMS, the room's
+// noise × BG_NOISE_RATIO and the learner's voice level × BG_VOICE_SHARE, but
+// never more than BG_MAX_RMS so a soft-spoken learner in a loud room still
+// gets through.
+const BG_MIN_RMS = 0.012;
+const BG_MAX_RMS = 0.05;
+const BG_NOISE_RATIO = 3; // ≈ 10 dB over the noise between words
+const BG_VOICE_SHARE = 0.25; // ≈ 12 dB under the learner's own voice
+const BG_OPEN_MS = 24; // a click or tap shorter than this doesn't open it
+const BG_HOLD_MS = 450; // stays open through the gaps between words
+const LOOKAHEAD_MS = 120;
+
 function toBase64(bytes: Uint8Array): string {
   let bin = "";
   const step = 0x8000;
@@ -53,7 +70,17 @@ export class MicPcmStream {
   private onChunk: ((b64: string) => void) | null = null;
   lastVoiceAt = 0;
   gate: ((rms: number) => boolean) | null = null;
+  // Set false before start() to send every frame (no background-voice gate).
+  rejectBackground = true;
   sampleRate = 16000;
+  // Background-gate state, timed in samples (worklet messages can arrive in bursts).
+  private clockMs = 0;
+  private noiseRms = 0.006;
+  private voiceRms = 0.06;
+  private aboveMs = 0;
+  private openUntilMs = -1;
+  private delayed: { frame: Int16Array; open: boolean; pass: boolean }[] = [];
+  private delayedSamples = 0;
 
   getAnalyser(): AnalyserNode | null {
     return this.analyser;
@@ -86,15 +113,21 @@ export class MicPcmStream {
     source.connect(this.analyser);
 
     const chunkSamples = Math.round((this.sampleRate * CHUNK_MS) / 1000);
+    const lookaheadSamples = this.rejectBackground ? Math.round((this.sampleRate * LOOKAHEAD_MS) / 1000) : 0;
     const push = (raw: Int16Array) => {
       let sum = 0;
       for (let i = 0; i < raw.length; i++) sum += (raw[i] / 32768) ** 2;
       const rms = Math.sqrt(sum / Math.max(1, raw.length));
-      if (rms > VOICE_RMS) this.lastVoiceAt = performance.now();
-      const frame = this.gate && !this.gate(rms) ? new Int16Array(raw.length) : raw;
-      this.pending.push(frame);
-      this.pendingSamples += frame.length;
-      if (this.pendingSamples >= chunkSamples) this.flush();
+      const pass = !this.gate || this.gate(rms);
+      const open = this.rejectBackground ? this.nearVoice(rms, (raw.length * 1000) / this.sampleRate, pass) : true;
+      if (open && rms > VOICE_RMS) this.lastVoiceAt = performance.now();
+      // Opening also lets through the held-back audio just before it (the onset).
+      if (open) for (const d of this.delayed) d.open = true;
+      this.delayed.push({ frame: raw, open, pass });
+      this.delayedSamples += raw.length;
+      while (this.delayed.length && this.delayedSamples - this.delayed[0].frame.length >= lookaheadSamples) {
+        this.emit(this.delayed.shift()!, chunkSamples);
+      }
     };
 
     if (ctx.audioWorklet) {
@@ -125,6 +158,43 @@ export class MicPcmStream {
     this.lastVoiceAt = performance.now();
   }
 
+  // Is this frame (part of) the learner's voice rather than the room?
+  // `learn` is false while `gate` is muting the frame (K.AI's own voice from
+  // the speaker), so that echo doesn't skew the learned levels.
+  private nearVoice(rms: number, frameMs: number, learn: boolean): boolean {
+    this.clockMs += frameMs;
+    const threshold = Math.min(
+      BG_MAX_RMS,
+      Math.max(BG_MIN_RMS, this.noiseRms * BG_NOISE_RATIO, this.voiceRms * BG_VOICE_SHARE),
+    );
+    if (rms > threshold) {
+      this.aboveMs += frameMs;
+      if (this.aboveMs >= BG_OPEN_MS) this.openUntilMs = this.clockMs + BG_HOLD_MS;
+    } else {
+      this.aboveMs = 0;
+    }
+    const open = this.clockMs <= this.openUntilMs;
+    if (!learn) return open;
+    if (open && rms > threshold) {
+      // Learn the learner's level: rise quickly, follow a softer voice over ~4 s.
+      const rate = rms > this.voiceRms ? 0.02 : frameMs / 4_000;
+      this.voiceRms += (rms - this.voiceRms) * rate;
+    } else if (!open) {
+      // Room noise: fall fast, rise over ~5 s.
+      const rate = rms < this.noiseRms ? 0.2 : frameMs / 5_000;
+      this.noiseRms = Math.max(0.002, this.noiseRms + (rms - this.noiseRms) * rate);
+    }
+    return open;
+  }
+
+  private emit(d: { frame: Int16Array; open: boolean; pass: boolean }, chunkSamples: number): void {
+    this.delayedSamples -= d.frame.length;
+    const frame = d.open && d.pass ? d.frame : new Int16Array(d.frame.length);
+    this.pending.push(frame);
+    this.pendingSamples += frame.length;
+    if (this.pendingSamples >= chunkSamples) this.flush();
+  }
+
   private flush(): void {
     if (!this.pendingSamples || !this.onChunk) return;
     const merged = new Int16Array(this.pendingSamples);
@@ -141,6 +211,9 @@ export class MicPcmStream {
   // Release the mic straight away (a held mic keeps Bluetooth headsets in
   // their muffled "call" profile, which would make K.AI's reply sound bad).
   stop(): void {
+    for (const d of this.delayed) this.emit(d, Infinity);
+    this.delayed = [];
+    this.delayedSamples = 0;
     this.flush();
     this.onChunk = null;
     this.stream?.getTracks().forEach((t) => t.stop());

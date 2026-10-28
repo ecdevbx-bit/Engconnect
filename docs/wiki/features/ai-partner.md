@@ -3,7 +3,7 @@ title: AI Partner (K.AI)
 type: feature
 tags: [trainer, ai-partner, gemini-live, voice]
 links: [architecture/gemini-live, architecture/gemini-key-pool, features/progress-and-rewards, features/premium, architecture/api, architecture/database, features/k-ai-instructions]
-updated: 2026-09-22
+updated: 2026-10-28
 ---
 
 # AI Partner — K.AI
@@ -34,6 +34,9 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 5. **Just talk — hands-free, like GPT voice mode** (D-039): the mic opens by itself when the call
    connects; K.AI answers when the learner pauses (longer pause allowed for Beginners); talking over
    K.AI interrupts it. The only control is **mute** (mic button or Space). Live captions show both sides.
+   Background voices (TV, people across the room) are filtered out: only a voice near the mic reaches
+   K.AI, and K.AI is told to ignore side speech (D-052). A background voice as loud as the learner
+   still gets through.
 6. Status reads **Listening… / Thinking… / Speaking… / Muted**.
 7. Talk-time earns XP (**+10 after 15 s of speaking, then +30 per extra minute**), shown on the
    "Speak to earn" card with celebrations.

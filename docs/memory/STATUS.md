@@ -33,6 +33,12 @@
   12 WARN `auth_rls_initplan` performance — not fixed yet.
 - Gemini text lane: every free key ~20 requests/day with 504 DEADLINE_EXCEEDED errors; paid key never used —
   not investigated yet.
+- **K.AI ignores background voices** (near-voice gate in `micPcmStream.ts` + prompt rule) and says its full
+  form is **Kanchan AI** (D-052). Simulated only — owner to test in a noisy room on phone + laptop.
+- "Chats run out at 10 min": no fixed cut found (sessions up to 30 min, Gemini's ~10-min resets resume on the
+  same lease); chats end at the allowance (free 20 min/week, Pro 30 min/day — admin → AI Partner).
+- Supabase usage is far under free limits (17 MB DB, ~53 MAU, 0 storage, ~5k REST requests/day) — no Pro needed yet.
+- `DNS-RECORDS-englishconnection.in.txt` (repo root, untracked) = handout with the 4 Resend records + steps.
 
 ## Done ✅
 - Sessions 1–2: backend, auth, K.AI on Gemini Live (hands-free), key pool, pronunciation scoring (strict,

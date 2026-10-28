@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T09:35:49.690Z",
+  "generatedAt": "2026-10-28T12:40:29.213Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -107,7 +107,7 @@
         "gemini-live",
         "voice"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-10-28",
       "path": "docs/wiki/features/ai-partner.md"
     },
     {
@@ -720,6 +720,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-052",
+      "title": "AI Partner ignores background voices; K.AI = \"Kanchan AI\"",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1120,6 +1128,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-039",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-052",
       "kind": "cites"
     },
     {
@@ -1758,6 +1771,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-052",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2065,6 +2083,11 @@
     {
       "source": "memory/status",
       "target": "D-051",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-052",
       "kind": "cites"
     },
     {

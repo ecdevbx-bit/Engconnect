@@ -517,3 +517,18 @@
   localhost, previews. Verified via `auth.flow_state.referrer` for each host. `configure-auth.mjs` carries
   the same list and keeps `mailer_autoconfirm` on unless `REQUIRE_EMAIL_CONFIRM=1` (D-050).
 - Suggested, not done: redirect `www` → apex in Vercel so there is one host.
+
+## D-052 · AI Partner ignores background voices; K.AI = "Kanchan AI" — 2026-10-28
+- Owner: "can we do about background voice ignore"; "when someone asks K.AI's full form it should be
+  Kanchan AI or Kanchan Artificial Intelligence".
+- `audio/micPcmStream.ts`: a background-voice gate (on by default, `rejectBackground`) sends frames as
+  silence unless they are a near voice. Threshold = max(0.012, room noise × 3, learner's level × 0.25),
+  capped at 0.05 so a soft voice in a loud room still passes; opens after 24 ms above it, holds 450 ms;
+  audio is delayed 120 ms so a word's onset is kept. Levels are not learned while the echo gate is muting
+  K.AI's own voice. Talk-time only counts gated-in voice. Simulated: a quiet TV is fully cut, a TV at
+  ~¼ of the learner's level mostly cut, the learner ≥93 % kept; a TV as loud as the learner still gets
+  through (volume can't tell them apart). Real-room behaviour still to be checked by the owner.
+- Prompt (`tutorPrompt.ts`): ignore TV/music/other people; K.AI's full form is Kanchan AI.
+- "Chats run out at 10 minutes": checked 30 days of sessions. No fixed cut. Gemini's ~10-min connection
+  resets resume on the same lease, and sessions ran up to 30 min. Chats end when the allowance runs out
+  (free 1200 s/week, Pro 1800 s/day, admin → AI Partner); `sessionSeconds` 600 only applies when uncapped.
