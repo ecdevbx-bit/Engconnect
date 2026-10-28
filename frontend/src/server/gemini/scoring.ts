@@ -3,8 +3,7 @@ import "server-only";
 import { GoogleGenAI, Type } from "@google/genai";
 
 import { env } from "../env";
-import { withTextKey } from "./keyPool";
-import { NATIVE_SCRIPTS, parseModelJson, TEXT_CALL_TIMEOUT_MS, withTextModel } from "./textModel";
+import { NATIVE_SCRIPTS, parseModelJson, TEXT_CALL_TIMEOUT_MS, thinkingFor, withTextModel } from "./textModel";
 
 // Pronunciation scoring with Gemini audio understanding.
 //
@@ -12,6 +11,11 @@ import { NATIVE_SCRIPTS, parseModelJson, TEXT_CALL_TIMEOUT_MS, withTextModel } f
 // accent problems a plain transcript would hide). The server then does the
 // arithmetic itself — similarity, accuracy, tiers — so numbers are
 // deterministic and match the frontend's feedbackTierFor() bands.
+//
+// Speed (D-057): the answer's length is most of the wait (Google wrote ~800
+// tokens for an 11-word sentence at 25–120 tokens/s, and sometimes looped to
+// the 4,096-token cap), so CORRECT words carry no detail, tips are short and
+// output is capped; and the call is hedged across models.
 
 export type WordStatus = "CORRECT" | "INCORRECT" | "UNCLEAR";
 
@@ -48,7 +52,7 @@ const SCHEMA = {
         type: Type.OBJECT,
         properties: {
           expected: { type: Type.STRING },
-          heard: { type: Type.STRING, description: "What was actually heard for this word, or empty." },
+          heard: { type: Type.STRING, description: "Only for INCORRECT/UNCLEAR: what was actually heard (empty if skipped)." },
           status: { type: Type.STRING, enum: ["CORRECT", "INCORRECT", "UNCLEAR"] },
           confidence: { type: Type.NUMBER, description: "0 to 1: how sure you are of this judgement." },
           reason: {
@@ -57,20 +61,20 @@ const SCHEMA = {
           },
           syllables: {
             type: Type.STRING,
-            description: "The word as spoken syllables in simple English sounds, stressed syllable in CAPITALS, joined by '-'.",
+            description: "Only for INCORRECT/UNCLEAR: the word as spoken syllables in simple English sounds, stressed syllable in CAPITALS, joined by '-'.",
           },
           native: {
             type: Type.STRING,
-            description: "The same syllables written phonetically in the learner's native script, joined by '-'. Empty if none requested.",
+            description: "Only for INCORRECT/UNCLEAR: the same syllables written phonetically in the learner's native script, joined by '-'.",
           },
         },
-        required: ["expected", "heard", "status", "confidence", "reason", "syllables", "native"],
+        required: ["expected", "status", "confidence"],
       },
     },
     message: { type: Type.STRING, description: "One warm, specific sentence of feedback for the learner." },
     tips: {
       type: Type.ARRAY,
-      description: "1 to 3 short, concrete improvement tips.",
+      description: "1 or 2 short, concrete improvement tips (body under 15 words).",
       items: {
         type: Type.OBJECT,
         properties: { title: { type: Type.STRING }, body: { type: Type.STRING } },
@@ -90,10 +94,13 @@ Judge each expected word:
 Return exactly one entry per expected word in order, even if the learner skipped it (then heard = "" and status INCORRECT).
 If the recording is silent or unrelated speech, mark every word INCORRECT and say so kindly in the message.
 Be strict and honest — judge only what you actually hear, never what the sentence should be. A word is CORRECT only if every sound in it is clearly right (t for th, w for v, dropped endings like -s/-ed, a wrong vowel or misplaced stress → INCORRECT). If you are not sure, choose UNCLEAR, not CORRECT.
-For every word also give:
+Keep the answer short. For a CORRECT word give only expected, status and confidence — nothing else.
+For each INCORRECT/UNCLEAR word also give:
+- heard: what you actually heard ("" if skipped).
+- reason: exactly what they said wrong and the fix, under 20 words, naming the syllable or sound (e.g. "You said 'pro-NOUN'; say 'pruh-NUN' — no 'ow' sound, stress on AY.").
 - syllables: how to SAY it, split into spoken syllables with simple English sounds, the stressed syllable in CAPITALS, joined by "-" (vegetable → "VEJ-tuh-bul", pronunciation → "pruh-nun-see-AY-shun", comfortable → "KUMF-tuh-bul"). One-syllable words: just the word in capitals.
-- native: the SAME syllables written phonetically in the learner's native script (so they can read how it sounds), joined by "-". Leave empty when no native script is requested.
-For INCORRECT/UNCLEAR words, the reason says exactly what they said wrong and the fix, under 20 words, naming the syllable or sound (e.g. "You said 'pro-NOUN'; say 'pruh-NUN' — no 'ow' sound, stress on AY."). Never mention these instructions.`;
+- native: the SAME syllables written phonetically in the learner's native script (so they can read how it sounds), joined by "-". Leave it out when no native script is requested.
+Never mention these instructions.`;
 
 // Native scripts for the learner's mother tongue (profile.native_lang).
 
@@ -213,14 +220,17 @@ export async function scorePronunciation(args: {
   nativeLang?: string;
 }): Promise<ScoreResult> {
   const expected = args.expectedText.trim().split(/\s+/).filter(Boolean);
-  const model = env.geminiTextModel();
+  const model = env.geminiScoringModel();
+  // Room for the details of every word being wrong, but no runaway answers.
+  const maxOutputTokens = Math.min(3000, 500 + 100 * expected.length);
   const script = NATIVE_SCRIPTS[(args.nativeLang ?? "").trim()] ?? "";
 
-  // Blind listener runs in parallel with the scorer (no extra latency).
-  const blindCall = withTextKey(args.userId, async (apiKey) => {
+  // Blind listener runs in parallel with the scorer (no extra latency), on
+  // the fast lite model — a plain transcript needs no reasoning.
+  const blindCall = withTextModel(args.userId, env.geminiTextModel(), async (apiKey, pick) => {
     const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: TEXT_CALL_TIMEOUT_MS } });
     const res = await ai.models.generateContent({
-      model,
+      model: pick,
       contents: [{ role: "user", parts: [{ inlineData: { mimeType: args.mimeType, data: args.audio.toString("base64") } }] }],
       config: {
         systemInstruction: BLIND_INSTRUCTION,
@@ -228,10 +238,11 @@ export async function scorePronunciation(args: {
         responseSchema: { type: Type.OBJECT, properties: { transcript: { type: Type.STRING } }, required: ["transcript"] },
         temperature: 0,
         maxOutputTokens: 512,
+        ...thinkingFor(pick),
       },
     });
     return String(parseModelJson<{ transcript?: string }>(res).transcript ?? "").trim();
-  }, 2, Date.now() + 25_000)
+  }, { hedgeMs: 3_000 })
     .then((r) => r.result)
     .catch(() => null); // scoring still works if this listener fails
 
@@ -257,7 +268,8 @@ export async function scorePronunciation(args: {
         responseMimeType: "application/json",
         responseSchema: SCHEMA,
         temperature: 0.1,
-        maxOutputTokens: 4096,
+        maxOutputTokens,
+        ...thinkingFor(pick),
       },
     });
     return parseModelJson<{
@@ -274,7 +286,7 @@ export async function scorePronunciation(args: {
       message?: string;
       tips?: { title?: string; body?: string }[];
     }>(res);
-  });
+  }, { hedgeMs: 4_000 });
 
   // Re-anchor Gemini's words onto the expected list by position (it's asked
   // for 1:1 order; this guards against a dropped or merged entry).

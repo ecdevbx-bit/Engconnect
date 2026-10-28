@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import ShowcaseV4 from "@/components/ShowcaseV4";
 import { FLAG_LEARN, flagEnabled } from "@/server/viewer";
 
@@ -39,13 +37,14 @@ const JSON_LD = {
 
 // Home is the marketing landing page for logged-out visitors (the promoted v4
 // design — the previous landing now lives at /showcase/v4). A signed-in user
-// who hits `/` is sent straight to their dashboard — the landing is only ever
-// shown pre-login.
+// who hits `/` is sent straight to their dashboard by src/proxy.ts, so this
+// page reads no cookies and is pre-rendered: served from Vercel's CDN instead
+// of being rendered for every visit (it used to take ~0.9 s before the first
+// byte — the slow part of signing out). The Learn link re-checks its admin
+// switch every minute.
+export const revalidate = 60;
+
 export default async function Page() {
-  const session = await auth();
-  if (session?.user?.sub && !session.error) {
-    redirect("/dashboard");
-  }
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />

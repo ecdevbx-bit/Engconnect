@@ -581,3 +581,57 @@
   talk-time + XP is one line in the status bar; slimmer header; start card's four tiles → three chips.
 - Verified locally: K.AI's greeting appeared word by word over ~9 s in step with its audio. Not verified:
   real mic behaviour (the preview pane blocks the mic) — owner to test on phone + laptop.
+
+## D-055 · Instant sign-out; static landing; signed-in "/" redirect moves to the proxy — 2026-10-28
+- Owner: "sign out is slow"; "every time I close the browser it logs out — is it okay?".
+- Measured: sign-out waited on supabase-js (`/logout` round trip 0.3–0.9 s, plus a token refresh first when
+  the token had expired, plus its auth lock), then a client navigation to `/`, which was rendered on every
+  visit (~0.9 s TTFB, 370 KB) — with no feedback on screen.
+- Now `signOut()` (lib/session.tsx) deletes the session cookies at once, revokes the session in the background
+  with a `keepalive` fetch (verified: the refresh token is rejected afterwards), shows "Signing out…" and does
+  a full page load (no in-memory session survives in the tab). Locally: the page change starts 6 ms after
+  the click.
+- `app/page.tsx` no longer reads the session; `src/proxy.ts` redirects signed-in visitors of `/` to
+  `/dashboard` (it already verifies the JWT on every page). `/` is static with `revalidate = 60` (the Learn
+  link's admin switch shows within a minute). A superseded session (D-009) now reaches /dashboard first,
+  whose gate signs it out as before.
+- "Logged out after closing the browser" is not the app: cookies are 400-day, Supabase has no timebox or
+  inactivity limit, and a production probe with an expired access token got a refreshed session (200,
+  new 400-day cookie). Likely causes: a different address (englishconnection.in / www / the Vercel URL each
+  have their own cookies — redirecting www and the Vercel URL to the apex would fix it), a browser set to
+  clear cookies on exit or a private window, or a login on another device (D-009).
+
+## D-056 · Server functions run in Mumbai (bom1), next to the database; faster K.AI start — 2026-10-28
+- Owner: "it takes a lot of time for a new session … I want it to start fast".
+- Measured on production (`start-timing` probe): `POST /chat/sessions` 4.7–5.9 s, Google's `setupComplete`
+  another 1.3–2 s, K.AI's first audio ~7.5 s after Start; even `GET /chat/usage` took 1.4–1.8 s.
+- Cause: Vercel ran every function in **iad1 (Washington DC)** while Supabase is in **ap-south-1 (Mumbai)**
+  — each database query crossed the world (~200 ms+), and session start made ~15 of them in a row. Learners
+  are in India too, so their requests also travelled to the US and back.
+- `frontend/vercel.json` → `"regions": ["bom1"]` (one region is allowed on Hobby). The proxy runs there too.
+- Session start (`routes/chat.ts`): profile + settings + body in parallel; one update closes every open or
+  stale session of the learner (was a sweep, a select and a loop) and runs alongside the key lease/token
+  mint; the memory file, last chat and "continue" chat are read in parallel; the combo reset moved to
+  `after()`. A continue id is used only if that chat is the learner's own (the context lookup found it).
+- Memory/history was not the slow part (a few small reads); K.AI's memory still goes into the locked prompt.
+
+## D-057 · Pronunciation scoring: short answers, gemini-3-flash-preview first, hedged across models — 2026-10-28
+- Owner: "why is pronunciation slow"; "choose the fastest and best model".
+- Production, 7 days of text-lane leases: p50 2.4 s, p90 8.7 s per call; **13 % failed at the 15 s timeout**
+  (Google 504) and were retried on the next model — those attempts took 17–25 s. Plus ~10 database round trips
+  to Mumbai from Washington (D-056). On 2026-10-28 the lite models answered 503 "high demand" most of an hour
+  (free AND paid key), `gemini-2.5-flash-lite` is retired (404).
+- Latency probe (11-word sentence): thinking was not the cost (0 thought tokens on the lite models); the
+  **answer length** was — ~800 output tokens (syllables + native script + reasons for every word, 3 tips),
+  written at 25–120 tokens/s, and some answers looped to the 4,096-token cap (MAX_TOKENS, broken JSON).
+  `gemini-3-flash-preview` with thinking LOW answered in 4.7–6.4 s and caught the swapped word; MINIMAL
+  thinking made it loop.
+- Now: detail fields only for words that are NOT correct, 1–2 tips, `maxOutputTokens` = 500 + 100 per word
+  (≤ 3,000); scorer `GEMINI_SCORING_MODEL` (default `gemini-3-flash-preview`, thinking LOW via
+  `thinkingFor()`); `withTextModel(…, { hedgeMs })` starts the next model in parallel after 4 s (blind
+  listener: lite model, 3 s) — first good answer wins, a failure starts the next at once, all failing →
+  `503 AI_MODEL_BUSY` (was a generic 500). Fallback order: 3.1-flash-lite → 3-flash-preview →
+  3.5-flash-lite → flash-lite-latest. The attempt route's reads and writes run in parallel.
+- Locally (lite models still 503'ing): 3 of 4 attempts in 5.2–6.6 s with the swapped word caught; one failed
+  when every model failed at once. Jumble clues and memory keep `GEMINI_TEXT_MODEL` without hedging.
+

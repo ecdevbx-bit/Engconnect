@@ -123,48 +123,43 @@ async function learnerContext(
   level: string,
   opts: { pro?: boolean; continueFrom?: string | null } = {},
 ): Promise<LearnerContext> {
-  const { data: mem } = await db().from("learner_memory").select("*").eq("user_id", profile.id).maybeSingle();
-
   // Pro (D-047): the memory file, the last digested conversation, and — for
   // "Continue this conversation" — that chat's digest plus where it stopped.
-  let lastSession: LearnerContext["lastSession"] = null;
-  let continuation: LearnerContext["continuation"] = null;
-  if (opts.pro) {
-    const { data: last } = await db()
-      .from("chat_sessions")
-      .select("title, summary, started_at")
-      .eq("user_id", profile.id)
-      .not("digest", "is", null)
-      .order("started_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (last?.title) lastSession = { title: last.title as string, summary: (last.summary as string) ?? "", date: last.started_at as string };
-
-    if (opts.continueFrom) {
-      const { data: prev } = await db()
-        .from("chat_sessions")
-        .select("id, title, summary, started_at")
-        .eq("id", opts.continueFrom)
-        .eq("user_id", profile.id)
-        .maybeSingle();
-      if (prev) {
-        const { data: tail } = await db()
-          .from("chat_messages")
-          .select("role, body")
-          .eq("session_id", prev.id)
-          .order("id", { ascending: false })
-          .limit(8);
-        continuation = {
-          title: (prev.title as string) || "our last conversation",
-          summary: (prev.summary as string) || "",
-          date: prev.started_at as string,
-          lines: (tail ?? [])
-            .reverse()
-            .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), text: String(m.body).slice(0, 300) })),
-        };
+  // Read in parallel: conversation start waits on this (D-056).
+  const [{ data: mem }, { data: last }, prevRes, tailRes] = await Promise.all([
+    db().from("learner_memory").select("*").eq("user_id", profile.id).maybeSingle(),
+    opts.pro
+      ? db()
+          .from("chat_sessions")
+          .select("title, summary, started_at")
+          .eq("user_id", profile.id)
+          .not("digest", "is", null)
+          .order("started_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    opts.pro && opts.continueFrom
+      ? db().from("chat_sessions").select("id, title, summary, started_at").eq("id", opts.continueFrom).eq("user_id", profile.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    opts.pro && opts.continueFrom
+      ? db().from("chat_messages").select("role, body").eq("session_id", opts.continueFrom).eq("user_id", profile.id).order("id", { ascending: false }).limit(8)
+      : Promise.resolve({ data: null }),
+  ]);
+  const lastSession: LearnerContext["lastSession"] = last?.title
+    ? { title: last.title as string, summary: (last.summary as string) ?? "", date: last.started_at as string }
+    : null;
+  const prev = prevRes.data as { title: string | null; summary: string | null; started_at: string } | null;
+  const tail = (tailRes.data ?? []) as { role: string; body: string }[];
+  const continuation: LearnerContext["continuation"] = prev
+    ? {
+        title: prev.title || "our last conversation",
+        summary: prev.summary || "",
+        date: prev.started_at,
+        lines: tail
+          .reverse()
+          .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("assistant" as const), text: String(m.body).slice(0, 300) })),
       }
-    }
-  }
+    : null;
 
   return {
     memoryDoc: opts.pro ? ((mem?.memory_md as string | undefined) ?? "") : "",
@@ -360,22 +355,28 @@ export function registerChatRoutes(r: Router) {
   });
 
   r.on("POST", "/chat/sessions", async ({ req }) => {
+    // Starting a conversation used to be ~15 database round trips one after
+    // another (4.7–5.9 s in production, D-056): independent reads now run in
+    // parallel and bookkeeping that the reply doesn't need runs after it.
     const u = await requireUser(req);
-    const body = await readJson(req);
-    const profile = await getProfile(u.id);
+    const [body, profile, rewards] = await Promise.all([readJson(req), getProfile(u.id), getSettings("ai_partner_rewards")]);
     if (!(await hasAccess(u, profile))) {
       throw fail.forbidden("AI Partner isn't available on your account yet.", "AI_PARTNER_DISABLED");
     }
 
-    await sweepStale(u.id);
-    // One live conversation per learner: close any other open session.
-    const { data: open } = await db().from("chat_sessions").select("id, lease_id").eq("user_id", u.id).eq("status", "active");
-    for (const o of open ?? []) {
-      await db().from("chat_sessions").update({ status: "ended", ended_at: new Date().toISOString(), end_reason: "replaced" }).eq("id", o.id);
-      if (o.lease_id) await releaseLease(o.lease_id as string, "ok", "replaced by a new session");
-    }
-
-    const rewards = await getSettings("ai_partner_rewards");
+    // One live conversation per learner: close any other open one (stale or
+    // not) — in one update, finished before the insert below (unique index).
+    const closing = (async () => {
+      const { data: open } = await db()
+        .from("chat_sessions")
+        .update({ status: "ended", ended_at: new Date().toISOString(), end_reason: "replaced" })
+        .eq("user_id", u.id)
+        .eq("status", "active")
+        .select("lease_id");
+      await Promise.all(
+        (open ?? []).filter((o) => o.lease_id).map((o) => releaseLease(o.lease_id as string, "ok", "replaced by a new session")),
+      );
+    })();
     const usage = await usageFor(profile, rewards);
     if (usage.cap > 0 && usage.remaining <= 0) {
       throw new ApiFailure(
@@ -394,32 +395,37 @@ export function registerChatRoutes(r: Router) {
     const voice = pick(body.voice, isKnownVoice, DEFAULT_AI_PARTNER_VOICE);
     const pro = memoryPro(u, profile);
     // "Continue this conversation" (Pro): only one of the learner's own, finished chats.
-    let continuedFrom: string | null = null;
-    if (pro && typeof body.continueFrom === "string" && UUID_RE.test(body.continueFrom)) {
-      const { data: prev } = await db()
-        .from("chat_sessions")
-        .select("id")
-        .eq("id", body.continueFrom)
-        .eq("user_id", u.id)
-        .neq("status", "active")
-        .maybeSingle();
-      continuedFrom = (prev?.id as string | undefined) ?? null;
-    }
+    // (Its own row was just closed above if it was still open, so "finished" holds.)
+    const continuedFrom = pro && typeof body.continueFrom === "string" && UUID_RE.test(body.continueFrom) ? body.continueFrom : null;
     const ctx = await learnerContext(profile, level, { pro, continueFrom: continuedFrom });
     const materialSeed = 1 + Math.floor(Math.random() * 2_000_000_000);
     const systemPrompt = buildSystemPrompt(ctx, language, scenario, materialSeed);
     const budget = usage.cap > 0 ? usage.remaining : rewards.sessionSeconds;
 
-    const grant = await grantLiveSession({
-      userId: u.id,
-      systemPrompt,
-      sessionSeconds: budget,
-      voice,
-      pauseMs: LEVEL_INSTRUCTIONS[normalizeLevel(level)].pauseMs,
-    });
+    const [grant] = await Promise.all([
+      grantLiveSession({
+        userId: u.id,
+        systemPrompt,
+        sessionSeconds: budget,
+        voice,
+        pauseMs: LEVEL_INSTRUCTIONS[normalizeLevel(level)].pauseMs,
+      }),
+      closing,
+    ]);
     const created = await db()
       .from("chat_sessions")
-      .insert({ user_id: u.id, language, level, scenario, voice, material_seed: materialSeed, model: grant.model, lease_id: grant.leaseId, continued_from: continuedFrom })
+      .insert({
+        user_id: u.id,
+        language,
+        level,
+        scenario,
+        voice,
+        material_seed: materialSeed,
+        model: grant.model,
+        lease_id: grant.leaseId,
+        // Only a chat the learner-context lookup actually found (their own).
+        continued_from: ctx.continuation ? continuedFrom : null,
+      })
       .select("id")
       .single();
     if (created.error) {
@@ -432,12 +438,15 @@ export function registerChatRoutes(r: Router) {
     }
     const session = created.data as { id: string };
 
-    // Combo for AI Partner = milestones reached in this conversation.
-    await awardProgress({ userId: u.id, game: "ai-partner", xp: 0, combo: "reset", log: false });
-
-    // Earlier conversations whose tab vanished never ran their /end digest —
-    // catch up in the background so history and memory stay complete.
+    // After the reply: reset the AI Partner combo (= milestones reached in this
+    // conversation; the first heartbeat is 20 s away), and catch up earlier
+    // conversations whose tab vanished before their /end digest ran.
     after(async () => {
+      try {
+        await awardProgress({ userId: u.id, game: "ai-partner", xp: 0, combo: "reset", log: false });
+      } catch (err) {
+        console.warn("[chat] combo reset failed:", err instanceof Error ? err.message : err);
+      }
       try {
         await digestPendingSessions(u.id, 2);
       } catch (err) {

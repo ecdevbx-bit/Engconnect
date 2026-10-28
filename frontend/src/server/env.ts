@@ -45,6 +45,8 @@ export const env = {
   geminiLiveApiVersion: () => read("GEMINI_LIVE_API_VERSION") || "v1alpha",
   geminiLiveVoice: () => read("GEMINI_LIVE_VOICE") || "Aoede",
   geminiTextModel: () => read("GEMINI_TEXT_MODEL") || "gemini-3.1-flash-lite",
+  // Pronunciation scoring — the learner is waiting on it (D-057).
+  geminiScoringModel: () => read("GEMINI_SCORING_MODEL") || "gemini-3-flash-preview",
 
   // Cloudflare R2 (S3-compatible). Optional: without it, recordings are
   // scored but not kept.

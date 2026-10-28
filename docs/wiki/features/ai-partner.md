@@ -54,6 +54,8 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 ## How it works
 - The browser talks **directly to Google Gemini Live** (`gemini-3.1-flash-live-preview`) over a
   WebSocket, using a **single-use token** our server mints — see [[architecture/gemini-live]].
+- Starting a conversation reads profile, settings, memory and usage in parallel; the server runs in Mumbai
+  (bom1) next to the database (D-056 — it was in Washington DC, ~5 s per start).
 - The server picks a healthy API key from the pool ([[architecture/gemini-key-pool]]), bakes the
   K.AI prompt + voice + transcription + hands-free voice-detection settings into the token (locked),
   and returns it.

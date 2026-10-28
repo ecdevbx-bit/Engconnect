@@ -49,6 +49,14 @@ is served from must be listed** or Google sign-in lands signed out on the site U
 - Client components use `useSession()` from `src/lib/session.tsx` (same shape as the old NextAuth
   hook: `data.user.accessToken`, `status`, `update()`); server components use `auth()` (`src/auth.ts`).
 - API calls send the Supabase access token as `Bearer`; `src/server/guards.ts` verifies it via JWKS.
+- **Sign-out is instant** (D-055): `signOut()` deletes the `sb-<ref>-auth-token` cookies at once and
+  reloads the page; the session is revoked on Supabase in the background (`keepalive` POST
+  `/auth/v1/logout?scope=local`). It used to wait 0.3–1.5 s on supabase-js with nothing on screen.
+- Signed-in visitors of `/` are sent to `/dashboard` by `src/proxy.ts`, so the landing is a static,
+  CDN-cached page (`revalidate = 60`), not rendered per visit (~0.9 s before the first byte).
+- Cookies last 400 days, and the server refreshes an expired access token (checked 2026-10-28 against
+  production), so closing the browser doesn't sign you out. Each address (englishconnection.in, www.,
+  the Vercel URL) has its own cookies, though: signing in on one and opening another looks signed out.
 
 ## Single active session (D-009)
 Each login stores the JWT's `session_id` in `profiles.active_session_id`; any request from an older

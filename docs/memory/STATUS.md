@@ -42,6 +42,16 @@
   voice player got crackle fixes (24 kHz context, jitter buffer, fade-in) (D-053). Deployed `6f047ef` READY;
   production smoke **32/32**. Owner to listen on a phone + laptop.
 - Plain-English notes of everything fixed this session: `docs/notes/2026-10-28-problems-solved.md`.
+- **Sign-out instant + landing static (D-055)**: cookies cleared at once, session revoked in the background
+  (verified: refresh token rejected after), "/" pre-rendered (proxy redirects signed-in visitors). "Logged out
+  after closing the browser" is not the app (400-day cookies, refresh verified on prod) — likely a different
+  address (apex / www / Vercel URL each have their own cookies) or a browser that clears cookies on exit.
+- **Functions moved to Mumbai `bom1` (D-056)**: they ran in Washington DC while Supabase is in Mumbai —
+  K.AI start took ~7.5 s to the first word (server 4.7–5.9 s). Session start also parallelised.
+- **Pronunciation faster (D-057)**: short answers (detail only for missed words), scorer
+  `gemini-3-flash-preview` (thinking LOW), hedged across models, friendly "busy" when all fail, parallel DB
+  work. Locally 5.2–6.6 s per attempt while Google's lite models were 503'ing (was 15–25 s).
+  D-055…D-057 being committed and deployed now.
 - **K.AI call rebuilt (D-054)**: ~10 % of K.AI replies were being cut off (one loud mic frame = barge-in) →
   sustained barge-in (220 ms, relative to the learner's level); +200 ms turn-end pauses; browser auto-gain OFF
   + our voice-keyed gain (background TV was boosted); mic held open through mute/reconnects + iOS

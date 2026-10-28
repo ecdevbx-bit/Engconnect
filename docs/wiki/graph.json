@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T15:05:10.799Z",
+  "generatedAt": "2026-10-28T15:49:37.745Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -744,6 +744,30 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-055",
+      "title": "Instant sign-out; static landing; signed-in \"/\" redirect moves to the proxy",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-056",
+      "title": "Server functions run in Mumbai (bom1), next to the database; faster K.AI start",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-057",
+      "title": "Pronunciation scoring: short answers, gemini-3-flash-preview first, hedged across models",
+      "type": "decision",
+      "date": "2026-10-28",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -854,6 +878,11 @@
     {
       "source": "architecture/auth",
       "target": "D-051",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-055",
       "kind": "cites"
     },
     {
@@ -1163,6 +1192,11 @@
     },
     {
       "source": "features/ai-partner",
+      "target": "D-056",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
       "target": "D-047",
       "kind": "cites"
     },
@@ -1359,6 +1393,11 @@
     {
       "source": "features/pronunciation",
       "target": "D-035",
+      "kind": "cites"
+    },
+    {
+      "source": "features/pronunciation",
+      "target": "D-057",
       "kind": "cites"
     },
     {
@@ -1812,6 +1851,21 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-055",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-056",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-057",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2139,6 +2193,21 @@
     {
       "source": "memory/status",
       "target": "D-053",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-055",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-056",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-057",
       "kind": "cites"
     },
     {

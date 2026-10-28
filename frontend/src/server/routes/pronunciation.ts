@@ -111,7 +111,13 @@ export function registerPronunciationRoutes(r: Router) {
     const order = int(form.get("order"), "order");
     const durationMs = int(form.get("durationMs"), "durationMs", { min: 0, max: 120_000, fallback: 0 });
 
-    const p = await findProblem({ category: "pronunciation", difficulty: d, order });
+    // Independent reads in parallel (D-057: every round trip is on the learner's wait).
+    const [p, quotas, pro, profRes] = await Promise.all([
+      findProblem({ category: "pronunciation", difficulty: d, order }),
+      getSettings("quotas"),
+      isPro(u.id),
+      db().from("profiles").select("native_lang").eq("id", u.id).maybeSingle(),
+    ]);
     if (!p) throw fail.notFound("That sentence no longer exists. Load a new one.");
 
     const buf = Buffer.from(await audio.arrayBuffer());
@@ -129,13 +135,13 @@ export function registerPronunciationRoutes(r: Router) {
 
     // Free quota is taken BEFORE scoring (each attempt is two model calls), and
     // given back if scoring fails. Pro / unlimited are just counted afterwards.
-    const { pronunciationPerDifficultyPerDay: cap } = await getSettings("quotas");
-    const limited = cap > 0 && !(await isPro(u.id));
+    const cap = quotas.pronunciationPerDifficultyPerDay;
+    const limited = cap > 0 && !pro;
     if (limited && !(await reserveUsage(u.id, bucket(d), cap))) {
       throw fail.quota(`You've used today's free ${d} sentences. Try another level or come back tomorrow.`);
     }
 
-    const { data: prof } = await db().from("profiles").select("native_lang").eq("id", u.id).maybeSingle();
+    const prof = profRes.data;
     let score: Awaited<ReturnType<typeof scorePronunciation>>;
     try {
       score = await scorePronunciation({
@@ -154,26 +160,26 @@ export function registerPronunciationRoutes(r: Router) {
     const paid = baseXp > 0 ? await claimDailyReward(u.id, p.id, baseXp) : false;
     const xp = paid ? baseXp : 0;
 
-    // Move this learner past the phrase and count today's free-tier usage.
-    const list = await activeProblems("pronunciation", d);
-    const idx = list.findIndex((x) => x.id === p.id);
-    if (idx >= 0) await setCursor(u.id, bucket(d), (idx + 1) % list.length);
-    if (!limited) await bumpUsage(u.id, bucket(d));
-
-    const progress = await awardProgress({
-      userId: u.id,
-      game: "pronunciation",
-      xp,
-      combo: score.accuracy >= 0.8 ? "inc" : "reset",
-      difficulty: d,
-      problemOrder: p.sort_order,
-    });
-
     const attemptId = crypto.randomUUID();
     const ext = EXT[mime] ?? "bin";
     const audioKey = `pronunciation/${u.id}/${attemptId}.${ext}`;
-    const row = must(
-      await db()
+    // Move this learner past the phrase, count today's free-tier usage, award
+    // and save — independent writes, in parallel.
+    const [, , progress, saved] = await Promise.all([
+      activeProblems("pronunciation", d).then(async (list) => {
+        const idx = list.findIndex((x) => x.id === p.id);
+        if (idx >= 0) await setCursor(u.id, bucket(d), (idx + 1) % list.length);
+      }),
+      limited ? Promise.resolve() : bumpUsage(u.id, bucket(d)),
+      awardProgress({
+        userId: u.id,
+        game: "pronunciation",
+        xp,
+        combo: score.accuracy >= 0.8 ? "inc" : "reset",
+        difficulty: d,
+        problemOrder: p.sort_order,
+      }),
+      db()
         .from("pronunciation_attempts")
         .insert({
           id: attemptId,
@@ -196,8 +202,8 @@ export function registerPronunciationRoutes(r: Router) {
         })
         .select("created_at")
         .single(),
-      "save attempt",
-    ) as { created_at: string };
+    ]);
+    const row = must(saved, "save attempt") as { created_at: string };
 
     // Keep the recording in R2 after responding (never slows the learner down).
     after(async () => {

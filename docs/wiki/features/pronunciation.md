@@ -38,13 +38,17 @@ Four steps, shown in a side stepper:
 2. `POST /api/pronunciation/attempts` (multipart). Server sniffs the real format from bytes and
    **rejects silence** (`speechStats`: < 250 ms of voiced audio → `422 NO_SPEECH`) — a silent clip used
    to score 100% because the model "heard" the expected sentence (D-038).
-3. **Gemini `gemini-3.1-flash-lite`** hears the audio + the expected sentence and returns strict
-   JSON: transcript, one verdict per expected word (CORRECT/INCORRECT/UNCLEAR + heard + confidence
-   + what-went-wrong tip + `syllables` + `native` respelling in the learner's script), a feedback
-   message and 1–3 tips. The audio goes **straight from our server to Gemini** inside the request —
+3. **Gemini `gemini-3-flash-preview`** (thinking LOW; `GEMINI_SCORING_MODEL`, D-057) hears the audio +
+   the expected sentence and returns strict JSON: transcript, one verdict per expected word
+   (CORRECT/INCORRECT/UNCLEAR + confidence; only for words that are NOT correct also heard +
+   what-went-wrong tip + `syllables` + `native` respelling in the learner's script), a feedback message
+   and 1–2 short tips. Kept short on purpose — the answer's length was most of the wait. The call is
+   **hedged**: if no answer after 4 s, the next model (3.1-flash-lite → 3.5-flash-lite →
+   flash-lite-latest) starts in parallel and the first good answer wins; if all fail the learner gets
+   "K.AI is busy, try again". The audio goes **straight from our server to Gemini** inside the request —
    nothing has to be stored first. The prompt says: *do not penalise an Indian
    accent, only sounds that change or blur the word* (v/w, th, stress, dropped syllables).
-4. A **blind listener** (same model, audio only — it is NOT told the sentence) transcribes in parallel;
+4. A **blind listener** (the fast lite model, hedged after 3 s; audio only — it is NOT told the sentence) transcribes in parallel;
    expected words it didn't hear can't stay CORRECT (downgraded to INCORRECT/UNCLEAR, "It sounded like
    …"), and its transcript is what's shown as "what you said". The scorer prompt is strict: t/th, w/v,
    dropped endings, wrong vowel/stress → INCORRECT; unsure → UNCLEAR.
@@ -55,6 +59,9 @@ Four steps, shown in a side stepper:
    "…I went… bought…" → exactly `went` and `bought` marked INCORRECT. `scripts/pronunciation-probe.mjs`
    (real API, native language set): "Wednesday" → INCORRECT "You said 'banana'; say 'WENZ-day'…",
    syllables for every word, Hindi and Tamil respellings.
+7. Speed (D-057): attempts took 15–25 s when Google's lite models were busy (13 % of text calls hit the
+   15 s timeout in October). Locally on 2026-10-28, with those models 503'ing: 5.2–6.6 s, swapped word
+   caught with syllables + Hindi; one of four failed when every model was down at once.
 
 ## Rules
 - Phrase choice: per-learner cursor per band; moves past a phrase once it's scored, so "Next

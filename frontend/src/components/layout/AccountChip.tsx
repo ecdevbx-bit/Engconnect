@@ -7,7 +7,6 @@ import Link from "next/link";
 // avatar surfaces. See Profile / Leaderboard / MyBadges for the same
 // pattern.
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useSession, signOut as nextAuthSignOut } from "@/lib/session";
 
@@ -29,7 +28,6 @@ import AccountDropdown from "./AccountDropdown";
  */
 export default function AccountChip({ size = "md" }: { size?: "sm" | "md" }) {
   const session = useSession();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   // Anchor for the dropdown, which is portaled to <body> (so it escapes the
   // navbar's backdrop-filter stacking context and is never hidden behind cards).
@@ -39,15 +37,11 @@ export default function AccountChip({ size = "md" }: { size?: "sm" | "md" }) {
   const loading = session.status === "loading";
   const isAuthenticated = !!user?.uid && user.emailVerified === true;
 
-  async function handleSignOut() {
+  function handleSignOut() {
     setOpen(false);
-    try {
-      await nextAuthSignOut({ redirect: false });
-      emitToast({ type: "success", title: "Signed out", body: "You have been signed out successfully." });
-      router.push("/");
-    } catch {
-      emitToast({ type: "error", title: "Sign out failed", body: "Please try again." });
-    }
+    // Instant: cookies cleared now, the landing page loads next (lib/session.tsx).
+    emitToast({ type: "info", title: "Signing out…", body: "See you soon!" });
+    void nextAuthSignOut({ callbackUrl: "/" });
   }
 
   const initials = user?.displayName

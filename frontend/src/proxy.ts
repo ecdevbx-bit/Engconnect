@@ -1,9 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Next 16 "proxy" (formerly middleware). Its only job: keep the Supabase
-// session cookie fresh so server components (dashboard gate, landing redirect)
-// see a valid session. Not an authorization layer — /api handlers verify the
+// Next 16 "proxy" (formerly middleware). Keeps the Supabase session cookie
+// fresh so server components (dashboard gate) see a valid session, and sends
+// signed-in visitors of "/" to their dashboard. Not an authorization layer — /api handlers verify the
 // Bearer token themselves (src/server/guards.ts).
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -24,7 +24,15 @@ export async function proxy(request: NextRequest) {
   );
 
   // Verifies the JWT and refreshes it when it's about to expire.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+
+  // Signed in → the landing isn't for you. Done here (not in app/page.tsx) so
+  // the landing itself can be a static, CDN-cached page for everyone else.
+  if (request.nextUrl.pathname === "/" && data?.claims?.sub) {
+    const redirect = NextResponse.redirect(new URL("/dashboard", request.url));
+    response.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    return redirect;
+  }
   return response;
 }
 

@@ -183,3 +183,9 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-28] build | K.AI shorter replies + voice player crackle fixes (D-053)
 
 ## [2026-10-28] build | K.AI call: synced captions, mic held through mute, sturdier barge-in, AGC off, less clutter (D-054, [[features/ai-partner]])
+
+## [2026-10-28] fix | Instant sign-out, static landing page (D-055, [[architecture/auth]])
+
+## [2026-10-28] perf | Functions moved to Mumbai (bom1) next to Supabase; K.AI session start parallelised (D-056, [[features/ai-partner]])
+
+## [2026-10-28] perf | Pronunciation scoring: short answers, gemini-3-flash-preview, hedged models (D-057, [[features/pronunciation]])

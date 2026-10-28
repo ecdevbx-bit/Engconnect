@@ -43,6 +43,11 @@ const SessionContext = createContext<Ctx | null>(null);
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
+// The signed-in access token, kept current by SessionProvider, so signOut()
+// can revoke the session without first waiting on supabase-js (which may
+// refresh the token or wait for its auth lock before it even starts).
+let liveAccessToken = "";
+
 function sessionIdOf(token: string): string {
   try {
     return jwtDecode<{ session_id?: string }>(token).session_id ?? "";
@@ -107,6 +112,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     tokenRef.current = authSession?.access_token ?? "";
+    liveAccessToken = tokenRef.current;
   }, [authSession]);
   const uid = authSession?.user?.id ?? null;
 
@@ -126,13 +132,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       ({ user, code } = await fetchSessionUser(tokenRef.current || token));
     }
     if (code === "SESSION_SUPERSEDED") {
-      await supabase.auth.signOut({ scope: "local" });
-      window.location.assign("/login?reason=signed_in_elsewhere");
+      await signOut({ callbackUrl: "/login?reason=signed_in_elsewhere" });
       return null;
     }
     if (user) setProfileUser(user);
     return user ?? null;
-  }, [supabase]);
+  }, []);
 
   // (Re)load the profile whenever the signed-in account changes.
   useEffect(() => {
@@ -189,10 +194,33 @@ export function useSession(): Ctx {
 
 // ── actions ─────────────────────────────────────────────────────────
 
-export async function signOut(opts: { callbackUrl?: string; redirect?: boolean } = {}): Promise<void> {
-  // "local": only this device — never sign the learner out everywhere.
-  await supabaseBrowser().auth.signOut({ scope: "local" });
-  if (opts.redirect !== false) window.location.assign(opts.callbackUrl ?? "/");
+// Sign-out is instant: the session cookies are deleted here at once and the
+// page reloads, while the session is revoked on Supabase in the background
+// (keepalive, so the request survives the page change). Waiting for
+// supabase-js first cost 0.3–1.5 s with nothing happening on screen.
+// Always a full page load, so no in-memory session survives in this tab.
+export async function signOut(opts: { callbackUrl?: string } = {}): Promise<void> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const token = liveAccessToken;
+  liveAccessToken = "";
+  if (url && key && token) {
+    // "local": only this device — never sign the learner out everywhere.
+    void fetch(`${url}/auth/v1/logout?scope=local`, {
+      method: "POST",
+      keepalive: true,
+      headers: { apikey: key, Authorization: `Bearer ${token}` },
+    }).catch(() => {});
+  }
+  if (url) {
+    // @supabase/ssr keeps the session in sb-<ref>-auth-token (chunked .0, .1… when long).
+    const base = `sb-${new URL(url).hostname.split(".")[0]}-auth-token`;
+    for (const part of document.cookie.split(";")) {
+      const name = part.split("=")[0].trim();
+      if (name === base || name.startsWith(`${base}.`)) document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
+    }
+  }
+  window.location.replace(opts.callbackUrl ?? "/");
 }
 
 export async function signInWithGoogle(next = "/dashboard"): Promise<void> {
