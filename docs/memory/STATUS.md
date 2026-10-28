@@ -39,8 +39,9 @@
 - "Chats run out at 10 min": no fixed cut found (sessions up to 30 min, Gemini's ~10-min resets resume on the
   same lease); chats end at the allowance (free 20 min/week, Pro 30 min/day — admin → AI Partner).
 - **K.AI talks less** (shorter caps, "let them talk" rules; probe replies ~15–35 words, were 34–46) and the
-  voice player got crackle fixes (24 kHz context, jitter buffer, fade-in) (D-053). Not committed yet;
-  owner to listen on a phone + laptop.
+  voice player got crackle fixes (24 kHz context, jitter buffer, fade-in) (D-053). Deployed `6f047ef` READY;
+  production smoke **32/32**. Owner to listen on a phone + laptop.
+- Plain-English notes of everything fixed this session: `docs/notes/2026-10-28-problems-solved.md`.
 - Supabase usage is far under free limits (17 MB DB, ~53 MAU, 0 storage, ~5k REST requests/day) — no Pro needed yet.
 - `DNS-RECORDS-englishconnection.in.txt` (repo root, untracked) = handout with the 4 Resend records + steps.
 
