@@ -16,10 +16,14 @@ const env = Object.fromEntries(
 );
 const SB = env.NEXT_PUBLIC_SUPABASE_URL, PUB = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SECRET = env.SUPABASE_SECRET_KEY;
 const [APP = "http://localhost:3000", LEVEL = "Beginner", SCENARIO = "General Conversation", LANGUAGE = "English"] = process.argv.slice(2);
-const LEARNER_TURNS = [
-  "My name is Ravi. I am from Pune. I am work in a bank since two years.",
-  "Yesterday I go to market and buyed vegetables for my mother.",
-];
+// PROBE_TURNS='["…","…"]' replaces the learner's lines (e.g. to test that
+// K.AI follows a Hinglish speaker, D-059).
+const LEARNER_TURNS = process.env.PROBE_TURNS
+  ? JSON.parse(process.env.PROBE_TURNS)
+  : [
+      "My name is Ravi. I am from Pune. I am work in a bank since two years.",
+      "Yesterday I go to market and buyed vegetables for my mother.",
+    ];
 const admin = { apikey: SECRET, Authorization: `Bearer ${SECRET}`, "Content-Type": "application/json" };
 let userId = "", token = "";
 

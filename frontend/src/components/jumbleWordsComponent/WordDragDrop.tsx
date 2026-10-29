@@ -694,7 +694,7 @@ function WordDragDropInner({
                             id="sentence-zone"
                             isOver={overZone === "sentence-zone" && activeFromZone === "pool-zone"}
                             isEmpty={sentenceWords.length === 0}
-                            placeholder={tapToPlace ? `${theme.placeholder} — tap or drag.` : theme.placeholder}
+                            placeholder={tapToPlace ? theme.placeholder : "Drag the words here in order"}
                             extraZoneClass={sentenceZoneClass}
                             contentAnimClass={contentAnimClass}
                             leadDecor={theme.leadDecor}

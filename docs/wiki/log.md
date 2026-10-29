@@ -191,3 +191,9 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-28] perf | Pronunciation scoring: short answers, gemini-3-flash-preview, hedged models (D-057, [[features/pronunciation]])
 
 ## [2026-10-28] fix | Sign-out shows a "Signing out…" cover at once (D-058, [[architecture/auth]])
+
+## [2026-10-29] feature | K.AI picks the conversation language itself; language picker removed (D-059, [[features/ai-partner]])
+
+## [2026-10-29] ux | Phone-first pass: onboarding sheet, End-call ✕, lighter start card + dashboard, tours on request, no sideways scroll (D-060, [[features/ai-partner]], [[features/jumble-words]])
+
+## [2026-10-29] feature | Pro payments via self-hosted YouPI PG behind admin → Payments (price, discount, on/off); Terms + Privacy updated (D-061, [[features/premium]], [[features/admin]])

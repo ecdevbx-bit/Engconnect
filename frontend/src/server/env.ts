@@ -70,6 +70,10 @@ export const env = {
     };
   },
 
+  // YouPI PG (D-061): HMAC secret of the merchant's webhook, from YouPI's
+  // merchant admin. Gateway URL / price live in admin settings, not here.
+  youpiWebhookSecret: () => read("YOUPI_WEBHOOK_SECRET") || "",
+
   razorpay: () => {
     const keyId = read("RAZORPAY_KEY_ID");
     const keySecret = read("RAZORPAY_KEY_SECRET");

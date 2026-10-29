@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { storageSeen } from "@/lib/safeStorage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HelpCircle, Mic } from "lucide-react";
 import { useNextStep } from "nextstepjs";
@@ -11,7 +10,6 @@ import {
   PRONUNCIATION_TOUR,
   PRONUNCIATION_TOUR_NAME,
   PRONUNCIATION_TOUR_QUERY,
-  PRONUNCIATION_TOUR_SEEN_KEY,
 } from "./pronunciationTour";
 import {
   PronunciationAttemptResult,
@@ -172,13 +170,14 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
       : undefined;
   const inDemo = !!demoStep;
 
-  // Auto-launch the walkthrough once on first visit, or whenever the URL
+  // Launch the walkthrough whenever the URL
   // carries ?tour=1 (deep-link from a "How to play" CTA). The query param
   // is stripped afterwards so a reload won't re-trigger it.
   const tourFlag = searchParams?.get(PRONUNCIATION_TOUR_QUERY);
   useEffect(() => {
-    const seen = storageSeen(PRONUNCIATION_TOUR_SEEN_KEY);
-    const shouldStart = tourFlag === "1" || !seen;
+    // Only on request (the ? button / ?tour=1) — never by itself: on phones the
+    // auto-started tour covered the screen (D-060).
+    const shouldStart = tourFlag === "1";
     if (!shouldStart) return;
 
     // Let the freshly-mounted anchors paint before highlighting them.

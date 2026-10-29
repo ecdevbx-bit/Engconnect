@@ -225,7 +225,7 @@ export default function LeaderboardPage() {
             on the right (always visible, so the toggle is XP / Streak). ── */}
       <div className="hidden space-y-5 lg:block">
         <StandingToggle mode={bannerMode} onChange={setMode} />
-        <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px]">
           <StandingCard
             cardMode={bannerMode}
             loading={loading}

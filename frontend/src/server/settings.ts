@@ -43,6 +43,27 @@ export type ProInviteSettings = {
   maxRedemptions: number;
 };
 
+// Pro payments through a self-hosted YouPI PG gateway (D-061). Off by default;
+// the webhook secret is an env var (YOUPI_WEBHOOK_SECRET), never stored here.
+export type PaymentsSettings = {
+  enabled: boolean;
+  /** Base URL of the owner's YouPI PG payment API, e.g. https://pay.example.in */
+  gatewayUrl: string;
+  /** Public merchant id from YouPI's merchant admin ("" = gateway default). */
+  merchantId: string;
+  /** Full price of one Pro period, in rupees. */
+  basePriceRupees: number;
+  /** 0 = no discount. */
+  discountPercent: number;
+  /** Last IST day the discount applies ("" = no end date). */
+  discountEndsOn: string;
+  /** Days of Pro one payment adds. */
+  durationDays: number;
+  /** "reconciled" = only after a bank-statement match (YouPI's rule);
+   *  "observed" = as soon as a bank alert matches (instant, riskier). */
+  grantOn: "reconciled" | "observed";
+};
+
 type Docs = {
   jumble: JumbleSettings;
   pronunciation_timings: PronunciationTimings;
@@ -50,6 +71,7 @@ type Docs = {
   quotas: Quotas;
   pro_trial: ProTrialSettings;
   pro_invite: ProInviteSettings;
+  payments: PaymentsSettings;
 };
 
 export const DEFAULTS: Docs = {
@@ -75,6 +97,16 @@ export const DEFAULTS: Docs = {
   quotas: { jumblePerDifficultyPerDay: 18, pronunciationPerDifficultyPerDay: 3 },
   pro_trial: { endsOn: "", durationDays: 14, maxApprovals: 100 },
   pro_invite: { active: false, endsOn: "", showEndsOn: "", durationDays: 30, maxRedemptions: 0 },
+  payments: {
+    enabled: false,
+    gatewayUrl: "",
+    merchantId: "",
+    basePriceRupees: 499,
+    discountPercent: 0,
+    discountEndsOn: "",
+    durationDays: 30,
+    grantOn: "reconciled",
+  },
 };
 
 type Key = keyof Docs;
@@ -160,6 +192,26 @@ function validate<K extends Key>(key: K, raw: Docs[K]): Docs[K] {
         durationDays: num(v.durationDays, "durationDays", 1, 365),
         maxRedemptions: num(v.maxRedemptions, "maxRedemptions", 0, 1_000_000),
       } as Docs[K];
+    case "payments": {
+      const gatewayUrl = typeof v.gatewayUrl === "string" ? v.gatewayUrl.trim().replace(/\/+$/, "") : "";
+      if (gatewayUrl && !/^https:\/\/[^\s/]+(\/[^\s]*)?$/.test(gatewayUrl) && !/^http:\/\/localhost(:\d+)?$/.test(gatewayUrl)) {
+        throw fail.badRequest("gatewayUrl must be an https:// address.", { gatewayUrl: "invalid" });
+      }
+      const merchantId = typeof v.merchantId === "string" ? v.merchantId.trim() : "";
+      if (merchantId.length > 100) throw fail.badRequest("merchantId is too long.", { merchantId: "invalid" });
+      const enabled = Boolean(v.enabled);
+      if (enabled && !gatewayUrl) throw fail.badRequest("Set the gateway URL before switching payments on.");
+      return {
+        enabled,
+        gatewayUrl,
+        merchantId,
+        basePriceRupees: num(v.basePriceRupees, "basePriceRupees", 1, 100000),
+        discountPercent: num(v.discountPercent, "discountPercent", 0, 95),
+        discountEndsOn: dateOr(v.discountEndsOn, "discountEndsOn", [""]),
+        durationDays: num(v.durationDays, "durationDays", 1, 3650),
+        grantOn: v.grantOn === "observed" ? "observed" : "reconciled",
+      } as Docs[K];
+    }
     default:
       throw fail.badRequest(`Unknown settings document ${String(key)}`);
   }

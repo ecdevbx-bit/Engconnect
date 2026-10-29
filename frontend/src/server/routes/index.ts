@@ -6,6 +6,7 @@ import { registerAdminRoutes } from "./admin";
 import { registerChatRoutes } from "./chat";
 import { registerChatHistoryRoutes } from "./chatHistory";
 import { registerJumbleRoutes } from "./jumble";
+import { registerPaymentRoutes } from "./payments";
 import { registerPremiumRoutes } from "./premium";
 import { registerPronunciationRoutes } from "./pronunciation";
 import { registerSupportRoutes } from "./support";
@@ -21,6 +22,7 @@ registerJumbleRoutes(api); //       /game/jumble/*
 registerPronunciationRoutes(api); // /pronunciation/*, /word-bank/*
 registerChatRoutes(api); //         /chat/*  (AI Partner on Gemini Live)
 registerChatHistoryRoutes(api); //  /chat/history, /chat/memory (Pro history + memory file)
-registerPremiumRoutes(api); //      /trial/*, /feedback, /pro-link, /payments/*
+registerPremiumRoutes(api); //      /trial/*, /feedback, /pro-link, /payments/* (Razorpay, unused)
+registerPaymentRoutes(api); //      /payments/offer|checkout|orders|youpi/webhook, /admin/payments (YouPI PG)
 registerSupportRoutes(api); //      /support, /admin/support (tickets → email via Resend)
 registerAdminRoutes(api); //        /admin/*  (INTERNAL_API_KEY or admin user)

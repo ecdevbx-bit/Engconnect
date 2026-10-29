@@ -2,25 +2,22 @@
 
 import { cn } from "@/lib/utils";
 import {
-  AI_PARTNER_LANGUAGES,
   AI_PARTNER_LEVELS,
   AI_PARTNER_SCENARIOS,
   AI_PARTNER_VOICES,
 } from "@/lib/aiPartnerOptions";
 
-// Pre-session setup for K.AI (like ENGAI's controls): which language to mix
-// with English, level, practice mode and K.AI's voice. Choices are baked into
-// the session's Gemini token, so changing them means starting a new session.
+// Pre-session setup for K.AI: level, practice mode and K.AI's voice. No
+// language picker — K.AI matches the language the learner talks in (D-059).
+// Choices are baked into the session's Gemini token, so changing them means
+// starting a new session.
 
-export type SessionSetupValue = { language: string; level: string; scenario: string; voice: string };
+export type SessionSetupValue = { level: string; scenario: string; voice: string };
 
 const LOCAL_KEY = "ai-partner:setup:v1";
 
-// Defaults: mix in the learner's own language (from their profile) if we
-// support it, else English only.
-export function defaultSetup(profileLang: string): SessionSetupValue {
+export function defaultSetup(): SessionSetupValue {
   return {
-    language: AI_PARTNER_LANGUAGES.some((l) => l.id === profileLang) ? profileLang : "English",
     level: "Intermediate",
     scenario: "General Conversation",
     voice: "Aoede",
@@ -33,9 +30,8 @@ export function loadSavedSetup(): SessionSetupValue | null {
     if (typeof window === "undefined") return null;
     const saved = JSON.parse(window.localStorage.getItem(LOCAL_KEY) ?? "null") as Partial<SessionSetupValue> | null;
     if (!saved) return null;
-    const d = defaultSetup("English");
+    const d = defaultSetup();
     return {
-      language: AI_PARTNER_LANGUAGES.some((l) => l.id === saved.language) ? saved.language! : d.language,
       // "Advanced" was renamed "Expert".
       level: saved.level === "Advanced" ? "Expert" : AI_PARTNER_LEVELS.some((l) => l.id === saved.level) ? saved.level! : d.level,
       scenario: AI_PARTNER_SCENARIOS.some((s) => s.id === saved.scenario) ? saved.scenario! : d.scenario,
@@ -55,9 +51,8 @@ export function saveSetup(v: SessionSetupValue) {
 }
 
 export function setupSummary(v: SessionSetupValue): string {
-  const lang = AI_PARTNER_LANGUAGES.find((l) => l.id === v.language)?.label ?? v.language;
   const mode = AI_PARTNER_SCENARIOS.find((s) => s.id === v.scenario)?.label ?? v.scenario;
-  return `${lang} · ${mode} · ${v.level} · Voice ${v.voice}`;
+  return `${mode} · ${v.level} · ${v.voice}`;
 }
 
 function Label({ children }: { children: React.ReactNode }) {
@@ -86,41 +81,14 @@ function Pill({ active, onClick, children, title }: { active: boolean; onClick: 
 export default function SessionSetup({
   value,
   onChange,
-  profileLang,
 }: {
   value: SessionSetupValue;
   onChange: (v: SessionSetupValue) => void;
-  profileLang: string;
 }) {
   const set = (patch: Partial<SessionSetupValue>) => onChange({ ...value, ...patch });
-  // The learner's own language first, then English, then the rest.
-  const languages = [...AI_PARTNER_LANGUAGES].sort((a, b) => {
-    const rank = (id: string) => (id === profileLang ? 0 : id === "English" ? 1 : 2);
-    return rank(a.id) - rank(b.id);
-  });
 
   return (
     <div className="mt-4 space-y-4 rounded-xl border border-white/[0.06] bg-surface-2/40 px-4 py-4 text-left">
-      <div className="space-y-2">
-        <Label>Language</Label>
-        <p className="text-[12px] leading-5 text-muted-foreground">
-          K.AI teaches in English and can mix in your language (70/30, written in English letters) to explain things.
-        </p>
-        <select
-          value={value.language}
-          onChange={(e) => set({ language: e.target.value })}
-          className="h-9 w-full rounded-lg border border-white/10 bg-surface-1 px-3 text-[13px] font-semibold text-heading sm:w-72"
-          aria-label="Session language"
-        >
-          {languages.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.native} · {l.label}
-              {l.id === profileLang && l.id !== "English" ? " (your language)" : ""}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <div className="space-y-2">
         <Label>Level</Label>
         <div className="flex flex-wrap gap-1.5">
@@ -142,9 +110,6 @@ export default function SessionSetup({
             </Pill>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">
-          {AI_PARTNER_SCENARIOS.find((s) => s.id === value.scenario)?.hint}
-        </p>
       </div>
 
       <div className="space-y-2">

@@ -12,8 +12,8 @@ Learners rebuild a sentence from scrambled word tiles. It trains **word order** 
 part of English for speakers of SOV languages like Hindi ("I market to went" → "I went to the market").
 
 ## What the learner experiences
-1. Open **Dashboard → Jumble Words** (`/dashboard/jumble`). Signed-in only. First visit (or
-   `?tour=1`) runs a guided tour.
+1. Open **Dashboard → Jumble Words** (`/dashboard/jumble`). Signed-in only. The ❓ button (or
+   `?tour=1`) runs a guided tour — only on request; tours no longer start by themselves (D-060).
 2. Pick a band: **Easy / Medium / Hard / Progressive**. A **round = 6 sentences**, all in that band.
    Switching tabs starts a fresh round.
 3. Drag or tap tiles into "Your sentence" (a little train adds a carriage per word). **Re-Jumble**

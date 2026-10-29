@@ -1,13 +1,18 @@
 // AI Partner session options shared by the UI (start card) and the server
 // (validation + prompt). Everything the learner can pick for a conversation:
-// the language K.AI mixes with English, level, scenario and K.AI's voice.
+// level, scenario and K.AI's voice. The language is no longer picked — K.AI
+// reads it from how the learner talks (AUTO_LANGUAGE, D-059).
 // Voices were verified against gemini-3.1-flash-live-preview on 2026-09-22
 // (all return audio; unknown names are rejected by Google with close 1007).
 
 export type AIPartnerLanguage = { id: string; label: string; native: string };
 
-// "English" = English only. Every other entry = that language + English
-// (70/30 blend, Roman script) — the ENGAI behaviour.
+// "Auto" (the default, D-059): K.AI starts in simple English and moves into
+// whichever of these languages the learner is comfortable in.
+export const AUTO_LANGUAGE = "Auto";
+
+// The languages K.AI can blend with English. Old sessions stored one of these
+// ids ("English" = English only, any other = that language + English).
 export const AI_PARTNER_LANGUAGES: AIPartnerLanguage[] = [
   { id: "English", label: "English only", native: "A" },
   { id: "Hindi", label: "Hindi + English", native: "अ" },
@@ -56,7 +61,7 @@ export function isKnownVoice(v: string): boolean {
 }
 
 export function isKnownLanguage(v: string): boolean {
-  return AI_PARTNER_LANGUAGES.some((x) => x.id === v);
+  return v === AUTO_LANGUAGE || AI_PARTNER_LANGUAGES.some((x) => x.id === v);
 }
 
 export function isKnownScenario(v: string): boolean {

@@ -64,7 +64,7 @@ const DIGEST_SCHEMA = {
     title: { type: Type.STRING, description: "3–6 word title, like a chat title. No quotes." },
     summary: { type: Type.STRING, description: "What happened in this conversation, max 60 words, second person (\"You talked about…\")." },
     topics: { type: Type.ARRAY, items: { type: Type.STRING }, description: "1–5 short topic labels." },
-    facts: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Up to 6 things the learner shared about themselves (job, plans, family, likes)." },
+    facts: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Up to 6 things the learner shared about themselves (job, plans, family, likes). If it was clear, include which language they were comfortable speaking (e.g. 'Comfortable in Hinglish', 'Prefers English only')." },
     mistakes: {
       type: Type.ARRAY,
       items: {
@@ -437,6 +437,7 @@ ${MEMORY_SECTIONS}
 - "What we've talked about": most recent first, one line each as "YYYY-MM-DD — topic: one detail", at most 8 lines.
 - "Mistakes to keep an eye on": recurring patterns as "wrong → right", most frequent first, at most 6.
 - "Words they've learnt": at most 12, comma-separated on one or two lines.
+- "About them": include the language they are comfortable speaking (English, Hinglish, Tamil + English…) when the material shows it.
 - "Next time": 1–3 concrete follow-ups (their plans to ask about, a mistake to re-check, a topic to try).
 - Only facts from the material below — never invent. ${NO_SECRETS}
 

@@ -28,5 +28,6 @@ updated: 2026-09-22
 | `/v3/admin/badges` | Badge catalog (xp, streak, combo, progset, onboarding) |
 | `/v3/admin/feature-flags` | Pronunciation, language carousel, Word Bank, AI Partner, **Learn library** (`englishconnection-learn`: OFF = admins only, [[features/learn]]) |
 | `/v3/admin/pro-invite` | /pro link on/off, dates, duration, redemption cap, sign-ups |
+| `/v3/admin/payments` | Sell Pro via YouPI PG (D-061): on/off, price, discount + end date, days, unlock rule, webhook URL, recent payments + Grant Pro ([[features/premium]]) |
 
 Free-tier quotas live in `app_settings.quotas` (API: `GET/PUT /api/admin/quotas`).

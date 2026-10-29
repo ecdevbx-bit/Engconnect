@@ -3,7 +3,7 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-10-28 (session 5). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
+> Last updated: 2026-10-29 (session 6). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
@@ -19,6 +19,22 @@
   Wiki & memory, Gemini keys, content, settings).
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
   (wiki: operations/monitoring, D-044). **Verified working in production 2026-09-24** (`scripts/sentry-check.mjs`).
+
+## Session 6 (2026-10-29) 🔧 — NOT committed yet
+- **K.AI picks the language itself** (D-059): no language picker; sessions are `Auto`; K.AI opens in English
+  and follows the learner (probe: Hinglish learner → Hinglish with English practice lines; English learner →
+  English only). Memory notes the language they're comfortable in.
+- **Phone-first UI pass** (D-060): onboarding = full-screen sheet, pinned Next, 4 steps, only 3 required
+  (was stuck below the screen on phones); red ✕ End call beside the mic (verified: session `ended`); K.AI start
+  card fits one phone screen with Start pinned; tours only on request (auto tour rendered see-through on
+  phones); dashboard decluttered; Profile/Leaderboard/dashboard no longer scroll sideways at 375 px.
+- **Pro payments via YouPI PG** (D-061): admin → Payments (on/off — **off**, price ₹499, discount % + end
+  date, days, unlock on statement match or bank alert), `/v3/premium` price + "Pay ₹X with UPI", signed
+  webhook → Pro days. Migration `20261029000100_pro_payments` **applied**. `scripts/payments-probe.mjs`
+  14/14 against a fake gateway locally. Terms §4 + Privacy updated.
+- Checks: `tsc` ✓, eslint on changed files ✓ (only old errors left), production build ✓, local smoke
+  31/32 (the Resend check needs the key, prod-only). Not checked: admin → Payments page visually (needs an
+  admin sign-in), a real YouPI gateway / real UPI payment, real-phone feel.
 
 ## Session 5 (2026-10-28) 🔧
 - Found email sign-ups and password resets failing for real learners (Resend 550 → Supabase rolled back the
@@ -115,6 +131,9 @@
    site — fine once the domain moves to this app; until then the Vercel URL pages canonicalise away.
 
 ## Blocked on the owner 🙋
+- **Payments (D-061)**: host YouPI PG yourself (VPS/home server + its Android observer or Gmail), create a
+  merchant, paste our webhook URL (shown on admin → Payments) into it, put its webhook secret in Vercel as
+  `YOUPI_WEBHOOK_SECRET`, then fill in admin → Payments and switch it on. Have Terms §4 / refunds reviewed.
 - **Email sending** (D-050): add the 4 Resend DNS records for `englishconnection.in` at GoDaddy, or a Gmail app
   password for ec.devbx@gmail.com → then turn email confirmation back on.
 - Resend: a verified domain. Optional: Razorpay, custom domain move, R2 (only if keeping recordings).

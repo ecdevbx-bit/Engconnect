@@ -3,7 +3,7 @@ title: Premium (Pro)
 type: feature
 tags: [premium, pro, trial, payments, quotas]
 links: [features/learn, features/admin, features/jumble-words, features/pronunciation, features/ai-partner]
-updated: 2026-09-22
+updated: 2026-10-29
 ---
 
 # Premium (Pro)
@@ -33,8 +33,29 @@ Over-limit responses: `DAILY_QUOTA_REACHED` (games) / `AI_TIME_LIMIT_REACHED` (A
 2. **/pro invite link** — a fixed public page. Sign-in started there drops a 1-hour cookie; if that
    sign-in **creates a new account**, it gets Pro (DECISIONS D-010). Settings: active, end date,
    display date, duration, max redemptions (`/v3/admin/pro-invite`).
-3. **Razorpay subscriptions** — implemented (`/api/payments/*` + HMAC-verified webhook), inactive
-   until `RAZORPAY_*` env vars are set. The plans UI component exists but isn't mounted.
+3. **Buy Pro with UPI through YouPI PG** (D-061) — experimental, **off by default**. The owner runs
+   the self-hosted [YouPI PG](https://github.com/youpi-pg/YouPI-PG) gateway (Node + SQLite + an
+   Android phone/Gmail reading bank alerts — it can't run on Vercel) and switches selling on at
+   **admin → Payments** (`/v3/admin/payments`): gateway URL, merchant id, full price, discount % + end
+   date, days per payment, and when to unlock Pro (default **bank statement matched** = YouPI's
+   `RECONCILED`; or **bank alert matched** = `OBSERVED_SUCCESS`, instant but riskier). Needs
+   `YOUPI_WEBHOOK_SECRET` on the server and the webhook URL `/api/payments/youpi/webhook` set in
+   YouPI's merchant admin.
+   - Learner: `/v3/premium` shows ₹price (crossed-out full price + "N% off till …") and **Pay ₹X with
+     UPI** (also above the cards on phones) → `POST /api/payments/checkout` creates the gateway session
+     server-side → YouPI's hosted checkout → back to `/v3/premium?payment=<id>`, which polls
+     `GET /api/payments/orders/:id` (received → being confirmed → You're Pro). One-time, no renewal;
+     days stack on top of existing Pro.
+   - Server (`server/routes/payments.ts`): order rows in `pro_payments` (amount frozen at checkout),
+     webhook verified with `X-Gateway-Signature-V2` (HMAC over `timestamp.body`, ≤ 3 h old) or the
+     body-only signature, deduplicated by delivery id (`pro_payment_deliveries`), amount must equal the
+     order's or it goes to **review**; grant claims the row once (`status → paid`). Max 5 checkouts per
+     hour, none while one is "observed". Admin can **Grant Pro** by hand for observed/review rows.
+   - Off → the Pay button disappears and `/v3/premium` shows the trial form; the webhook keeps working
+     so a payment in flight still counts. Terms §4 (payments & refunds) and Privacy (payments) cover it.
+   - Proof: `scripts/payments-probe.mjs` (fake gateway on localhost, 14 checks).
+4. **Razorpay subscriptions** — older code (`/api/payments/plans|subscriptions|webhook`), inactive
+   until `RAZORPAY_*` env vars are set; its UI isn't mounted.
 
 Feedback (`POST /api/feedback`) is collected for everyone; it no longer affects Pro.
 

@@ -646,3 +646,66 @@
 - Checked on the way: the account menu opens in ~9 ms (a delay seen in the hidden preview pane was its
   1-fps throttling, not the app).
 
+
+## D-059 · K.AI picks the conversation language itself (no language picker) — 2026-10-29
+- Owner: "instead of setting English + Hindi or any other language I want the model to decide what they are
+  comfortable with and talk in that language with them". Supersedes the language part of D-026.
+- The start card has no language picker; every new session is `language = 'Auto'` (a language sent by an old
+  cached page is ignored). `tutorPrompt.ts` "MATCH THE LEARNER" block: open in simple English; comfortable
+  English → stay English; answers in Hindi/another language, mixes, or is lost → blend (their language for
+  warmth/meanings, English for everything practised); an explicit request ("Hindi mein bolo", "only English")
+  wins; adjust as they go; mother tongue from the profile is only a hint; never ask or announce the switch.
+  The level's `blend()` still sets how much (Beginner up to half, Expert almost none).
+- Memory: the digest's facts and the Pro memory file's "About them" note the language they're comfortable in,
+  so the next call starts there. Old sessions keep their English / X + English rule on reconnect.
+- Verified (`ai-partner-probe.mjs`, new `PROBE_TURNS`): a Hinglish learner got Hinglish with the practice
+  sentence in English; an English learner got English only.
+
+## D-060 · Phone-first UI pass: onboarding sheet, lighter start card and dashboard, no auto tours — 2026-10-29
+- Owner: "when making the ID it asks some initial questions — in phone view it's difficult to go next";
+  "a lot of text which is not needed and self-explanatory — go through best UI/UX practices and fix it";
+  "there should be a cross option beside the mic which ends the session".
+- Onboarding: the pop-up didn't scroll on phones, so Next fell below the screen; step 1 was a drag-to-spin
+  language wheel with `touch-action: none` and nothing preselected (Next grey with no reason). Now a
+  full-screen sheet on phones (dialog from `sm`), scrolling body + pinned 48 px Next, 4 steps (review step
+  gone), tap tiles (language step moves on by itself), only language / status / reason required (the server
+  never required more), Next says what's missing. `LanguageCarousel` deleted; flag
+  `englishconnection-lang-carousel` no longer read.
+- AI Partner: red ✕ **End call** beside the mic (ends the conversation, back to the start card); start card
+  = mascot + "Talk to K.AI" + History, setup, Start pinned above the tab bar on phones (was below the fold);
+  the eyebrow, paragraph, three chips and the practice-mode hint line are gone; desktop hint "Space to mute".
+- Tours (Jumble, Pronunciation, K.AI) start only from the ? button / `?tour=1` — the auto-started tour
+  rendered see-through over the game on phones.
+- Dashboard: "Hi, Name" only (no rotating taglines), no big Level/XP block for new users (navbar has both),
+  "Practice" heading, no FREE/PRO pill on every card, phone swipe row without autoplay and with the next card
+  peeking, Leaderboard card left out on phones (tab bar has Ranks), smaller "Unlock Pro".
+- Grids without a phone column grew to their widest child (Profile cards 404 px on a 375 px screen) →
+  `grid-cols-1` on Profile, Leaderboard and dashboard grids; no horizontal scroll at 375 px.
+- Jumble placeholder "Tap the words in order" (the instruction was said twice). Pro page header: one line.
+
+## D-061 · Pro payments through a self-hosted YouPI PG gateway, behind an admin switch — 2026-10-29
+- Owner: "for payment I want to integrate https://github.com/youpi-pg/YouPI-PG … add to terms and
+  conditions"; "do it experimental where I can turn payment on and off and also set the discount, initial cost
+  for Pro".
+- YouPI PG is a self-hosted UPI gateway (Node + SQLite services, Android/Gmail observers parsing bank alerts,
+  hosted checkout). It cannot run inside our Vercel app, so the owner hosts it; we integrate with its public
+  contract: `POST /api/v1/payments` (orderId, amount, returnUrl, metadata; `X-Merchant-Id`, `Idempotency-Key`)
+  → `checkoutUrl`, and signed webhooks (`X-Gateway-Signature[-V2]`, `X-Gateway-Delivery-Id`,
+  `X-Gateway-Timestamp`). Its own docs say a bank-alert match (`OBSERVED_SUCCESS`) is not settlement —
+  only `RECONCILED` (statement CSV matched) is; it also calls itself experimental (≤ 20 payments/day per
+  receiving account suggested, review before real customers).
+- Settings doc `payments` (admin → Payments): enabled (default **off**), gatewayUrl (https), merchantId,
+  basePriceRupees (499), discountPercent + discountEndsOn (IST), durationDays (30), grantOn
+  (`reconciled` default | `observed`). Webhook secret only in env `YOUPI_WEBHOOK_SECRET`; can't switch on
+  without it. Price = round(base × (100 − discount) / 100), frozen on the order.
+- Migration `20261029000100_pro_payments`: `pro_payments` (status created → observed → paid, or review /
+  failed / expired / cancelled) + `pro_payment_deliveries` (dedupe). Grant = one conditional update to
+  `paid`, then days added on top of current Pro. Wrong amount → review (never granted); unknown order →
+  200 so YouPI stops retrying; max 5 checkouts/hour; none while one is observed; admin "Grant Pro" for
+  observed/review rows. Learner goes to YouPI's hosted page by redirect (no third-party script on our pages).
+- Terms §4 rewritten (one-time payment, prices/discounts, UPI on our own checkout, confirmation up to 3
+  working days, refunds for not-unlocked or double charges within 7 working days, otherwise non-refundable
+  once unlocked) and Privacy lists payment data (amount, status, UTR; mobile number at checkout) — a
+  template, to be reviewed by the owner / counsel.
+- Proof: `scripts/payments-probe.mjs` against a fake gateway (14/14). Not done: a real YouPI install and a
+  real UPI payment — the owner has to host the gateway and set `YOUPI_WEBHOOK_SECRET` on Vercel.

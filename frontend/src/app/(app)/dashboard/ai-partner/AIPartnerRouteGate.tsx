@@ -12,7 +12,7 @@ import { useAIPartnerGate } from "@/hooks/useAIPartnerGate";
 // link or restores a tab lands here — so the chat component is never mounted
 // while the flag is off; they get the same popup, and dismissing it returns
 // them to the dashboard rather than an empty screen.
-export default function AIPartnerRouteGate({ lang }: { lang?: string }) {
+export default function AIPartnerRouteGate() {
   const router = useRouter();
   const { blocked, checking } = useAIPartnerGate();
 
@@ -28,5 +28,5 @@ export default function AIPartnerRouteGate({ lang }: { lang?: string }) {
 
   if (blocked) return <AIPartnerUpdatingModal open onClose={leave} />;
 
-  return <V3AIPartner nativeLanguage={lang} />;
+  return <V3AIPartner />;
 }

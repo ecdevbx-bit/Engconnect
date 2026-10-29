@@ -14,12 +14,16 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 ## What the learner experiences (`/dashboard/ai-partner`)
 1. Gate: shown if the `englishconnection-ai-partner` flag is on (default **on**) or the account has
    `ai_partner_access`; otherwise an "upgrading" modal.
-2. If onboarding isn't done, the wizard asks first (K.AI uses it to personalise).
-3. **Start card**: how it works, XP rule (from admin config), time left ("12 min left this week"),
-   and the **session setup** (ENGAI-style, D-026 — `SessionSetup.tsx`):
-   - **Language**: English only, or any of 13 languages mixed with English (70/30, Roman script):
-     Hindi, Bengali, Marathi, Gujarati, Punjabi, Tamil, Telugu, Kannada, Malayalam, Odia, Assamese,
-     Urdu, Nepali. The learner's own language (profile) is listed first and preselected.
+2. If onboarding isn't done, the wizard asks first (K.AI uses it to personalise) — 4 phone-first
+   steps, only language / status / reason required (D-060).
+3. **Start card** (one phone screen, D-060): mascot + "Talk to K.AI" + History, the **session setup**
+   (`SessionSetup.tsx`) and **Start session** pinned above the tab bar on phones, with the time left
+   under it. No language picker any more (D-059):
+   - **Language: K.AI decides.** It opens in simple English and follows how the learner talks —
+     comfortable English → English; Hindi/Hinglish/Tamil… or lost → a blend (their language for warmth
+     and meanings, English for everything they practise); "Hindi mein bolo" / "only English" → that.
+     The profile's mother tongue is only a hint; the Pro memory file notes the language they're
+     comfortable in. Sessions store `language = 'Auto'`; a language sent by an old page is ignored.
    - **Level**: Beginner / Intermediate / Expert — each has its own instruction block (Beginner = soft,
      slow voice, very simple words, "say with me"); the chosen level's description shows under the
      pills. See [[features/k-ai-instructions]].
@@ -33,7 +37,8 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 4. **Start session** → K.AI greets by name (and opens the chosen practice mode).
 5. **Just talk — hands-free, like GPT voice mode** (D-039): the mic opens by itself when the call
    connects; K.AI answers when the learner pauses (longer pause allowed for Beginners); talking over
-   K.AI interrupts it. The only control is **mute** (mic button or Space). Mute keeps the mic open and
+   K.AI interrupts it. Controls: **mute** (mic button or Space) and a red **✕ End call** beside it,
+   which ends the conversation (saved and digested as usual) and returns to the start card (D-060). Mute keeps the mic open and
    just stops sending, so a phone never switches audio mode mid-call (K.AI's volume used to drop) (D-054).
    **Live captions** (D-054): K.AI's words appear as they are spoken (bubble + one-line caption in the
    mic bar), not seconds early; on a computer the learner's own words show while they talk (browser
@@ -88,8 +93,9 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 ## Tutor persona (server/gemini/tutorPrompt.ts)
 Ported from the production K.AI prompt in ENGAI: acknowledge → correct with WHY → one question;
 1–2 short spoken sentences (<35 words); learner does 80 % of the talking; topic guard; adapts to
-level; says its name as "kaa-ee". Language mode per session: English-only or X + English 70/30 in
-Roman script (hand-tuned phrases for 7 languages, a generic rule for the rest). A **SESSION MODE**
+level; says its name as "kaa-ee". Language: "Auto" (D-059) — a "MATCH THE LEARNER" block (open in
+English, follow what they speak, never ask or announce); sessions from before 2026-10-29 keep their
+English-only / X + English 70/30 Roman-script rule on reconnect. A **SESSION MODE**
 block adds the chosen practice mode's rules. Both the **LEVEL** and **SESSION MODE** blocks come from
 the instruction files `server/gemini/instructions/levels.ts` and `modes.ts`
 ([[features/k-ai-instructions]]), including "TODAY'S MATERIAL" picked with the session's `material_seed`. Options are validated server-side against

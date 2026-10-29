@@ -11,6 +11,7 @@ import {
 import { useIsPro } from "@/hooks/useIsPro";
 import { useAIPartnerGate } from "@/hooks/useAIPartnerGate";
 import TrialModal from "./TrialModal";
+import { ProBuyButton, useProOffer } from "./ProCheckout";
 
 // Pro feature cards for /v3/premium (and reused, one at a time, in the
 // quota-reached Go-Pro modal). Each card is a thin white frame around a scene
@@ -159,15 +160,20 @@ export default function ProFeatureCards() {
   // guard cancels that and pops the "we're upgrading" modal while it's gated.
   const { guard: aiPartnerGuard } = useAIPartnerGate();
   const [trialOpen, setTrialOpen] = useState(false);
+  // Payments on (admin switch, D-061) → price + Pay button; off → free trial.
+  const offer = useProOffer();
+  const selling = !!offer?.enabled && !isPro;
   const openTrial = (e: MouseEvent) => {
     e.preventDefault();
-    setTrialOpen(true);
+    if (selling) document.getElementById("pro-buy")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    else setTrialOpen(true);
   };
   return (
     <section className="mt-10">
       {/* One common card wrapping the four feature cards, the other perks, and
           the final Go-Pro call to action. */}
       <div className="rounded-[2rem] border border-black/[0.06] bg-black/[0.015] p-4 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.5)] dark:border-white/[0.06] dark:bg-white/[0.02] sm:p-6">
+        {selling && offer && <ProBuyButton offer={offer} top />}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {PRO_FEATURES.map((f, i) => (
             <ProFeatureCard
@@ -177,7 +183,7 @@ export default function ProFeatureCards() {
               // game/section; free users open the free-trial modal.
               href={isPro ? f.route : "#"}
               onClick={isPro ? (f.key === "ai" ? aiPartnerGuard : undefined) : openTrial}
-              ariaLabel={isPro ? `Open ${f.name}` : `${f.name} — start your free trial`}
+              ariaLabel={isPro ? `Open ${f.name}` : selling ? `${f.name} — go Pro` : `${f.name} — start your free trial`}
               style={{ animationDelay: `${i * 90}ms` }}
             />
           ))}
@@ -201,6 +207,8 @@ export default function ProFeatureCards() {
           >
             <Check className="h-5 w-5" strokeWidth={2.5} /> You&apos;re Pro
           </button>
+        ) : selling && offer ? (
+          <ProBuyButton offer={offer} />
         ) : (
           <button
             onClick={() => setTrialOpen(true)}

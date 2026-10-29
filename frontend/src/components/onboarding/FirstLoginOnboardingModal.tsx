@@ -11,49 +11,51 @@
 // new tab gets the prompt again, but a refresh in the same tab does
 // not nag.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSession } from "@/lib/session";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 
 const DISMISS_KEY = "ec.v3.onboarding.modal.dismissed";
 
+function dismissedThisTab(): boolean {
+  try {
+    return typeof window !== "undefined" && window.sessionStorage.getItem(DISMISS_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 export default function FirstLoginOnboardingModal() {
   const { data: session, status } = useSession();
-  const [open, setOpen] = useState(false);
+  // Read once; sessionStorage only exists in the browser. The session is
+  // "loading" on the server, so nothing renders there either way.
+  const [dismissed, setDismissed] = useState(dismissedThisTab);
 
-  const eligible =
+  const open =
     status === "authenticated" &&
-    session?.user?.onboardingCompleted === false;
-
-  // Decide once on mount (and whenever eligibility flips) whether to
-  // show the modal. Reading sessionStorage on the server would crash —
-  // gated to the effect, which only runs on the client.
-  useEffect(() => {
-    if (!eligible) {
-      setOpen(false);
-      return;
-    }
-    try {
-      const dismissed = window.sessionStorage.getItem(DISMISS_KEY) === "true";
-      setOpen(!dismissed);
-    } catch {
-      setOpen(true);
-    }
-  }, [eligible]);
+    session?.user?.onboardingCompleted === false &&
+    !dismissed;
 
   const close = () => {
     try { window.sessionStorage.setItem(DISMISS_KEY, "true"); } catch { /* noop */ }
-    setOpen(false);
+    setDismissed(true);
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-6 backdrop-blur-sm">
+    // Full-screen sheet on phones (the footer with Next stays on screen),
+    // a centred dialog from sm up.
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Set up your profile"
+      className="fixed inset-0 z-50 flex bg-black/65 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
+    >
       <OnboardingWizard
         onComplete={close}
         onSkip={close}
-        eyebrowOverride="Welcome to English Connection"
+        className="h-[100dvh] rounded-none sm:h-auto sm:max-h-[min(720px,92dvh)] sm:max-w-2xl sm:rounded-2xl"
       />
     </div>
   );

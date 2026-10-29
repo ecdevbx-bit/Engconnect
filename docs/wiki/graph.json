@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T16:09:12.943Z",
+  "generatedAt": "2026-10-29T03:19:41.762Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -160,7 +160,7 @@
         "payments",
         "quotas"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-10-29",
       "path": "docs/wiki/features/premium.md"
     },
     {
@@ -308,7 +308,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-10-28",
+      "updated": "2026-10-29",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -776,6 +776,30 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-059",
+      "title": "K.AI picks the conversation language itself (no language picker)",
+      "type": "decision",
+      "date": "2026-10-29",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-060",
+      "title": "Phone-first UI pass: onboarding sheet, lighter start card and dashboard, no auto tours",
+      "type": "decision",
+      "date": "2026-10-29",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-061",
+      "title": "Pro payments through a self-hosted YouPI PG gateway, behind an admin switch",
+      "type": "decision",
+      "date": "2026-10-29",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1129,6 +1153,11 @@
       "kind": "cites"
     },
     {
+      "source": "features/admin",
+      "target": "D-061",
+      "kind": "cites"
+    },
+    {
       "source": "features/ai-partner",
       "target": "features/k-ai-instructions",
       "kind": "links"
@@ -1165,7 +1194,12 @@
     },
     {
       "source": "features/ai-partner",
-      "target": "D-026",
+      "target": "D-060",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-059",
       "kind": "cites"
     },
     {
@@ -1250,6 +1284,11 @@
     },
     {
       "source": "features/jumble-words",
+      "target": "D-060",
+      "kind": "cites"
+    },
+    {
+      "source": "features/jumble-words",
       "target": "D-043",
       "kind": "cites"
     },
@@ -1266,6 +1305,11 @@
     {
       "source": "features/k-ai-instructions",
       "target": "D-032",
+      "kind": "cites"
+    },
+    {
+      "source": "features/k-ai-instructions",
+      "target": "D-059",
       "kind": "cites"
     },
     {
@@ -1336,6 +1380,11 @@
     {
       "source": "features/premium",
       "target": "D-010",
+      "kind": "cites"
+    },
+    {
+      "source": "features/premium",
+      "target": "D-061",
       "kind": "cites"
     },
     {
@@ -1879,6 +1928,21 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-059",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-060",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-061",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2186,6 +2250,21 @@
     {
       "source": "memory/status",
       "target": "D-044",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-059",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-060",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-061",
       "kind": "cites"
     },
     {

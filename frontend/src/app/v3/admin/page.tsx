@@ -22,6 +22,7 @@ const TOOLS = [
   { href: "/v3/admin/badges", title: "Badges", body: "XP, streak, combo and progressive-set badge thresholds." },
   { href: "/v3/admin/feature-flags", title: "Feature flags", body: "Turn Pronunciation, Word Bank, AI Partner, the Learn library, etc. on or off." },
   { href: "/v3/admin/pro-invite", title: "Pro invite link", body: "The public /pro link: on/off, dates, redemption cap, sign-ups." },
+  { href: "/v3/admin/payments", title: "Payments", body: "Sell Pro through YouPI PG: on/off, price, discount, recent payments." },
 ];
 
 export default async function AdminHome() {

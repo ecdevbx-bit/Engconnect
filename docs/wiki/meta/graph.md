@@ -3,13 +3,13 @@ title: Knowledge graph
 type: meta
 tags: [graph, memory]
 links: [index, meta/how-this-wiki-works]
-updated: 2026-10-28
+updated: 2026-10-29
 ---
 
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(85 nodes · 300 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(88 nodes · 311 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -187,15 +187,15 @@ flowchart LR
 | [[architecture/gemini-live]] | D-026, D-039, D-048 |
 | [[architecture/storage-r2]] | D-036 |
 | [[architecture/system]] | D-002 |
-| [[features/admin]] | D-023, D-018, D-042, D-031 |
-| [[features/ai-partner]] | D-026, D-032, D-048, D-039, D-054, D-052, D-053, D-056, D-047, D-049, D-033 |
-| [[features/jumble-words]] | D-043 |
-| [[features/k-ai-instructions]] | D-032 |
+| [[features/admin]] | D-023, D-018, D-042, D-031, D-061 |
+| [[features/ai-partner]] | D-060, D-059, D-032, D-048, D-039, D-054, D-052, D-053, D-056, D-047, D-049, D-033 |
+| [[features/jumble-words]] | D-060, D-043 |
+| [[features/k-ai-instructions]] | D-032, D-059 |
 | [[features/learn]] | D-042 |
-| [[features/premium]] | D-033, D-010 |
+| [[features/premium]] | D-033, D-010, D-061 |
 | [[features/pronunciation]] | D-038, D-035, D-057, D-036 |
 | [[features/support]] | D-029, D-034 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058, D-059, D-060, D-061 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023, D-044 |
 | [[operations/deployment]] | D-022 |
@@ -231,7 +231,7 @@ flowchart LR
 | D-023 | Admin is ec.devbx@gmail.com | active | [[architecture/auth]] [[features/admin]] [[log]] [[operations/credentials]] |
 | D-024 | Google sign-in enabled in Supabase | active | [[architecture/auth]] [[log]] [[operations/credentials]] |
 | D-025 | Auth email via Resend SMTP (no verified domain yet) | active | [[architecture/auth]] [[log]] [[operations/credentials]] |
-| D-026 | AI Partner session setup: language × level × mode × voice (ENGAI-style) | active | [[architecture/gemini-live]] [[features/ai-partner]] [[log]] |
+| D-026 | AI Partner session setup: language × level × mode × voice (ENGAI-style) | active | [[architecture/gemini-live]] [[log]] |
 | D-027 | The 7 free Gemini keys are from different Google Cloud projects | active | [[architecture/gemini-key-pool]] [[log]] [[operations/credentials]] |
 | D-028 | Graph memory = generated from the wiki (`docs/wiki/graph.json`) | active | [[log]] [[meta/how-this-wiki-works]] |
 | D-029 | Customer support panel: navbar "Help" dropdown → ticket + Resend email | active | [[features/support]] [[log]] |
@@ -264,6 +264,9 @@ flowchart LR
 | D-056 | Server functions run in Mumbai (bom1), next to the database; faster K.AI start | active | [[features/ai-partner]] [[log]] [[memory/status]] |
 | D-057 | Pronunciation scoring: short answers, gemini-3-flash-preview first, hedged across models | active | [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-058 | Sign-out shows a "Signing out…" cover at once | active | [[log]] [[memory/status]] |
+| D-059 | K.AI picks the conversation language itself (no language picker) | active | [[features/ai-partner]] [[features/k-ai-instructions]] [[log]] [[memory/status]] |
+| D-060 | Phone-first UI pass: onboarding sheet, lighter start card and dashboard, no auto tours | active | [[features/ai-partner]] [[features/jumble-words]] [[log]] [[memory/status]] |
+| D-061 | Pro payments through a self-hosted YouPI PG gateway, behind an admin switch | active | [[features/admin]] [[features/premium]] [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

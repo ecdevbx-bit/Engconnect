@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BookMarked, Zap } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
 
 import { cn } from "@/lib/utils";
 import { useWordBankEnabled } from "@/lib/featureFlags";
@@ -68,21 +67,6 @@ function useIsMobile() {
   return isMobile;
 }
 
-// Free/Pro status pill, top-right of each card — same white-pill look as the
-// /v3/premium PRO badge. `tier` is data-driven (see CARDS) so the free↔pro
-// state can later be wired to the user's plan / a feature flag.
-function TierBadge({ tier }: { tier: "free" | "pro" }) {
-  return tier === "pro" ? (
-    <span className="absolute right-3.5 top-3.5 z-20 rounded-full bg-white px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-gray-900 shadow-sm">
-      PRO
-    </span>
-  ) : (
-    <span className="absolute right-3.5 top-3.5 z-20 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-white ring-1 ring-white/30 backdrop-blur-sm">
-      FREE
-    </span>
-  );
-}
-
 function ShowcaseCard({
   href,
   title,
@@ -90,7 +74,6 @@ function ShowcaseCard({
   tint,
   Scene,
   active,
-  tier = "free",
   onClick,
 }: {
   href: string;
@@ -99,7 +82,6 @@ function ShowcaseCard({
   tint: string;
   Scene: React.ComponentType<{ hovered: boolean }>;
   active?: boolean;
-  tier?: "free" | "pro";
   // Lets a caller intercept the navigation (the AI Partner card cancels it and
   // pops the "we're upgrading" modal while the feature is flag-gated off).
   onClick?: (e: React.MouseEvent) => void;
@@ -151,9 +133,6 @@ function ShowcaseCard({
         className="pointer-events-none absolute inset-0"
         style={{ background: darkTint ? DARK_TINT : tint, transition: "background 250ms ease" }}
       />
-
-      {/* Free/Pro status pill */}
-      <TierBadge tier={tier} />
 
       {/* Content */}
       <div className="relative z-10 flex h-full max-w-[58%] flex-col justify-between p-6 md:p-5">
@@ -492,8 +471,7 @@ export function WordBankScene({ hovered }: { hovered: boolean }) {
 }
 
 // Shared card list — used by both the desktop grid and the mobile carousel.
-// The corner badge's free/pro state comes from the caller's `isPro` (the
-// user's plan), applied uniformly to every card below. The Word Bank card is
+// (No Free/Pro badge per card: the plan is in the navbar.) The Word Bank card is
 // flag-gated off in both mappers below (WORD_BANK_HREF), so it only appears
 // once the englishconnection-word-bank flag is switched on.
 const WORD_BANK_HREF = "/dashboard/word-bank";
@@ -507,8 +485,7 @@ const CARDS = [
 ] as const;
 
 // Tablet + desktop (≥ md): the full 2-/4-up grid.
-export function TrainingShowcaseCards({ isPro = false }: { isPro?: boolean }) {
-  const tier = isPro ? "pro" : "free";
+export function TrainingShowcaseCards() {
   const wordBankOn = useWordBankEnabled();
   const { guard } = useAIPartnerGate();
   const cards = wordBankOn ? CARDS : CARDS.filter((c) => c.href !== WORD_BANK_HREF);
@@ -518,7 +495,6 @@ export function TrainingShowcaseCards({ isPro = false }: { isPro?: boolean }) {
         <ShowcaseCard
           key={c.title}
           {...c}
-          tier={tier}
           onClick={c.href === AI_PARTNER_HREF ? guard : undefined}
         />
       ))}
@@ -526,19 +502,17 @@ export function TrainingShowcaseCards({ isPro = false }: { isPro?: boolean }) {
   );
 }
 
-// Mobile (< md): one full-width card at a time in an infinite, auto-advancing
-// carousel. Swipe/drag left-right to move; autoplay keeps it looping on its own
-// and resumes after a manual swipe.
-export function TrainingShowcaseCarousel({ isPro = false }: { isPro?: boolean }) {
-  const tier = isPro ? "pro" : "free";
+// Mobile (< md): a swipe row with the next card peeking, so every drill is
+// discoverable. No autoplay — cards moving under a thumb get mis-tapped. The
+// Leaderboard card is left out: the bottom tab bar already has Ranks.
+export function TrainingShowcaseCarousel() {
   const wordBankOn = useWordBankEnabled();
   const { guard } = useAIPartnerGate();
-  const cards = wordBankOn ? CARDS : CARDS.filter((c) => c.href !== WORD_BANK_HREF);
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "center" },
-    [Autoplay({ delay: 3000, stopOnInteraction: false })],
+  const cards = CARDS.filter(
+    (c) => c.href !== "/dashboard/leaderboard" && (wordBankOn || c.href !== WORD_BANK_HREF),
   );
-  // Track the centered slide so each card replays its intro as it scrolls in.
+  const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", containScroll: "trimSnaps" });
+  // Track the leading slide so each card replays its intro as it scrolls in.
   const [selected, setSelected] = useState(0);
   useEffect(() => {
     if (!emblaApi) return;
@@ -551,15 +525,13 @@ export function TrainingShowcaseCarousel({ isPro = false }: { isPro?: boolean })
   }, [emblaApi]);
 
   return (
-    <div className="overflow-hidden md:hidden" ref={emblaRef}>
-      <div className="flex">
+    <div className="-mx-3 overflow-hidden px-3 md:hidden" ref={emblaRef}>
+      <div className="-ml-3 flex">
         {cards.map((c, i) => (
-          <div key={c.title} className="min-w-0 flex-[0_0_100%]">
-            {/* active replays this card's intro whenever it becomes centered */}
+          <div key={c.title} className="min-w-0 flex-[0_0_84%] pl-3">
             <ShowcaseCard
               {...c}
               active={i === selected}
-              tier={tier}
               onClick={c.href === AI_PARTNER_HREF ? guard : undefined}
             />
           </div>

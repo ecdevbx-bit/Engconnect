@@ -8,7 +8,6 @@ import { useSession } from "@/lib/session";
 import { Puzzle, Sparkles, Mic, ArrowUpRight } from "lucide-react";
 
 import { fromSessionUser } from "@/lib/displayUser";
-import { useAppSelector } from "@/store/hooks";
 import { useAIPartnerGate } from "@/hooks/useAIPartnerGate";
 
 import WeeklyActivityChart from "@/components/v3/WeeklyActivityChart";
@@ -29,55 +28,8 @@ import {
   type V3UserAttributes,
 } from "@/lib/v3Game";
 
-// Hero greeting variants. A first-time user must never see "Welcome back" or a
-// streak nudge (owner feedback); returning users get one of several rotated
-// messages so the dashboard feels a little different on each visit.
-type Greeting = { eyebrow: string; short: string; long: string };
-
-// Shown while we don't yet know if the user is new or returning — safe for both.
-const NEUTRAL_GREETING: Greeting = {
-  eyebrow: "Welcome",
-  short: "Let's learn some English.",
-  long: "Pick a game below to get started.",
-};
-
-const NEW_USER_GREETING: Greeting = {
-  eyebrow: "Welcome aboard",
-  short: "Great to have you here!",
-  long: "Pick a game below to start your first streak.",
-};
-
-const RETURNING_GREETINGS: Greeting[] = [
-  {
-    eyebrow: "Welcome back",
-    short: "Keep your streak alive.",
-    long: "Pick up where you left off — or try something new today.",
-  },
-  {
-    eyebrow: "Good to see you",
-    short: "Ready for a quick round?",
-    long: "A few minutes a day keeps your English sharp.",
-  },
-  {
-    eyebrow: "Back at it",
-    short: "Let's keep it going.",
-    long: "Play a game and earn some XP today.",
-  },
-  {
-    eyebrow: "Nice to have you back",
-    short: "Time to practice.",
-    long: "Jump into a lesson or challenge yourself with something new.",
-  },
-  {
-    eyebrow: "Onwards",
-    short: "Your next level awaits.",
-    long: "Pick a game below and keep climbing.",
-  },
-];
-
 export default function DashboardPage() {
   const session = useSession();
-  const { totalXP, currentLevel } = useAppSelector((s) => s.xp);
   // AI Partner is flag-gated while it's being rebuilt — the hero CTA opens the
   // "upgrading" popup instead of the chat.
   const { guard: aiPartnerGuard } = useAIPartnerGate();
@@ -98,20 +50,10 @@ export default function DashboardPage() {
   // once data arrives and shove the page around. (Flipping it off lives in the
   // async .finally below to stay clear of the set-state-in-effect rule.)
   const [loading, setLoading] = useState(true);
-  // Which returning-user greeting to show. Re-randomised on every mount (i.e.
-  // each time the dashboard is opened) inside the fetch .finally below.
-  const [greetIndex, setGreetIndex] = useState(0);
 
   // Login streak (same calc the heatmap uses) — drives the hero's streak tile.
   const streak = useMemo(() => computeStreak(rows), [rows]);
 
-  // A brand-new account has no activity history and no XP yet.
-  const isNewUser = !loading && rows.length === 0 && totalXP === 0;
-  const greeting = useMemo<Greeting>(() => {
-    if (loading) return NEUTRAL_GREETING;
-    if (isNewUser) return NEW_USER_GREETING;
-    return RETURNING_GREETINGS[greetIndex % RETURNING_GREETINGS.length];
-  }, [loading, isNewUser, greetIndex]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -131,12 +73,7 @@ export default function DashboardPage() {
         }
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-          // Client-only randomness (runs post-mount, so no hydration mismatch;
-          // in an async callback, so it dodges the set-state-in-effect rule).
-          setGreetIndex(Math.floor(Math.random() * RETURNING_GREETINGS.length));
-        }
+        if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
   }, [accessToken]);
@@ -144,23 +81,12 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5 md:space-y-8">
       {/* ── Top section: welcome + activity ── */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_auto]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto]">
         {/* Welcome hero — mobile: text + square streak tile side by side; md+:
             the original stacked text/CTA column (unchanged). */}
-        <div className="relative overflow-hidden rounded-2xl c-box px-6 py-4 md:p-8 flex flex-row items-center justify-between gap-4 min-h-0 md:min-h-[280px] md:flex-col md:items-stretch md:justify-between md:gap-0">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-primary">{greeting.eyebrow}</p>
-            <h1 className="mt-2 text-3xl font-extrabold text-heading">
-              Hey, {firstName}!
-            </h1>
-            <p className="mt-3 max-w-md text-sm text-body leading-relaxed">
-              {greeting.short}
-              <span className="hidden md:inline">
-                {" "}
-                {greeting.long}
-              </span>
-            </p>
-          </div>
+        <div className="relative overflow-hidden rounded-2xl c-box px-6 py-4 md:p-8 flex flex-row items-center justify-between gap-4 min-h-0 md:min-h-[220px] md:flex-col md:items-stretch md:justify-between md:gap-0">
+          {/* Just the name — level and XP are in the navbar, the drills below. */}
+          <h1 className="min-w-0 text-3xl font-extrabold text-heading">Hi, {firstName}</h1>
 
           {/* Mobile-only streak tile — square, fitted to the hero's right edge */}
           {streak > 0 && (
@@ -205,39 +131,18 @@ export default function DashboardPage() {
           <div className="hidden lg:block">
             <WeeklyActivityChart rows={rows} attributes={attrs} isPro={isPro} />
           </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <div
-              className="relative flex w-[210px] shrink-0 flex-col items-center justify-center overflow-hidden rounded-[22px] px-6 py-4 md:p-6"
-              style={{ background: "linear-gradient(150deg, #f59e0b 0%, #f97316 40%, #ef4444 100%)" }}
-            >
-              <div className="absolute inset-0" style={{
-                background: [
-                  "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.04) 45%, transparent 60%)",
-                  "radial-gradient(ellipse at 35% 25%, rgba(255,255,255,0.28) 0%, transparent 50%)",
-                ].join(", "),
-              }} />
-              <div className="relative z-10 flex flex-col items-center gap-4">
-                <p className="text-3xl font-black text-white">Level {currentLevel}</p>
-                <p className="text-sm font-semibold text-white/70">{totalXP.toLocaleString()} XP</p>
-              </div>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* ── Trainings section ── */}
       <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-heading">Trainings</h2>
-          <p className="text-sm text-body">Improve your English every day!</p>
-        </div>
+        <h2 className="mb-4 text-xl font-bold text-heading">Practice</h2>
 
         {/* Tablet + desktop (md and up) — illustrated, blue-frosted grid */}
-        <TrainingShowcaseCards isPro={isPro} />
+        <TrainingShowcaseCards />
 
-        {/* Mobile (< md) — same cards, one full-width at a time, swipeable */}
-        <TrainingShowcaseCarousel isPro={isPro} />
+        {/* Mobile (< md) — same cards in a swipe row, the next one peeking */}
+        <TrainingShowcaseCarousel />
       </section>
 
       {/* ── Learn library (free lessons) — only while the admin switch shows it ── */}
@@ -362,7 +267,7 @@ function PremiumUpsellCard({
           <ArrowUpRight className="h-5 w-5" strokeWidth={2.5} />
         </span>
 
-        <h3 className="pr-16 text-5xl font-bold tracking-tight text-[#15240c] dark:text-[#0f1f08]">
+        <h3 className="pr-16 text-4xl font-bold tracking-tight md:text-5xl text-[#15240c] dark:text-[#0f1f08]">
           {isPro ? "Pro Unlocked" : "Unlock Pro"}
         </h3>
         {isPro && untilLabel && (

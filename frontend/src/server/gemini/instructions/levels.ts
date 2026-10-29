@@ -24,7 +24,7 @@ export type LevelInstruction = {
   teaching: string;
   /** How to correct mistakes at this level. */
   correction: string;
-  /** How much of the learner's own language to use when a blend was chosen. */
+  /** How much of the learner's own language to use when K.AI blends it in. */
   blend: (language: string) => string;
   /** Hard limit for each reply. */
   replyLength: string;
@@ -55,7 +55,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
   that reply — ask your next question only after they have repeated it. Praise the second try warmly.
 * Never say "wrong". Say "Almost!" or "Nice try!" and give the right way.`,
     blend: (language) =>
-      `* Use more ${language} than usual for explanations and comfort (up to half), but keep the practice sentences in English.
+      `* Use more of ${language} than usual for explanations and comfort (up to half), but keep the practice sentences in English.
 * Explain the meaning of a new English word in ${language} (Roman letters), then say the English word again slowly.`,
     replyLength:
       "1–2 very short sentences with ONE simple question OR one 'say with me' task (never both) — under 20 words. You may repeat a question in their language right after the English.",

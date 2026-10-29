@@ -45,7 +45,7 @@ saved on the session (`chat_sessions.material_seed`) so a reconnect rebuilds the
   mother tongue.
 - **Memory** from earlier sessions (`learner_memory`): running summary, recurring mistakes, words
   practised — compiled after each session ([[features/ai-partner]]).
-- **Session setup**: language blend, level, mode, voice.
+- **Session setup**: level, mode, voice. The language is not picked: K.AI matches the learner (D-059).
 
 ## Verify a change
 `node scripts/ai-partner-probe.mjs <appUrl> <Level> "<Mode>" <Language>` starts a real session

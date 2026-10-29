@@ -84,10 +84,11 @@ try {
 
   // AI Partner setup options (D-026): chosen options echoed; bad voice falls back
   x = await api("/chat/sessions", { method: "POST", body: JSON.stringify({ language: "Tamil", level: "Advanced", scenario: "Job Interview", voice: "Charon" }) });
-  check("session with Tamil / Job Interview / Charon", x.body.success && x.body.data.language === "Tamil" && x.body.data.scenario === "Job Interview" && x.body.data.voice === "Charon" && x.body.data.live?.token?.startsWith("auth_tokens/"), `kickoff: ${(x.body.data?.live?.kickoff||"").slice(0,60)}…`);
+  // A sent language is ignored: K.AI picks it from how the learner talks (D-059).
+  check("session with Job Interview / Charon (language Auto)", x.body.success && x.body.data.language === "Auto" && x.body.data.scenario === "Job Interview" && x.body.data.voice === "Charon" && x.body.data.live?.token?.startsWith("auth_tokens/"), `kickoff: ${(x.body.data?.live?.kickoff||"").slice(0,60)}…`);
   if (x.body.data) await api(`/chat/sessions/${x.body.data.sessionID}/end`, { method: "POST", body: "{}" });
   x = await api("/chat/sessions", { method: "POST", body: JSON.stringify({ language: "Klingon", scenario: "Hacking", voice: "NotAVoice" }) });
-  check("invalid options fall back safely", x.body.success && x.body.data.language === "English" && x.body.data.voice === "Aoede" && x.body.data.scenario === "General Conversation");
+  check("invalid options fall back safely", x.body.success && x.body.data.language === "Auto" && x.body.data.voice === "Aoede" && x.body.data.scenario === "General Conversation");
   if (x.body.data) await api(`/chat/sessions/${x.body.data.sessionID}/end`, { method: "POST", body: "{}" });
 
   // Support ticket (D-029) — emails the team once

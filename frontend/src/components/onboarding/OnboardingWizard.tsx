@@ -1,19 +1,19 @@
 "use client";
 
-// Self-contained 5-step v3 onboarding card. No internal navigation —
-// the host (FirstLoginOnboardingModal or V3AIPartner pre-session)
-// decides what to render before/after via onComplete / onSkip.
+// Self-contained 4-step onboarding card. No internal navigation — the host
+// (FirstLoginOnboardingModal or V3AIPartner pre-session) decides what to render
+// before/after via onComplete / onSkip.
 //
-// Renders as a card with progress bar at the top, step content in
-// the middle, and a footer with Back / Skip / Next-or-Finish. Fits
-// naturally inside a modal overlay or inline in a page.
+// Phone-first (D-060): the host gives the card its height; the step body
+// scrolls and the footer with one big Next button stays pinned, so Next is
+// never pushed off-screen. Only the answers the server requires (language,
+// status, reason) block Next — city, goal and hobbies are optional. Tapping
+// a language moves on by itself.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
-import { useLangCarouselEnabled } from "@/lib/featureFlags";
 import { ApiError } from "@/lib/apiClient";
-import LanguageCarousel from "./LanguageCarousel";
 import {
   v3SubmitOnboarding,
   NATIVE_LANG_OPTIONS,
@@ -27,7 +27,7 @@ import {
 } from "@/lib/v3Onboarding";
 
 const STORAGE_KEY = "ec.v3.onboarding.draft";
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 interface Draft {
   nativeLang: OnboardingNativeLang | "";
@@ -59,33 +59,45 @@ function loadDraft(): Draft {
   }
 }
 
+// What's still missing on a step ("" = can go on).
+function missing(step: number, d: Draft): string {
+  if (step === 1 && !d.nativeLang) return "Pick your language";
+  if (step === 2 && !d.currentStatus) return "Pick what you do";
+  if (step === 3 && !d.englishReason) return "Pick a reason";
+  return "";
+}
+
 export interface OnboardingWizardProps {
   /** Called once the user has successfully submitted answers. */
   onComplete: () => void;
   /** Called when the user dismisses without finishing. */
   onSkip: () => void;
-  /** Short copy shown above the title — surface-specific hint. */
+  /** Short line above the first question — surface-specific. */
   eyebrowOverride?: string;
+  /** Sizing from the host (the card fills it and scrolls inside). */
+  className?: string;
 }
 
 export default function OnboardingWizard({
   onComplete,
   onSkip,
   eyebrowOverride,
+  className,
 }: OnboardingWizardProps) {
   const { data: session, update: updateSession } = useSession();
   const accessToken = session?.user?.accessToken ?? null;
-  const firstName =
-    (session?.user?.name?.trim().split(/\s+/)[0]) || "there";
+  const firstName = session?.user?.name?.trim().split(/\s+/)[0] || "";
 
   const [step, setStep] = useState(1);
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  // Only mounted on the client after the session loads, so the saved draft
+  // can be read during the first render.
+  const [draft, setDraft] = useState<Draft>(loadDraft);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setDraft(loadDraft());
-  }, []);
+  // Set when Next is tapped on an unfinished step, so the hint shows only then.
+  const [nudge, setNudge] = useState(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const autoNext = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     try {
@@ -95,15 +107,15 @@ export default function OnboardingWizard({
     }
   }, [draft]);
 
-  const stepValid = useMemo(() => isStepValid(step, draft), [step, draft]);
+  useEffect(() => () => {
+    if (autoNext.current) clearTimeout(autoNext.current);
+  }, []);
 
-  const next = useCallback(() => {
-    if (!stepValid) return;
-    setStep((s) => Math.min(TOTAL_STEPS, s + 1));
-  }, [stepValid]);
-
-  const back = useCallback(() => {
-    setStep((s) => Math.max(1, s - 1));
+  const goTo = useCallback((s: number) => {
+    setNudge(false);
+    setError(null);
+    setStep(Math.max(1, Math.min(TOTAL_STEPS, s)));
+    bodyRef.current?.scrollTo({ top: 0 });
   }, []);
 
   const submit = useCallback(async () => {
@@ -111,8 +123,10 @@ export default function OnboardingWizard({
       setError("You're not signed in.");
       return;
     }
-    if (!isStepValid(5, draft)) {
-      setError("Please complete all steps before finishing.");
+    const firstMissing = [1, 2, 3].find((s) => missing(s, draft));
+    if (firstMissing) {
+      goTo(firstMissing);
+      setNudge(true);
       return;
     }
     setSubmitting(true);
@@ -137,386 +151,263 @@ export default function OnboardingWizard({
       try { window.localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
       onComplete();
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "Something went wrong. Try again.";
-      setError(msg);
+      setError(err instanceof ApiError ? err.message : "Something went wrong. Try again.");
       setSubmitting(false);
     }
-  }, [accessToken, draft, updateSession, onComplete]);
+  }, [accessToken, draft, updateSession, onComplete, goTo]);
+
+  const next = useCallback(() => {
+    if (missing(step, draft)) {
+      setNudge(true);
+      return;
+    }
+    if (step < TOTAL_STEPS) goTo(step + 1);
+    else void submit();
+  }, [step, draft, goTo, submit]);
+
+  const hint = nudge ? missing(step, draft) : "";
 
   return (
-    <div className="c-box flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl">
-      {/* Progress bar pinned to the card top */}
-      <div className="flex items-center gap-2 px-6 pt-6 sm:px-8 sm:pt-7">
-        {Array.from({ length: TOTAL_STEPS }).map((_, i) => {
-          const idx = i + 1;
-          const done = idx < step;
-          const active = idx === step;
-          return (
-            <div
-              key={idx}
-              className={cn(
-                "h-1.5 flex-1 rounded-full transition-all",
-                done
-                  ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316]"
-                  : active
-                    ? "bg-gradient-to-r from-[#b79fff]/80 to-[#ab8eff]/80"
-                    : "bg-surface-3"
-              )}
-            />
-          );
-        })}
-      </div>
-
-      {/* Step body */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-8">
-        {step === 1 && (
-          <StepLanguage
-            firstName={firstName}
-            eyebrowOverride={eyebrowOverride}
-            value={draft.nativeLang}
-            onChange={(v) => setDraft((d) => ({ ...d, nativeLang: v }))}
-          />
-        )}
-        {step === 2 && (
-          <StepAboutYou
-            location={draft.location}
-            status={draft.currentStatus}
-            onLocation={(v) => setDraft((d) => ({ ...d, location: v }))}
-            onStatus={(v) => setDraft((d) => ({ ...d, currentStatus: v }))}
-          />
-        )}
-        {step === 3 && (
-          <StepWhy
-            reason={draft.englishReason}
-            goals={draft.goals}
-            onReason={(v) => setDraft((d) => ({ ...d, englishReason: v }))}
-            onGoals={(v) => setDraft((d) => ({ ...d, goals: v }))}
-          />
-        )}
-        {step === 4 && (
-          <StepHobbies
-            hobbies={draft.hobbies}
-            onChange={(v) => setDraft((d) => ({ ...d, hobbies: v }))}
-          />
-        )}
-        {step === 5 && <StepReview draft={draft} />}
-      </div>
-
-      {/* Footer */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-6 py-4 sm:px-8">
+    <div className={cn("c-box flex w-full flex-col overflow-hidden", className)}>
+      {/* Top bar: back, progress, skip */}
+      <div className="flex shrink-0 items-center gap-3 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-5">
         <button
           type="button"
-          onClick={back}
+          onClick={() => goTo(step - 1)}
           disabled={step === 1 || submitting}
-          className="rounded-full border border-white/[0.08] px-4 py-2 text-[12.5px] font-semibold text-muted-foreground transition hover:bg-surface-2/60 hover:text-heading disabled:cursor-not-allowed disabled:opacity-30"
+          aria-label="Back"
+          className="-ml-2 grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg text-muted-foreground transition hover:bg-surface-2/60 hover:text-heading disabled:invisible"
         >
-          ← Back
+          ←
         </button>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onSkip}
-            disabled={submitting}
-            className="text-[12.5px] font-semibold text-muted-foreground transition hover:text-heading"
-          >
-            Maybe later
-          </button>
-          {step < TOTAL_STEPS ? (
-            <button
-              type="button"
-              onClick={next}
-              disabled={!stepValid}
-              className="rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] px-5 py-2 text-[12.5px] font-bold text-[#0b0e14] shadow-[0_6px_18px_rgba(249,115,22,0.25)] transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Next →
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={submit}
-              disabled={submitting}
-              className="rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] px-5 py-2 text-[12.5px] font-bold text-[#0b0e14] shadow-[0_8px_22px_rgba(249,115,22,0.35)] transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {submitting ? "Saving…" : "✨ Finish"}
-            </button>
-          )}
+        <div
+          className="flex flex-1 gap-1.5"
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={TOTAL_STEPS}
+          aria-valuenow={step}
+          aria-label={`Step ${step} of ${TOTAL_STEPS}`}
+        >
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+            <span
+              key={i}
+              className={cn(
+                "h-1.5 flex-1 rounded-full transition-colors",
+                i < step ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316]" : "bg-surface-3",
+              )}
+            />
+          ))}
         </div>
+        <button
+          type="button"
+          onClick={onSkip}
+          disabled={submitting}
+          className="-mr-2 h-10 shrink-0 rounded-full px-3 text-[13px] font-semibold text-muted-foreground transition hover:text-heading"
+        >
+          Skip
+        </button>
       </div>
-      {error && (
-        <div className="border-t border-destructive/30 bg-destructive/10 px-6 py-2 text-center text-[12px] text-destructive sm:px-8">
-          {error}
-        </div>
-      )}
+
+      {/* Step body — the only part that scrolls */}
+      <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 pt-3 sm:px-6">
+        {step === 1 && (
+          <>
+            <Title eyebrow={eyebrowOverride ?? (firstName ? `Hi ${firstName} 👋` : "Welcome 👋")}>
+              Your native language?
+            </Title>
+            <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+              {NATIVE_LANG_OPTIONS.map((opt) => (
+                <Tile
+                  key={opt.id}
+                  selected={draft.nativeLang === opt.id}
+                  onClick={() => {
+                    setDraft((d) => ({ ...d, nativeLang: opt.id }));
+                    setNudge(false);
+                    // One tap answers this step — move on after the tap shows.
+                    if (autoNext.current) clearTimeout(autoNext.current);
+                    autoNext.current = setTimeout(() => goTo(2), 220);
+                  }}
+                  className="flex-col py-4"
+                >
+                  <span className="text-[26px] leading-none">{opt.native}</span>
+                  <span className="text-[14px] font-semibold">{opt.label}</span>
+                </Tile>
+              ))}
+            </div>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <Title>What do you do?</Title>
+            <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {STATUS_OPTIONS.map((opt) => (
+                <Tile
+                  key={opt.id}
+                  selected={draft.currentStatus === opt.id}
+                  onClick={() => {
+                    setDraft((d) => ({ ...d, currentStatus: opt.id }));
+                    setNudge(false);
+                  }}
+                >
+                  <span className="text-[18px]">{opt.emoji}</span>
+                  <span className="text-[14px] font-semibold">{opt.label}</span>
+                </Tile>
+              ))}
+            </div>
+            <Field label="City" optional>
+              <input
+                type="text"
+                value={draft.location}
+                onChange={(e) => setDraft((d) => ({ ...d, location: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && next()}
+                placeholder="Mumbai"
+                maxLength={80}
+                autoComplete="address-level2"
+                enterKeyHint="next"
+                className={INPUT}
+              />
+            </Field>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <Title>Why are you learning English?</Title>
+            <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {REASON_OPTIONS.map((opt) => (
+                <Tile
+                  key={opt.id}
+                  selected={draft.englishReason === opt.id}
+                  onClick={() => {
+                    setDraft((d) => ({ ...d, englishReason: opt.id }));
+                    setNudge(false);
+                  }}
+                >
+                  <span className="text-[18px]">{opt.emoji}</span>
+                  <span className="text-[14px] font-semibold">{opt.label}</span>
+                </Tile>
+              ))}
+            </div>
+            <Field label="Your goal" optional>
+              <input
+                type="text"
+                value={draft.goals}
+                onChange={(e) => setDraft((d) => ({ ...d, goals: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && next()}
+                placeholder="Speak confidently in interviews"
+                maxLength={280}
+                enterKeyHint="next"
+                className={INPUT}
+              />
+            </Field>
+          </>
+        )}
+
+        {step === 4 && (
+          <StepHobbies hobbies={draft.hobbies} onChange={(v) => setDraft((d) => ({ ...d, hobbies: v }))} />
+        )}
+      </div>
+
+      {/* Pinned footer */}
+      <div className="shrink-0 border-t border-border px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-6">
+        {(hint || error) && (
+          <p role="alert" className="mb-2 text-center text-[13px] font-semibold text-destructive">
+            {error || hint}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={next}
+          disabled={submitting}
+          className={cn(
+            "h-12 w-full rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[15px] font-bold text-[#0b0e14] shadow-[0_6px_18px_rgba(249,115,22,0.25)] transition active:scale-[0.98] disabled:opacity-60 sm:ml-auto sm:block sm:w-48",
+            missing(step, draft) && "opacity-60",
+          )}
+        >
+          {step < TOTAL_STEPS ? "Next" : submitting ? "Saving…" : "Start learning"}
+        </button>
+      </div>
     </div>
   );
 }
 
-function isStepValid(step: number, d: Draft): boolean {
-  switch (step) {
-    case 1:
-      return d.nativeLang !== "";
-    case 2:
-      return d.location.trim().length > 0 && d.currentStatus !== "";
-    case 3:
-      return d.englishReason !== "" && d.goals.trim().length > 0;
-    case 4:
-      return d.hobbies.length > 0;
-    case 5:
-      return (
-        isStepValid(1, d) && isStepValid(2, d) && isStepValid(3, d) && isStepValid(4, d)
-      );
-    default:
-      return false;
-  }
-}
+const INPUT =
+  "mt-2 h-12 w-full rounded-xl border border-border bg-surface-2 px-4 text-[16px] text-heading outline-none transition placeholder:text-muted-foreground/70 focus:border-primary/40 focus:ring-1 focus:ring-primary/20";
 
-function StepHeader({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle?: string;
-}) {
+function Title({ eyebrow, children }: { eyebrow?: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">{eyebrow}</p>
-      <h2 className="mt-2 text-[22px] font-bold text-gradient sm:text-[26px]">{title}</h2>
-      {subtitle && (
-        <p className="mt-1.5 max-w-xl text-[13px] leading-6 text-muted-foreground">{subtitle}</p>
-      )}
+      {eyebrow && <p className="text-[13px] font-semibold text-primary">{eyebrow}</p>}
+      <h2 className="mt-1 text-[22px] font-bold leading-tight text-heading sm:text-[26px]">{children}</h2>
     </div>
   );
 }
 
-function StepLanguage({
-  firstName,
-  eyebrowOverride,
-  value,
-  onChange,
-}: {
-  firstName: string;
-  eyebrowOverride?: string;
-  value: OnboardingNativeLang | "";
-  onChange: (v: OnboardingNativeLang) => void;
-}) {
-  const carousel = useLangCarouselEnabled();
+function Field({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
   return (
-    <section>
-      <StepHeader
-        eyebrow={eyebrowOverride ?? `Hi ${firstName} · Step 1`}
-        title="What's your native language?"
-        subtitle="K.AI uses this to throw in a familiar phrase when you're stuck — and to help with translations."
-      />
-      {carousel ? (
-        <div className="mt-4">
-          <LanguageCarousel value={value} onChange={onChange} />
-        </div>
-      ) : (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {NATIVE_LANG_OPTIONS.map((opt) => {
-            const selected = value === opt.id;
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => onChange(opt.id)}
-                aria-pressed={selected}
-                className={cn(
-                  "group relative flex flex-col items-center gap-1.5 rounded-2xl border px-4 py-4 text-center transition",
-                  selected
-                    ? "border-primary/60 bg-primary/10 shadow-[0_8px_22px_rgba(249,115,22,0.18)]"
-                    : "border-white/[0.06] bg-surface-2/40 hover:border-white/[0.12] hover:bg-surface-2/70"
-                )}
-              >
-                <span className="text-[28px] leading-none">{opt.native}</span>
-                <span className="text-[12.5px] font-semibold text-heading">{opt.label}</span>
-              </button>
-            );
-          })}
-        </div>
+    <label className="mt-6 block">
+      <span className="text-[14px] font-semibold text-heading">
+        {label}
+        {optional && <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function Tile({
+  selected,
+  onClick,
+  className,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={cn(
+        "flex min-h-[52px] items-center gap-2 rounded-xl border px-3 text-left text-heading transition active:scale-[0.98]",
+        selected
+          ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
+          : "border-border bg-surface-2/50 hover:border-primary/40",
+        className,
       )}
-    </section>
+    >
+      {children}
+    </button>
   );
 }
 
-function StepAboutYou({
-  location,
-  status,
-  onLocation,
-  onStatus,
-}: {
-  location: string;
-  status: OnboardingStatus | "";
-  onLocation: (v: string) => void;
-  onStatus: (v: OnboardingStatus) => void;
-}) {
-  return (
-    <section>
-      <StepHeader
-        eyebrow="Step 2"
-        title="Tell us about you"
-        subtitle="A little context goes a long way. K.AI remembers and uses these in conversation."
-      />
-      <div className="mt-6 space-y-6">
-        <div>
-          <label className="text-[13px] font-semibold text-heading">
-            Where do you live?
-          </label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => onLocation(e.target.value)}
-            placeholder="e.g. Mumbai"
-            maxLength={80}
-            className="mt-2 h-11 w-full rounded-xl border border-white/[0.08] bg-surface-2 px-4 text-[14px] text-heading outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-1 focus:ring-primary/20"
-          />
-        </div>
-
-        <div>
-          <label className="text-[13px] font-semibold text-heading">
-            What are you up to right now?
-          </label>
-          <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            {STATUS_OPTIONS.map((opt) => {
-              const selected = status === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => onStatus(opt.id)}
-                  aria-pressed={selected}
-                  className={cn(
-                    "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[13px] font-semibold transition",
-                    selected
-                      ? "border-primary/60 bg-primary/10 text-heading"
-                      : "border-white/[0.06] bg-surface-2/40 text-muted-foreground hover:border-white/[0.12] hover:text-heading"
-                  )}
-                >
-                  <span className="text-[17px]">{opt.emoji}</span>
-                  <span>{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function StepWhy({
-  reason,
-  goals,
-  onReason,
-  onGoals,
-}: {
-  reason: OnboardingReason | "";
-  goals: string;
-  onReason: (v: OnboardingReason) => void;
-  onGoals: (v: string) => void;
-}) {
-  return (
-    <section>
-      <StepHeader
-        eyebrow="Step 3"
-        title="Why are you here?"
-        subtitle="Knowing your reason helps K.AI steer conversations the right way."
-      />
-      <div className="mt-6 space-y-6">
-        <div>
-          <label className="text-[13px] font-semibold text-heading">
-            Pick the closest reason
-          </label>
-          <div className="mt-2 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            {REASON_OPTIONS.map((opt) => {
-              const selected = reason === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => onReason(opt.id)}
-                  aria-pressed={selected}
-                  className={cn(
-                    "group flex items-start gap-3 rounded-xl border px-3.5 py-3 text-left transition",
-                    selected
-                      ? "border-primary/60 bg-primary/10"
-                      : "border-white/[0.06] bg-surface-2/40 hover:border-white/[0.12]"
-                  )}
-                >
-                  <span className="text-[20px]">{opt.emoji}</span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-semibold text-heading">{opt.label}</span>
-                    <span className="block text-[12px] leading-5 text-muted-foreground">{opt.sub}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[13px] font-semibold text-heading">
-            What&apos;s one thing you&apos;d love to be able to do?
-          </label>
-          <textarea
-            value={goals}
-            onChange={(e) => onGoals(e.target.value)}
-            placeholder="e.g. Speak confidently in interviews"
-            maxLength={280}
-            rows={3}
-            className="mt-2 w-full resize-none rounded-xl border border-white/[0.08] bg-surface-2 px-4 py-3 text-[14px] leading-6 text-heading outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-1 focus:ring-primary/20"
-          />
-          <p className="mt-1 text-right text-[11px] text-muted-foreground">
-            {goals.length}/280
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function StepHobbies({
-  hobbies,
-  onChange,
-}: {
-  hobbies: string[];
-  onChange: (v: string[]) => void;
-}) {
+function StepHobbies({ hobbies, onChange }: { hobbies: string[]; onChange: (v: string[]) => void }) {
   const [custom, setCustom] = useState("");
+  const full = hobbies.length >= 10;
 
   const toggle = (h: string) => {
-    if (hobbies.includes(h)) {
-      onChange(hobbies.filter((x) => x !== h));
-    } else {
-      if (hobbies.length >= 10) return;
-      onChange([...hobbies, h]);
-    }
+    if (hobbies.includes(h)) onChange(hobbies.filter((x) => x !== h));
+    else if (!full) onChange([...hobbies, h]);
   };
 
   const addCustom = () => {
     const t = custom.trim();
-    if (!t || hobbies.length >= 10) {
-      setCustom("");
-      return;
-    }
-    if (!hobbies.find((h) => h.toLowerCase() === t.toLowerCase())) {
-      onChange([...hobbies, t]);
-    }
+    if (t && !full && !hobbies.some((h) => h.toLowerCase() === t.toLowerCase())) onChange([...hobbies, t]);
     setCustom("");
   };
 
+  const extra = hobbies.filter((h) => !HOBBY_SUGGESTIONS.includes(h));
+
   return (
-    <section>
-      <StepHeader
-        eyebrow="Step 4"
-        title="What do you enjoy?"
-        subtitle="K.AI will lean on these for conversation topics. Pick a few — or add your own."
-      />
-      <div className="mt-6 flex flex-wrap gap-2">
-        {HOBBY_SUGGESTIONS.map((h) => {
+    <>
+      <Title>What do you enjoy?</Title>
+      <p className="mt-1 text-[13px] text-muted-foreground">K.AI picks topics from these. Optional.</p>
+      <div className="mt-5 flex flex-wrap gap-2">
+        {[...HOBBY_SUGGESTIONS, ...extra].map((h) => {
           const selected = hobbies.includes(h);
           return (
             <button
@@ -525,10 +416,10 @@ function StepHobbies({
               onClick={() => toggle(h)}
               aria-pressed={selected}
               className={cn(
-                "rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition",
+                "h-10 rounded-full border px-4 text-[14px] font-semibold transition",
                 selected
-                  ? "border-primary/60 bg-primary/15 text-heading"
-                  : "border-white/[0.06] bg-surface-2/40 text-muted-foreground hover:border-white/[0.12] hover:text-heading"
+                  ? "border-primary/70 bg-primary/15 text-heading"
+                  : "border-border bg-surface-2/50 text-muted-foreground hover:text-heading",
               )}
             >
               {selected ? "✓ " : ""}
@@ -536,20 +427,7 @@ function StepHobbies({
             </button>
           );
         })}
-        {hobbies
-          .filter((h) => !HOBBY_SUGGESTIONS.includes(h))
-          .map((h) => (
-            <button
-              key={h}
-              type="button"
-              onClick={() => toggle(h)}
-              className="rounded-full border border-primary/60 bg-primary/15 px-3.5 py-1.5 text-[12.5px] font-semibold text-heading"
-            >
-              ✓ {h}
-            </button>
-          ))}
       </div>
-
       <div className="mt-5 flex gap-2">
         <input
           type="text"
@@ -561,59 +439,21 @@ function StepHobbies({
               addCustom();
             }
           }}
-          placeholder="Add your own (press Enter)"
+          placeholder="Something else"
+          aria-label="Add your own"
           maxLength={40}
-          className="h-10 flex-1 rounded-xl border border-white/[0.08] bg-surface-2 px-4 text-[13.5px] text-heading outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-1 focus:ring-primary/20"
+          enterKeyHint="done"
+          className={cn(INPUT, "mt-0 flex-1")}
         />
         <button
           type="button"
           onClick={addCustom}
-          disabled={!custom.trim() || hobbies.length >= 10}
-          className="rounded-xl border border-white/[0.08] px-3.5 text-[12.5px] font-semibold text-heading transition hover:bg-surface-2/70 disabled:cursor-not-allowed disabled:opacity-30"
+          disabled={!custom.trim() || full}
+          className="h-12 rounded-xl border border-border px-4 text-[14px] font-semibold text-heading transition hover:bg-surface-2/70 disabled:opacity-30"
         >
           Add
         </button>
       </div>
-      <p className="mt-2 text-[11.5px] text-muted-foreground">
-        {hobbies.length}/10 picked
-      </p>
-    </section>
-  );
-}
-
-function StepReview({ draft }: { draft: Draft }) {
-  const statusLabel = STATUS_OPTIONS.find((s) => s.id === draft.currentStatus)?.label ?? "—";
-  const reasonLabel = REASON_OPTIONS.find((s) => s.id === draft.englishReason)?.label ?? "—";
-
-  return (
-    <section>
-      <StepHeader
-        eyebrow="Step 5"
-        title="Looks good?"
-        subtitle="Quick check before we hand you over to K.AI."
-      />
-      <dl className="mt-6 divide-y divide-white/[0.06] rounded-2xl border border-white/[0.06] bg-surface-2/40">
-        <Row label="Native language" value={draft.nativeLang || "—"} />
-        <Row label="Lives in" value={draft.location || "—"} />
-        <Row label="Currently" value={statusLabel} />
-        <Row label="Reason" value={reasonLabel} />
-        <Row label="Goal" value={draft.goals || "—"} />
-        <Row label="Hobbies" value={draft.hobbies.join(", ") || "—"} />
-      </dl>
-      <p className="mt-3 text-[11.5px] text-muted-foreground">
-        You can edit any of these later from your profile.
-      </p>
-    </section>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-4 px-4 py-3">
-      <dt className="w-32 shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="flex-1 text-[13.5px] text-heading">{value}</dd>
-    </div>
+    </>
   );
 }

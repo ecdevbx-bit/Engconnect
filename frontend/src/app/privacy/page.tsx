@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <InfoPageShell
       title="Privacy Policy"
-      updated="22 June 2026"
+      updated="29 October 2026"
       intro="This Privacy Policy explains what personal data English Connection collects, why we collect it, how we use and protect it, and the choices and rights you have. It is written to align with India's Digital Personal Data Protection Act, 2023 (DPDP Act)."
     >
       <Section title="1. Who we are">
@@ -43,6 +43,7 @@ export default function PrivacyPage() {
             <><strong className="text-heading">Learning data</strong> — your lessons, scores, XP, levels, streaks, badges, and progress.</>,
             <><strong className="text-heading">Audio</strong> — voice recordings you submit for pronunciation feedback, processed to score your speech.</>,
             <><strong className="text-heading">Conversations with K.AI</strong> — the text transcript of your voice practice (not the audio). It is summarised so K.AI remembers your progress; for Pro members K.AI also keeps a short memory note about you. You can delete any conversation or clear K.AI&apos;s memory under AI Partner → History &amp; memory. On a computer, the live captions of what you say use your browser&apos;s built-in speech recognition (in Chrome, Google processes it); nothing from it is stored.</>,
+            <><strong className="text-heading">Payments</strong> — when you buy Pro: the amount, the time, the payment status and the UPI reference number (UTR) your bank gives us, so we can confirm and, if needed, refund it. The checkout page may ask for your mobile number to verify you. We never see your UPI PIN, card or bank login.</>,
             <><strong className="text-heading">Usage & device data</strong> — app interactions, device type, and basic analytics to improve the Service.</>,
           ]}
         />

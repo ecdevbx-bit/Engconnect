@@ -149,7 +149,7 @@ export default function Profile() {
       ) : (
         <div className="space-y-6">
           {/* ── Identity + progress ── */}
-          <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
             {/* Identity card */}
             <div className="c-box rounded-2xl px-6 py-3 sm:px-8 sm:py-6">
               <div className="flex flex-row items-center gap-4 text-left sm:gap-6">

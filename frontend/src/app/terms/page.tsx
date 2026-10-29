@@ -11,7 +11,7 @@ export default function TermsPage() {
   return (
     <InfoPageShell
       title="Terms of Service"
-      updated="22 June 2026"
+      updated="29 October 2026"
       intro="These Terms of Service (the &ldquo;Terms&rdquo;) are an agreement between you and English Connection and govern your use of our website and apps (the &ldquo;Service&rdquo;). By using the Service, you agree to these Terms."
     >
       <Section title="1. Acceptance of terms">
@@ -40,12 +40,17 @@ export default function TermsPage() {
         />
       </Section>
 
-      <Section title="4. Subscriptions & payments">
-        <p>
-          Some features require a paid subscription. Prices, billing cycle (e.g. monthly), and what&apos;s included
-          are shown at the point of purchase. Subscriptions renew automatically unless cancelled before the renewal
-          date. Except where required by law, payments are non-refundable.
-        </p>
+      <Section title="4. Pro, payments & refunds">
+        <Bullets
+          items={[
+            "Pro is a one-time payment for a fixed number of days, shown with the price before you pay. It does not renew by itself; paying again adds the same number of days on top of any Pro time you still have.",
+            "Prices and discounts are shown on the Pro page and can change. A discount applies only to payments started while it is shown. The price you saw when you started the payment is the price you pay.",
+            "Payments are made by UPI on our own checkout page, straight to our bank account. We never see your UPI PIN or bank login. The checkout may ask you to verify your mobile number.",
+            "Pro unlocks once we can confirm the payment with our bank. This is usually quick but can take up to 3 working days. Until then the Pro page shows your payment as being confirmed.",
+            "Refunds: if you were charged but Pro did not unlock within 3 working days, or you were charged twice for one purchase, write to us from Help with your UPI reference number (UTR) and we will refund the amount to the account it came from within 7 working days. Once Pro has been unlocked, payments are non-refundable except where the law requires otherwise.",
+            "Payments can be paused at any time. If buying is switched off, Pro time you have already paid for is not affected.",
+          ]}
+        />
       </Section>
 
       <Section title="5. Acceptable use">

@@ -68,11 +68,8 @@ export function usePronunciationEnabled(): boolean {
   return useFlagWithDefault(FLAG_PRONUNCIATION, true);
 }
 
-export const FLAG_LANG_CAROUSEL = "englishconnection-lang-carousel";
-
-export function useLangCarouselEnabled(): boolean {
-  return useFlagWithDefault(FLAG_LANG_CAROUSEL, true);
-}
+// (englishconnection-lang-carousel is no longer read: onboarding uses plain
+// tap tiles on every screen, D-060.)
 
 export const FLAG_WORD_BANK = "englishconnection-word-bank";
 

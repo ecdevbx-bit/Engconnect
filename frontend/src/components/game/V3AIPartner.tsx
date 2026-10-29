@@ -5,17 +5,15 @@
 // token). Kept as a separate file so the v1 code is untouched.
 
 import { useSession } from "@/lib/session";
-import { storageSeen } from "@/lib/safeStorage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HelpCircle, History } from "lucide-react";
+import { HelpCircle, History, X } from "lucide-react";
 import Link from "next/link";
 import { useNextStep } from "nextstepjs";
 import { cn } from "@/lib/utils";
 import {
   AI_PARTNER_TOUR_NAME,
   AI_PARTNER_TOUR_QUERY,
-  AI_PARTNER_TOUR_SEEN_KEY,
 } from "./aiPartnerTour";
 import { fromSessionUser } from "@/lib/displayUser";
 import VoiceAgent from "./voiceAgent/VoiceAgent";
@@ -39,6 +37,7 @@ import { PixelMascot } from "@/components/v3/PixelMascot";
 import { SolveCelebration } from "@/components/v3/SolveCelebration";
 
 import { SpeechProgressCard } from "./aiPartner/SpeechProgressCard";
+import { AUTO_LANGUAGE } from "@/lib/aiPartnerOptions";
 import SessionSetup, {
   defaultSetup,
   loadSavedSetup,
@@ -50,32 +49,6 @@ import SessionSetup, {
 // Fallback session length used until the per-session rewards config
 // arrives. Admin can tune the real value via /v3/admin/ai-partner.
 const DEFAULT_TOTAL_SECONDS = 10 * 60;
-
-// Start-card tiles. The XP copy is built from the admin's reward config
-// (returned by /chat/usage) so it can never drift from what's awarded.
-function buildInstructions(rewards: V3AIUsage["rewards"]) {
-  const everyMin = rewards ? Math.max(1, Math.round(rewards.recurringIntervalSeconds / 60)) : 1;
-  const earnBody = rewards
-    ? `+${rewards.thresholdXp} XP after ${rewards.thresholdSeconds}s of talking, then +${rewards.recurringXp} XP every ${
-        rewards.recurringIntervalSeconds % 60 === 0 ? `${everyMin} min` : `${rewards.recurringIntervalSeconds}s`
-      } you speak.`
-    : "Earn XP for every minute you spend speaking.";
-  return [
-    {
-      icon: FaMicrophone,
-      title: "Just talk",
-      body: "No buttons — speak naturally and K.AI answers when you pause. Talk over it any time to interrupt. Tap the mic to mute.",
-    },
-    { icon: FaHourglassHalf, title: "Earn as you speak", body: earnBody },
-    {
-      icon: FaRobot,
-      title: "Free-flowing",
-      body: "There's no script. Talk about anything — K.AI follows your lead.",
-    },
-    // The 4th tile is rendered dynamically in the start card — it shows the
-    // remaining AI-Partner time for the current window (see the usage fetch).
-  ];
-}
 
 // Each mascot mood maps onto one of three short cues: an upbeat lift for
 // positive replies, a gentle fall for tender ones, a soft tick otherwise.
@@ -109,26 +82,20 @@ function formatMinutesLeft(seconds: number) {
   return `${mins} min`;
 }
 
-export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: string }) {
+export default function V3AIPartner() {
   const { data: session } = useSession();
   const user = fromSessionUser(session?.user);
   const accessToken = session?.user?.accessToken ?? null;
-  // The user's profile native language (source of truth for the per-
-  // session picker default). Falls back to English when not yet set.
-  const profileLang = nativeLanguage ?? session?.user?.nativeLang ?? "English";
-
   // Session setup (language K.AI mixes with English, level, practice mode,
   // voice) — like ENGAI's controls. Until the learner changes something the
   // defaults follow their profile language; their last choice is remembered
   // on this device. Baked into the Gemini token at session start.
   const [savedSetup, setSavedSetup] = useState<SessionSetupValue | null>(() => loadSavedSetup());
-  const setup = savedSetup ?? defaultSetup(profileLang);
+  const setup = savedSetup ?? defaultSetup();
   const updateSetup = (v: SessionSetupValue) => {
     setSavedSetup(v);
     saveSetup(v);
   };
-  const lang = setup.language;
-  const langLabel = lang === "English" ? "English" : `${lang} + English`;
 
   // "Continue this conversation" from History (Pro, D-047): /dashboard/ai-partner?continue=<id>.
   // Captured once — the server checks it's the learner's own finished chat.
@@ -191,7 +158,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
   } = useGeminiLiveSession({
     enabled: started && !isSessionEnded,
     accessToken,
-    nativeLanguage: lang,
+    // K.AI picks the language from how the learner talks (D-059).
+    nativeLanguage: AUTO_LANGUAGE,
     level: setup.level,
     scenario: setup.scenario,
     voice: setup.voice,
@@ -371,6 +339,15 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     if (continueFrom && typeof window !== "undefined") window.history.replaceState(null, "", "/dashboard/ai-partner");
   };
 
+  // End call (✕ beside the mic): close the conversation now — it is saved and
+  // digested like any other — and go back to the start card.
+  const handleEndCall = () => {
+    closeChat();
+    setContinueFrom(null);
+    setEndedAck(false);
+    setStarted(false);
+  };
+
   const handleRetry = () => {
     primeAudio();
     setContinueFrom(null);
@@ -451,8 +428,9 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
 
   useEffect(() => {
     if (!started) return;
-    const seen = storageSeen(AI_PARTNER_TOUR_SEEN_KEY);
-    const shouldStart = tourFlag === "1" || !seen;
+    // Only on request (the ? button / ?tour=1) — never by itself: on phones the
+    // auto-started tour covered the screen (D-060).
+    const shouldStart = tourFlag === "1";
     if (!shouldStart) return;
 
     // Let the active-session anchors paint before highlighting them.
@@ -475,11 +453,14 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
 
   if (!started && needsOnboarding) {
     return (
-      <div className="flex min-h-[calc(100dvh-10rem)] items-center justify-center py-6">
+      // Same sizing as the chat below: fills the screen between the navbars on
+      // phones, so the wizard's Next bar is always visible.
+      <div className="-mb-28 flex h-[calc(100dvh_-_9.75rem_-_env(safe-area-inset-bottom))] justify-center md:mb-0 md:h-auto md:max-h-[calc(100dvh-10rem)] md:items-center md:py-6">
         <OnboardingWizard
           onComplete={() => setOnboardingSkipped(true)}
           onSkip={() => setOnboardingSkipped(true)}
           eyebrowOverride="Before you meet K.AI"
+          className="h-full rounded-2xl md:h-auto md:max-h-[min(720px,calc(100dvh-12rem))] md:max-w-2xl"
         />
       </div>
     );
@@ -489,14 +470,18 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
     return (
       <div className="flex min-h-[calc(100dvh-10rem)] items-center justify-center py-3">
         <div className="c-box w-full max-w-2xl rounded-2xl px-6 py-6 text-center sm:px-12 sm:py-7">
-          {/* Past conversations + what K.AI remembers (Pro; others see the Pro card there). */}
-          <div className="-mt-2 mb-2 flex justify-end sm:-mr-6">
+          {/* Mascot + title, and History (Pro; others see the Pro card there). */}
+          <div className="mb-4 flex items-center gap-3 text-left">
+            <div className="anim-bubble-bob shrink-0">
+              <PixelMascot emotion="greeting" size={144} className="!h-14 !w-14 sm:!h-20 sm:!w-20" />
+            </div>
+            <h1 className="min-w-0 flex-1 text-2xl font-bold text-gradient sm:text-3xl">Talk to K.AI</h1>
             <Link
               href="/dashboard/ai-partner/history"
               className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2 px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
             >
               <History className="h-4 w-4" />
-              History &amp; memory
+              History
             </Link>
           </div>
 
@@ -519,44 +504,8 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
             </div>
           )}
 
-          {/* Mascot + intro copy side by side on EVERY view (mascot left, text
-              adjacent). The mascot scales down on phones (!w/!h override the
-              component's inline size) so the row fits a narrow screen. */}
-          <div className="mb-5 flex flex-row items-center justify-center gap-4 text-left sm:gap-7">
-            <div className="anim-bubble-bob shrink-0">
-              <PixelMascot emotion="greeting" size={144} className="!h-24 !w-24 sm:!h-36 sm:!w-36" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-                AI Partner
-              </p>
-              <h1 className="mt-1 text-2xl font-bold text-gradient sm:mt-2 sm:text-4xl">Meet K.AI</h1>
-              <p className="mt-2 max-w-md text-[13px] leading-5 text-muted-foreground sm:mt-3 sm:text-[14px] sm:leading-6">
-                Talk in English, judgement-free. K.AI listens, fixes your mistakes
-                and keeps you talking.
-              </p>
-            </div>
-          </div>
-
-          {/* How it works, in three chips (the time left is under Start). */}
-          <ul className="mt-4 flex flex-wrap justify-center gap-2 text-left">
-            {buildInstructions(usage?.rewards).map((item) => {
-              const Icon = item.icon;
-              return (
-                <li
-                  key={item.title}
-                  title={item.body}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-surface-2/40 px-3 py-1.5 text-[12px] font-semibold text-heading"
-                >
-                  <Icon className="text-[13px] text-primary" />
-                  {item.title}
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* Session setup: language, level, practice mode, voice. */}
-          <SessionSetup value={setup} onChange={updateSetup} profileLang={profileLang} />
+          {/* Session setup: level, practice mode, voice. */}
+          <SessionSetup value={setup} onChange={updateSetup} />
 
           {usage && usage.capSeconds > 0 && usage.remainingSeconds <= 0 ? (
             // Window spent — block the start and point free users to Pro.
@@ -579,20 +528,20 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
               )}
             </div>
           ) : (
-            <>
+            <div className="sticky bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-10 -mx-6 mt-4 rounded-b-2xl bg-gradient-to-t from-surface-1 via-surface-1/95 to-transparent px-6 pb-1 pt-4 md:static md:mx-0 md:bg-none md:p-0">
               <button
                 type="button"
                 onClick={handleStart}
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-primary-1 to-primary-2 px-10 py-3.5 text-[15px] font-bold text-primary-foreground shadow-[0_14px_38px_-8px_rgba(15,23,42,0.6)] transition hover:opacity-90 active:scale-[0.98]"
+                className="mt-2 inline-flex w-full justify-center md:w-auto items-center gap-2 rounded-full bg-gradient-to-br from-primary-1 to-primary-2 px-10 py-3.5 text-[15px] font-bold text-primary-foreground shadow-[0_14px_38px_-8px_rgba(15,23,42,0.6)] transition hover:opacity-90 active:scale-[0.98]"
               >
                 ▶ Start session
               </button>
               <p className="mt-2 text-[12px] text-muted-foreground">
                 {usage && usage.capSeconds > 0
-                  ? `${formatMinutesLeft(usage.remainingSeconds)} left ${usage.pro ? "today" : "this week"} · ${langLabel}`
-                  : `${Math.round((usage?.rewards?.sessionSeconds ?? DEFAULT_TOTAL_SECONDS) / 60)}-minute session · ${langLabel}`}
+                  ? `${formatMinutesLeft(usage.remainingSeconds)} left ${usage.pro ? "today" : "this week"}`
+                  : `${Math.round((usage?.rewards?.sessionSeconds ?? DEFAULT_TOTAL_SECONDS) / 60)}-minute session`}
               </p>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -633,7 +582,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
             setContinueFrom(null);
             setStarted(false);
           }}
-          title="Change language, mode or voice (starts a new conversation)"
+          title="Change level, mode or voice (starts a new conversation)"
           className="ml-auto rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
         >
           Change setup
@@ -939,7 +888,7 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                         )}
                       </div>
 
-                      {/* Mute button — the only control in a hands-free call. */}
+                      {/* Mute — the main control in a hands-free call. */}
                       <div className="relative grid shrink-0 place-items-center">
                         <MicLevelRing active={isMicActive} getAnalyser={mic.getAnalyser} />
                         <button
@@ -963,11 +912,21 @@ export default function V3AIPartner({ nativeLanguage }: { nativeLanguage?: strin
                           )}
                         </button>
                       </div>
+
+                      {/* End call. */}
+                      <button
+                        type="button"
+                        onClick={handleEndCall}
+                        aria-label="End call"
+                        title="End call"
+                        className="grid h-12 w-12 shrink-0 select-none place-items-center rounded-full bg-red-500 text-white shadow-[0_8px_22px_-6px_rgba(239,68,68,0.6)] transition hover:bg-red-600 active:scale-95 sm:h-14 sm:w-14"
+                      >
+                        <X className="h-6 w-6" strokeWidth={2.75} />
+                      </button>
                     </div>
 
                     {/* Desktop hint: Space mutes / unmutes. */}
                     <p className="mt-1.5 hidden text-center text-[11px] text-muted-foreground sm:block">
-                      Just talk — K.AI answers when you pause. Press{" "}
                       <kbd className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[10px] text-heading">
                         Space
                       </kbd>{" "}

@@ -160,8 +160,9 @@ const REASON_LABEL: Record<string, string> = {
   other: "personal growth",
 };
 
-// `sessionLanguage` is what the learner picked on the start card:
-// "English" (English only) or any listed language (that language + English).
+// `sessionLanguage` is "Auto" (D-059: K.AI matches the language the learner is
+// comfortable in) or, for sessions started before that, what they picked:
+// "English" (English only) or a listed language (that language + English).
 // `scenario` is one of AI_PARTNER_SCENARIOS (role-play mode). `materialSeed`
 // picks today's material from the mode's bank (stored on the session so a
 // reconnect gets the same questions).
@@ -171,7 +172,8 @@ export function buildSystemPrompt(
   scenario = "General Conversation",
   materialSeed = 1,
 ): string {
-  const codeMix = sessionLanguage !== "English";
+  const auto = sessionLanguage === "Auto";
+  const codeMix = !auto && sessionLanguage !== "English";
   const levelId = normalizeLevel(ctx.level);
   const lv = LEVEL_INSTRUCTIONS[levelId];
   const mode = modeFor(scenario);
@@ -184,7 +186,19 @@ export function buildSystemPrompt(
     ? `${ph.correctIntro} — '[wrong]' nahi, '[correct]'. ${ph.tryAgain}`
     : `${ph.correctIntro} — '[wrong]' isn't quite right, say '[correct]'. ${ph.tryAgain}`;
 
-  const language = codeMix
+  const language = auto
+    ? `LANGUAGE — MATCH THE LEARNER (you decide, nobody picked one)
+* You teach English: the sentences you model and every correction are always in English.
+* Open in simple, warm English. Then follow how they actually talk:
+  - They answer comfortably in English → stay in English.
+  - They answer in ${native} or another language, mix it with English (Hinglish etc.), or clearly don't follow you → move to a blend: their language for warmth, quick explanations and meanings, English for everything they practise.
+  - They ask for a language ("Hindi mein bolo", "only English please") → do exactly that from then on.
+* Keep adjusting: as they get comfortable, use more English; if they get lost, use more of their language.
+* Speak their language the way they speak it (the same everyday mix), never a formal textbook version.
+* Their mother tongue (${native}) is only a hint — follow what they speak. If your notes say which language they are comfortable in, start with that.
+* Never ask which language they prefer and never announce a switch — just do it.
+${lv.blend("their language")}`
+    : codeMix
     ? `LANGUAGE — THE 70/30 BALANCE
 * ${ph.ratioRule}
 * 70% English for the teaching, 30% ${sessionLanguage} for warmth and quick explanations.
@@ -304,7 +318,12 @@ SPOKEN FORMAT — STRICT
 
 export function buildKickoff(ctx: LearnerContext, sessionLanguage: string, scenario = "General Conversation"): string {
   const firstName = ctx.name.trim().split(/\s+/)[0] ?? "";
-  const lang = sessionLanguage === "English" ? "English only" : `${sessionLanguage} + English blend`;
+  const lang =
+    sessionLanguage === "Auto"
+      ? "language: start in simple English, then match the learner"
+      : sessionLanguage === "English"
+        ? "English only"
+        : `${sessionLanguage} + English blend`;
   const returning = (ctx.memory?.sessions ?? 0) > 0;
   const mode =
     scenario === "General Conversation"

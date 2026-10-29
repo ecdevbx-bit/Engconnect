@@ -11,8 +11,8 @@ import { LEVEL_INSTRUCTIONS, normalizeLevel } from "../gemini/instructions/level
 import { buildKickoff, buildSystemPrompt, type LearnerContext } from "../gemini/tutorPrompt";
 import { isAdminEmail, requireUser, type AuthedUser } from "../guards";
 import {
+  AUTO_LANGUAGE,
   DEFAULT_AI_PARTNER_VOICE,
-  isKnownLanguage,
   isKnownScenario,
   isKnownVoice,
 } from "@/lib/aiPartnerOptions";
@@ -389,7 +389,9 @@ export function registerChatRoutes(r: Router) {
     // Learner-chosen options, validated against the shared allow-lists.
     const pick = (v: unknown, ok: (x: string) => boolean, fallback: string) =>
       typeof v === "string" && ok(v.trim()) ? v.trim() : fallback;
-    const language = pick(body.language, isKnownLanguage, "English");
+    // K.AI picks the language from how the learner talks (D-059); a language
+    // sent by an old cached page is ignored.
+    const language = AUTO_LANGUAGE;
     const level = normalizeLevel(typeof body.level === "string" ? body.level.trim() : "");
     const scenario = pick(body.scenario, isKnownScenario, "General Conversation");
     const voice = pick(body.voice, isKnownVoice, DEFAULT_AI_PARTNER_VOICE);

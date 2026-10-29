@@ -37,7 +37,7 @@ export const GAME_THEMES: Record<ThemeId, GameTheme> = {
     id: "plain",
     label: "Plain",
     emoji: "",
-    placeholder: "Arrange the words in the right order",
+    placeholder: "Tap the words in order",
     tilePool: "rounded-lg bg-surface-2 border-white/10 text-heading",
     tileSentence: "rounded-lg bg-surface-3 border-primary/40 text-heading",
     bobTiles: false,
@@ -52,7 +52,7 @@ export const GAME_THEMES: Record<ThemeId, GameTheme> = {
     label: "Train",
     emoji: "🚂",
     // The build happens inline below the yard; the bottom band IS the train.
-    placeholder: "Arrange the words in the right order",
+    placeholder: "Tap the words in order",
     // Warm wooden tiles — light-toned in light mode, deep wood in dark.
     tilePool:
       "rounded-md bg-gradient-to-b from-[#efe2cd] to-[#e2cfae] border-amber-700/30 text-amber-900 dark:from-[#3b3025] dark:to-[#2a221b] dark:border-amber-600/40 dark:text-amber-100",

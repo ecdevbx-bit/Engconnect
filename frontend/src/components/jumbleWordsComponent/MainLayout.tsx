@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { storageSeen } from "@/lib/safeStorage";
 import dynamic from "next/dynamic";
 import { HiSpeakerWave } from "react-icons/hi2";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -29,7 +28,6 @@ import { useNextStep } from "nextstepjs";
 import {
     JUMBLE_TOUR_NAME,
     JUMBLE_TOUR_QUERY,
-    JUMBLE_TOUR_SEEN_KEY,
 } from "./jumbleTour";
 
 import { useGlowBorder } from "@/hooks/useGlowBorder";
@@ -219,13 +217,13 @@ export default function MainLayout() {
 
     // Auto-launch the walkthrough once questions are on screen if either:
     //   (a) the URL carries ?tour=1 (deep-link from the "How to play" CTA), or
-    //   (b) the player has never seen the tour on this browser.
-    // The query param is stripped afterwards so a reload won't re-trigger.
+        // The query param is stripped afterwards so a reload won't re-trigger.
     const tourFlag = searchParams?.get(JUMBLE_TOUR_QUERY);
     useEffect(() => {
         if (loading || !authReady || sentences.length === 0) return;
-        const seen = storageSeen(JUMBLE_TOUR_SEEN_KEY);
-        const shouldStart = tourFlag === "1" || !seen;
+        // Only on request (the ? button / ?tour=1) — never by itself: on phones the
+        // auto-started tour covered the screen (D-060).
+        const shouldStart = tourFlag === "1";
         if (!shouldStart) return;
 
         // Let the DOM paint the freshly-mounted anchors before highlighting.
