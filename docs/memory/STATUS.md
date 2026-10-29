@@ -20,7 +20,7 @@
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
   (wiki: operations/monitoring, D-044). **Verified working in production 2026-09-24** (`scripts/sentry-check.mjs`).
 
-## Session 6 (2026-10-29) 🔧 — NOT committed yet
+## Session 6 (2026-10-29) 🔧 — deployed `960bad9` READY, production smoke **32/32**
 - **K.AI picks the language itself** (D-059): no language picker; sessions are `Auto`; K.AI opens in English
   and follows the learner (probe: Hinglish learner → Hinglish with English practice lines; English learner →
   English only). Memory notes the language they're comfortable in.
@@ -35,6 +35,9 @@
 - Checks: `tsc` ✓, eslint on changed files ✓ (only old errors left), production build ✓, local smoke
   31/32 (the Resend check needs the key, prod-only). Not checked: admin → Payments page visually (needs an
   admin sign-in), a real YouPI gateway / real UPI payment, real-phone feel.
+- Production: `/api/payments/offer` answers `enabled:false` (no `YOUPI_WEBHOOK_SECRET` on Vercel yet) — payments stay off.
+- Owner asked where YouPI can run: needs an always-on Node 24 host with a disk (small Linux VPS in Mumbai, or an
+  always-on home PC + Cloudflare Tunnel) plus an Android phone with the bank SIM for the SMS observer. Not Vercel.
 
 ## Session 5 (2026-10-28) 🔧
 - Found email sign-ups and password resets failing for real learners (Resend 550 → Supabase rolled back the
