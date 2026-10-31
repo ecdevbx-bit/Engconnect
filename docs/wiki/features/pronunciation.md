@@ -3,7 +3,7 @@ title: Pronunciation Coach
 type: feature
 tags: [trainer, pronunciation, gemini, r2]
 links: [features/word-bank, features/progress-and-rewards, features/premium, architecture/gemini-key-pool, architecture/storage-r2, architecture/api]
-updated: 2026-09-22
+updated: 2026-10-31
 ---
 
 # Pronunciation Coach
@@ -30,6 +30,9 @@ Four steps, shown in a side stepper:
    "+XP", level-up, badges; ≥80 % celebrates.
    With the Word Bank flag on, words can be dragged into the wallet ([[features/word-bank]]).
 4. **Improve** — "Words to revisit" (tap to hear slowly) + tip cards → **Next sentence**.
+5. **Try again** (Feedback and Improve, D-067) — the same sentence again, from Listen. The main button
+   under 80 %, otherwise next to Next sentence. Free learners get 3 tries per sentence per day ("2 more
+   tries on this sentence today"); a retry doesn't use another free sentence. Pro: no limit.
 "Sentence X of 12" is a client-side counter. The side panel shows attempts and best % (last 50).
 
 ## How scoring works (`frontend/src/server/gemini/scoring.ts`)
@@ -66,9 +69,11 @@ Four steps, shown in a side stepper:
 ## Rules
 - Phrase choice: per-learner cursor per band; moves past a phrase once it's scored, so "Next
   sentence" is always new (`sessionOffset` from the client is informational only).
-- XP = round(base × accuracy), base easy **20** / medium **30** / hard **40**; once per phrase
-  per IST day. Combo continues at ≥ 80 %, else resets. XP tier: HIGH ≥80, MID ≥55, else NEEDS_REVIEW.
-- Free quota: **3 scored attempts per band per day** → `DAILY_QUOTA_REACHED` on `GET /phrases`.
+- XP = round(base × accuracy), base easy **20** / medium **30** / hard **40**; per phrase per IST
+  day the **best** try counts — a better retry pays only the difference, a worse one nothing (D-067). Combo continues at ≥ 80 %, else resets. XP tier: HIGH ≥80, MID ≥55, else NEEDS_REVIEW.
+- Free quota: **3 sentences per band per day** → `DAILY_QUOTA_REACHED` on `GET /phrases`; retries of the
+  same sentence don't count, but max 3 tries per sentence per day (`TRIES_PER_PHRASE`; the attempt
+  response has `triesLeft`, null for Pro). Probe: `scripts/pronunciation-retry-probe.mjs`.
 - Recording kept in **R2** (`pronunciation/<user>/<attempt>.wav`) after the response is sent — only
   if R2 is configured; **not needed for scoring** and currently off (D-036, [[architecture/storage-r2]]).
 

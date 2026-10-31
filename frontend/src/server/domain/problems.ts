@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db, must } from "../supabase";
+import { istDate } from "./users";
 
 export type ProblemRow = {
   id: number;
@@ -95,4 +96,32 @@ export async function claimDailyReward(userId: string, problemId: number, xp: nu
     .select("problem_id");
   if (error) throw new Error(`claim reward: ${error.message}`);
   return (data ?? []).length > 0;
+}
+
+// Pronunciation retries: today's reward for a problem is the BEST score, so a
+// better retry pays the difference (D-067). Returns the XP to pay now (0 when
+// this try is no better). Optimistic on the stored xp, so two submits racing
+// can't both be paid the same difference.
+export async function claimBestDailyReward(userId: string, problemId: number, xp: number): Promise<number> {
+  if (xp <= 0) return 0;
+  if (await claimDailyReward(userId, problemId, xp)) return xp;
+  const day = istDate(new Date());
+  const row = must(
+    await db().from("problem_rewards").select("xp").eq("user_id", userId).eq("problem_id", problemId).eq("day", day).maybeSingle(),
+    "load reward",
+  ) as { xp: number } | null;
+  const before = row?.xp ?? 0;
+  if (xp <= before) return 0;
+  const updated = must(
+    await db()
+      .from("problem_rewards")
+      .update({ xp })
+      .eq("user_id", userId)
+      .eq("problem_id", problemId)
+      .eq("day", day)
+      .eq("xp", before)
+      .select("problem_id"),
+    "raise reward",
+  ) as unknown[];
+  return updated.length > 0 ? xp - before : 0;
 }

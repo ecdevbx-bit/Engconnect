@@ -794,3 +794,18 @@
   0.27–0.34 s, headphones 0.21–0.29 s, phone ducking 6 dB 0.27–0.33 s, loud speakers 0.06–0.21 s; no barge-in
   on K.AI's echo alone (even as loud as the learner), a 150 ms cough, a "mm" or two knocks. Not covered: a very
   quiet mic on a phone that turns the learner down 6 dB (blocked in 3 of 8). Real phone + laptop test needed.
+
+## D-067 · Pronunciation: "Try again" on the same sentence; the best try of the day counts — 2026-10-31
+- Owner: "in pronunciation, if the pronunciation is not that correct or if the student wants to retry".
+- Before: after scoring, the only way on was "Next sentence"; a second try on a sentence (not reachable from
+  the UI) would have used another free sentence and paid 0 XP (XP was once per sentence per day, first try).
+- Now: **Try again** on Feedback and Improve sends the learner back to Listen with the same sentence (the
+  "Sentence X of 12" counter doesn't move). Under 80 % it is the main button; at ≥ 80 % "Next sentence" is.
+- Server (`routes/pronunciation.ts`): a retry = an earlier scored try on this sentence today. It doesn't take
+  a new free sentence (quota counts sentences, not tries). Free learners get **3 tries per sentence per day**
+  (each try is two model calls) → the 4th answers `DAILY_QUOTA_REACHED`; the response carries `triesLeft`
+  (null for Pro, who have no limit) and the UI hides Try again at 0. XP: `claimBestDailyReward()` keeps the
+  day's best — a better retry pays only the difference (optimistic update on `problem_rewards.xp`), a worse
+  one pays nothing. Combo follows each try as before.
+- Proof: `scripts/pronunciation-retry-probe.mjs` all ✓ locally (80 % → +16 XP, retry 100 % → +4 XP, 80 % → +0,
+  4th refused, one free sentence used). Phone layout checked at 375 px.

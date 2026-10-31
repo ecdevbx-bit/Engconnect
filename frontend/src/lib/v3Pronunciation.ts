@@ -105,6 +105,8 @@ export type PronunciationAttemptResult = {
   tips: PronunciationTip[];
   // XP / progression
   xpEarned: number;
+  /** Tries left on this sentence today; null/absent = no limit (Pro). */
+  triesLeft?: number | null;
   totalXp: number;
   currentLevel: number;
   leveledUp: boolean;

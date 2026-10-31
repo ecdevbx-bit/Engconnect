@@ -209,3 +209,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-31] fix | K.AI speaks the learner's known language from the greeting; notes can't force English-only; memory never logs mixing as a mistake (D-065, [[features/ai-partner]], [[features/k-ai-instructions]])
 
 ## [2026-10-31] fix | Barge-in: syllable-window rule + D-062 steady rule; D-062 alone never let real speech through with good echo cancelling (D-066, [[features/ai-partner]])
+
+## [2026-10-31] feature | Pronunciation "Try again": same sentence, 3 tries/day free, best try's XP counts, retries don't use a free sentence (D-067, [[features/pronunciation]])

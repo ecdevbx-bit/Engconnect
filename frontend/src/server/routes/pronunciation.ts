@@ -2,8 +2,8 @@ import "server-only";
 
 import { after } from "next/server";
 
-import { activeProblems, claimDailyReward, findProblem, parseDifficulty } from "../domain/problems";
-import { awardProgress, bumpUsage, getAttributes, isPro, refundUsage, reserveUsage, setCursor, usageToday } from "../domain/users";
+import { activeProblems, claimBestDailyReward, findProblem, parseDifficulty } from "../domain/problems";
+import { awardProgress, bumpUsage, getAttributes, istDate, isPro, refundUsage, reserveUsage, setCursor, usageToday } from "../domain/users";
 import { scorePronunciation, speechStats } from "../gemini/scoring";
 import { requireUser } from "../guards";
 import { ApiFailure, fail, int, ok, readJson, str } from "../http";
@@ -19,14 +19,18 @@ import { db, must } from "../supabase";
 //    past a phrase when an attempt on it is scored, so "Next sentence" always
 //    lands on a fresh phrase (sessionOffset from the client is informational).
 //  * Scoring: Gemini judges each expected word; accuracy = correct / total.
-//  * XP = round(base × accuracy), base easy 20 · medium 30 · hard 40; paid at
-//    most once per phrase per IST day. Combo continues at ≥ 80 %.
-//  * Free learners: N scored attempts per difficulty per day (admin quota).
+//  * XP = round(base × accuracy), base easy 20 · medium 30 · hard 40; per
+//    phrase per IST day the best try counts — a better retry pays the
+//    difference (D-067). Combo continues at ≥ 80 %.
+//  * Free learners: N sentences per difficulty per day (admin quota). Retrying
+//    the same sentence doesn't use another one; up to TRIES_PER_PHRASE tries
+//    per sentence per day (each try is two model calls). Pro: no limit.
 //  * Recordings are kept in Cloudflare R2 when configured.
 
 type PDifficulty = "easy" | "medium" | "hard";
 const BASE_XP: Record<PDifficulty, number> = { easy: 20, medium: 30, hard: 40 };
 const MAX_AUDIO_BYTES = 6 * 1024 * 1024;
+const TRIES_PER_PHRASE = 3;
 
 const bucket = (d: PDifficulty) => `pronunciation:${d}`;
 
@@ -120,6 +124,20 @@ export function registerPronunciationRoutes(r: Router) {
     ]);
     if (!p) throw fail.notFound("That sentence no longer exists. Load a new one.");
 
+    // Earlier scored tries on this sentence today: a retry doesn't take a new
+    // free sentence, but free learners get TRIES_PER_PHRASE tries per sentence.
+    const { count: triedToday, error: triedErr } = await db()
+      .from("pronunciation_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", u.id)
+      .eq("problem_id", p.id)
+      .gte("created_at", `${istDate(new Date())}T00:00:00+05:30`);
+    if (triedErr) throw new Error(`count tries: ${triedErr.message}`);
+    const tried = triedToday ?? 0;
+    if (!pro && tried >= TRIES_PER_PHRASE) {
+      throw fail.quota(`You've tried this sentence ${TRIES_PER_PHRASE} times today. Try the next one.`);
+    }
+
     const buf = Buffer.from(await audio.arrayBuffer());
     const mime = sniffAudio(buf, audio.type);
 
@@ -136,7 +154,7 @@ export function registerPronunciationRoutes(r: Router) {
     // Free quota is taken BEFORE scoring (each attempt is two model calls), and
     // given back if scoring fails. Pro / unlimited are just counted afterwards.
     const cap = quotas.pronunciationPerDifficultyPerDay;
-    const limited = cap > 0 && !pro;
+    const limited = cap > 0 && !pro && tried === 0;
     if (limited && !(await reserveUsage(u.id, bucket(d), cap))) {
       throw fail.quota(`You've used today's free ${d} sentences. Try another level or come back tomorrow.`);
     }
@@ -157,8 +175,7 @@ export function registerPronunciationRoutes(r: Router) {
     }
     const accuracyPercent = Math.floor(score.accuracy * 100);
     const baseXp = Math.round(BASE_XP[d] * score.accuracy);
-    const paid = baseXp > 0 ? await claimDailyReward(u.id, p.id, baseXp) : false;
-    const xp = paid ? baseXp : 0;
+    const xp = await claimBestDailyReward(u.id, p.id, baseXp);
 
     const attemptId = crypto.randomUUID();
     const ext = EXT[mime] ?? "bin";
@@ -170,7 +187,7 @@ export function registerPronunciationRoutes(r: Router) {
         const idx = list.findIndex((x) => x.id === p.id);
         if (idx >= 0) await setCursor(u.id, bucket(d), (idx + 1) % list.length);
       }),
-      limited ? Promise.resolve() : bumpUsage(u.id, bucket(d)),
+      limited || tried > 0 ? Promise.resolve() : bumpUsage(u.id, bucket(d)),
       awardProgress({
         userId: u.id,
         game: "pronunciation",
@@ -229,6 +246,8 @@ export function registerPronunciationRoutes(r: Router) {
       durationMs,
       tips: score.tips,
       xpEarned: xp,
+      // null = no limit (Pro).
+      triesLeft: pro ? null : Math.max(0, TRIES_PER_PHRASE - tried - 1),
       totalXp: progress.totalXp,
       currentLevel: progress.currentLevel,
       leveledUp: progress.leveledUp,

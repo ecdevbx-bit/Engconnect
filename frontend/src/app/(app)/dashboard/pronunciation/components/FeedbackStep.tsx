@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Bot, ChevronDown, Sparkles, Volume2, Zap } from "lucide-react";
+import { Bot, ChevronDown, RotateCcw, Sparkles, Volume2, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -236,16 +236,22 @@ export function FeedbackStep({
   result,
   onContinue,
   onNext,
+  onRetry,
   demo = false,
 }: {
   result: PronunciationAttemptResult;
   onContinue: () => void;
   onNext: () => void;
+  /** Same sentence again; no button without it (landing demo). */
+  onRetry?: () => void;
   /** Landing-demo mode: hides the bottom AI-Feedback callout card. */
   demo?: boolean;
 }) {
   const meta = pronunciationFeedbackMeta(result);
   const missed = (result.words ?? []).filter((w) => w.status !== "CORRECT");
+  const canRetry = !!onRetry && result.triesLeft !== 0;
+  // Under "Great job" (80 %), trying the same sentence again is the main action.
+  const retryFirst = canRetry && result.accuracyPercent < 80;
 
   return (
     <div>
@@ -353,19 +359,41 @@ export function FeedbackStep({
         </div>
       )}
 
+      {/* Phones: the main action full width on top, the others under it. */}
       <div
         className={cn(
-          "mt-6 flex flex-wrap items-center gap-3",
-          demo ? "justify-between" : "justify-end",
+          "mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center",
+          demo ? "sm:justify-between" : "sm:justify-end",
         )}
       >
-        <Button onClick={onContinue} size="lg" variant="secondary">
+        <Button onClick={onContinue} size="lg" variant="ghost">
           See tips
         </Button>
-        <Button onClick={onNext} size="lg">
+        {canRetry && (
+          <Button
+            onClick={onRetry}
+            size="lg"
+            variant={retryFirst ? "default" : "secondary"}
+            className={retryFirst ? "order-first col-span-2 sm:order-last" : undefined}
+          >
+            <RotateCcw className="h-4 w-4" />
+            Try again
+          </Button>
+        )}
+        <Button
+          onClick={onNext}
+          size="lg"
+          variant={retryFirst ? "secondary" : "default"}
+          className={retryFirst ? undefined : "order-first col-span-2 sm:order-last"}
+        >
           Next sentence →
         </Button>
       </div>
+      {canRetry && typeof result.triesLeft === "number" && (
+        <p className="mt-2 text-center text-xs text-muted-foreground sm:text-right">
+          {result.triesLeft} more {result.triesLeft === 1 ? "try" : "tries"} on this sentence today · a better score adds XP
+        </p>
+      )}
     </div>
   );
 }

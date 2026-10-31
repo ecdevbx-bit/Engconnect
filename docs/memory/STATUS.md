@@ -62,6 +62,11 @@
   8 random voices (`scripts/barge-in-sim.mjs`): ~0.2–0.35 s on phones/headphones, no false barge-in on echo
   alone, a 150 ms cough, a "mm" or knocks. Still blocked: a very quiet mic on a phone that ducks the learner.
   Real-device check needed. tsc ✓, eslint ✓.
+- **Pronunciation "Try again"** (D-067, not deployed yet) — owner: "if the pronunciation is not that correct or the
+  student wants to retry". Try again on Feedback + Improve (main button under 80 %) → same sentence from Listen;
+  free: 3 tries per sentence per day, a retry doesn't use a free sentence; the day's best try's XP counts (a better
+  retry pays the difference). `scripts/pronunciation-retry-probe.mjs` all ✓ locally; layout checked at 375 px.
+  tsc ✓, eslint ✓ (one old error in PronunciationCoach.tsx, line 232, untouched).
 - Mute does NOT pause — the call and the clock keep running, no audio is sent (a real pause with auto-end was
   offered, not built).
 - Owner asked where YouPI can run: needs an always-on Node 24 host with a disk (small Linux VPS in Mumbai, or an

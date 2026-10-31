@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Sparkles, Volume2 } from "lucide-react";
+import { RotateCcw, Sparkles, Volume2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,9 +16,11 @@ import { PronunciationAttemptResult } from "@/lib/v3Pronunciation";
 export function ImproveStep({
   result,
   onNext,
+  onRetry,
 }: {
   result: PronunciationAttemptResult;
   onNext: () => void;
+  onRetry: () => void;
 }) {
   const [speakingWord, setSpeakingWord] = useState<string | null>(null);
 
@@ -89,7 +91,13 @@ export function ImproveStep({
         ))}
       </div>
 
-      <div className="mt-8 flex justify-end">
+      <div className="mt-8 flex flex-wrap justify-end gap-3">
+        {result.triesLeft !== 0 && (
+          <Button onClick={onRetry} size="lg" variant="secondary">
+            <RotateCcw className="h-4 w-4" />
+            Try again
+          </Button>
+        )}
         <Button onClick={onNext} size="lg">
           Next sentence →
         </Button>

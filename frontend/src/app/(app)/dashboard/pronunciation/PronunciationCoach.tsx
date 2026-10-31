@@ -131,9 +131,9 @@ function DemoStage({ demoStep }: { demoStep: CoachStep }) {
         />
       );
     case "feedback":
-      return <FeedbackStep result={DEMO_RESULT} onContinue={demoNoop} onNext={demoNoop} demo />;
+      return <FeedbackStep result={DEMO_RESULT} onContinue={demoNoop} onNext={demoNoop} onRetry={demoNoop} demo />;
     case "improve":
-      return <ImproveStep result={DEMO_RESULT} onNext={demoNoop} />;
+      return <ImproveStep result={DEMO_RESULT} onNext={demoNoop} onRetry={demoNoop} />;
     default:
       return null;
   }
@@ -317,6 +317,15 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
     void loadPhrase(difficulty, next - 1);
   }, [difficulty, loadPhrase, phraseIndex]);
 
+  // Same sentence again (D-067): back to Listen so they can hear it first.
+  // The counter doesn't move; the server pays only an improvement.
+  const onRetry = useCallback(() => {
+    setResult(null);
+    setCelebrating(false);
+    recorder.reset();
+    setStep("listen");
+  }, [recorder]);
+
   const sessionLabel = useMemo(() => `Sentence ${phraseIndex} of ${SESSION_SIZE}`, [phraseIndex]);
   // GameStatsCard reads Level/XP/combo straight from Redux, which onSubmit
   // keeps fresh (syncFromBackend + setCombo) — no local override needed here.
@@ -393,13 +402,14 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
                 result={result}
                 onContinue={() => setStep("improve")}
                 onNext={onNext}
+                onRetry={onRetry}
               />
             )}
             {wordBankOn && !loadingPhrase && phrase && step === "feedback" && result && (
               <PronunciationWordWallet sentence={phrase.sentence} accessToken={accessToken} />
             )}
             {!loadingPhrase && phrase && step === "improve" && result && (
-              <ImproveStep result={result} onNext={onNext} />
+              <ImproveStep result={result} onNext={onNext} onRetry={onRetry} />
             )}
               </>
             )}
