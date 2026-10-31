@@ -49,7 +49,7 @@ type Mistake = { wrong: string; correct: string; why?: string; count: number; la
 type Vocab = { word: string; meaning?: string; lastSeen: string };
 
 const TRANSCRIPT_NOTE =
-  "The learner's speech is auto-transcribed and may contain recognition noise — ignore obvious transcription glitches. Only the LEARNER's mistakes count, never K.AI's.";
+  "The learner's speech is auto-transcribed and may contain recognition noise — ignore obvious transcription glitches. Only the LEARNER's mistakes count, never K.AI's. Speaking their own language or mixing it with English is welcome: never list it as a mistake, a challenge, a goal or a next-time task — just note which language they were comfortable in.";
 
 const NO_SECRETS =
   "Never record phone numbers, email or street addresses, passwords, ID or bank numbers — leave them out entirely.";
@@ -447,6 +447,7 @@ ${MEMORY_SECTIONS}
 - "Mistakes to keep an eye on": recurring patterns as "wrong → right", most frequent first, at most 6.
 - "Words they've learnt": at most 12, comma-separated on one or two lines.
 - "About them": include the language they are comfortable speaking (English, Hinglish, Tamil + English…) when the material shows it.
+- Using their own language or mixing it with English is welcome. Never write it as a challenge, goal, mistake or next-time task ("avoid code-switching", "without switching to Hindi", "all in English"); delete any such line already in the file. Only note "English only" if the learner asked for it.
 - "Next time": 1–3 concrete follow-ups (their plans to ask about, a mistake to re-check, a topic to try).
 - Only facts from the material below — never invent. ${NO_SECRETS}
 

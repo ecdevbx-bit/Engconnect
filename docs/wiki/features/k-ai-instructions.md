@@ -24,6 +24,7 @@ pasted into the system prompt that the server locks into the Gemini Live token
 |---|---|
 | **Beginner** (A0–A1) | Speaks **softly and slowly** with pauses; only very common words; one idea per sentence; gives the sentence and says "say with me"; checks understanding with yes/no questions; accepts answers in the learner's language and turns them into English; explains only the ONE most important mistake per turn but always models a fully correct sentence; a "say it after me" repeat is the only ask in that reply; up to half the learner's language for explanations (if a blend was chosen); replies under ~25 words |
 | **Intermediate** (A2–B1) | Friendly, slightly slower than native; pushes full sentences, past/future, one new phrase at a time; corrects every error briefly with a one-line reason and asks for a repeat; 70/30 blend; under 35 words |
+| _Auto calls (D-065)_ | `autoMix` replaces the blend: Beginner ~half their language, Intermediate some in every reply (Hinglish-style), Expert mostly English but starts in their language when they use it |
 | **Expert** (B2–C1) | Natural confident pace; opinions, comparisons, "argue the other side"; idioms, phrasal verbs, collocations, tone; corrects subtle errors fast and suggests more natural phrasing; English almost only; under 45 words |
 
 "Advanced" was renamed **Expert**; old saved setups and sessions are mapped automatically.

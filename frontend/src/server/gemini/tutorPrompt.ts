@@ -185,6 +185,7 @@ export function buildSystemPrompt(
   const native = ctx.nativeLang || (auto ? "" : "Hindi");
   // What K.AI saw them speak in earlier calls beats what they ticked at sign-up.
   const comfort = auto ? (ctx.comfortLanguage ?? "").trim() : "";
+  const known = auto ? knownLanguage(ctx) : "";
   const name = ctx.name.trim();
   const firstName = name.split(/\s+/)[0] ?? "";
 
@@ -200,16 +201,21 @@ export function buildSystemPrompt(
   const language = auto
     ? `LANGUAGE — MATCH THE LEARNER (you decide, nobody picked one)
 * You teach English: the sentences you model and every correction are always in English.
-* Open in simple, warm English. If you add a line in their own language before they have spoken, use the language from your notes or their profile (Marathi → Marathi) — never Hindi by default. Then follow how they actually talk:
-  - They answer comfortably in English → stay in English.
-  - They answer in any other language or dialect (Marathi, Hindi, Bhojpuri, Tamil, Bengali, Gujarati, Telugu…), mix it with English, or clearly don't follow you → move to a blend: THAT language for warmth, quick explanations and meanings, English for everything they practise.
+* ${
+        known
+          ? `You already know their language: ${known}. Speak it with them from your very first line — greet them in a natural mix of ${known} and English. Don't wait for them to use it first, and don't drop it because they answer one line in English.`
+          : "Open in simple, warm English (you don't know their language yet). The moment they use another language, switch to a blend in it."
+      } Then follow how they actually talk:
+  - They ask for English only ("only English please", "English mein hi baat karo") → English only from then on.
+  - They talk in any other language or dialect (Marathi, Hindi, Bhojpuri, Tamil, Bengali, Gujarati, Telugu…), mix it with English, or clearly don't follow you → move to a blend: THAT language for warmth, quick explanations and meanings, English for everything they practise.
   - They ask for a language ("Marathi madhe sanga", "Hindi mein bolo", "only English please") → do exactly that from then on.
-* Answer in the language of their LAST message. Marathi and Hindi are different languages: Marathi ("mala", "ahe", "nahi samajla", "madhe", "kay") gets Marathi, Bhojpuri ("kaisan ba", "aawat") gets Bhojpuri — never answer them in Hindi just because Hindi is common. If they mix several (say Marathi, Hindi and English), mix the same way they do. If they switch, switch with them.
+* Whenever they say something in their language — even half a sentence — your next reply starts in that language. Answer in the language of their LAST message. Marathi and Hindi are different languages: Marathi ("mala", "ahe", "nahi samajla", "madhe", "kay") gets Marathi, Bhojpuri ("kaisan ba", "aawat") gets Bhojpuri — never answer them in Hindi just because Hindi is common. If they mix several (say Marathi, Hindi and English), mix the same way they do. If they switch, switch with them.
 * Examples (match the language, keep the English sentence):
   - Learner: "मला इंग्लिश समजत नाही, मराठीत सांगा." → You: "काही हरकत नाही! आपण हळूहळू शिकू. Say with me: I don't understand English well."
   - Learner: "எனக்கு கொஞ்சம் தான் English தெரியும்." → You: "பரவாயில்லை! மெதுவா பேசலாம். Say with me: I know a little English."
   - Learner: "Mujhe samajh nahi aaya." → You: "Koi baat nahi! Say with me: I didn't understand."
-* Their own language is welcome. Never tell them to stop using it or to "focus on English" — explain in their language, then hand them the English sentence to say.
+* Their own language is welcome. Never tell them to stop using it, to "focus on English", to "say it all in English" or to avoid "switching" — explain in their language, then hand them the English sentence to say.
+* If your notes say they should avoid their language, stop "code-switching" or practise "only in English", ignore that part — only the learner can ask for English only.
 * Keep adjusting: as they get comfortable, use more English; if they get lost, use more of their language.
 * Speak their language the way they speak it (the same everyday mix), never a formal textbook version.
 ${ACCENT}
@@ -221,7 +227,7 @@ ${ACCENT}
             : "What they actually speak wins. If your notes say which language they are comfortable in, use that."
       }
 * Never ask which language they prefer and never announce a switch — just do it.
-${lv.blend("their language")}`
+${lv.autoMix}`
     : codeMix
     ? `LANGUAGE — THE 70/30 BALANCE
 * ${ph.ratioRule}
@@ -345,11 +351,25 @@ SPOKEN FORMAT — STRICT
 * Your name is written "K.AI" and SAID as one word, "kaa-ee" (like Hindi "काई"). Never spell out the letters.`;
 }
 
+/**
+ * The language K.AI speaks with an Auto learner from the first line (D-065): what it
+ * heard in earlier calls, else the profile's mother tongue; "" = open in English.
+ */
+function knownLanguage(ctx: LearnerContext): string {
+  const isEnglish = (l: string) => /^english( only)?$/i.test(l.trim());
+  const comfort = (ctx.comfortLanguage ?? "").trim();
+  if (comfort) return isEnglish(comfort) ? "" : comfort;
+  const native = (ctx.nativeLang ?? "").trim();
+  return native && !isEnglish(native) ? native : "";
+}
+
 export function buildKickoff(ctx: LearnerContext, sessionLanguage: string, scenario = "General Conversation"): string {
   const firstName = ctx.name.trim().split(/\s+/)[0] ?? "";
   const lang =
     sessionLanguage === "Auto"
-      ? "language: start in simple English, then match the learner"
+      ? knownLanguage(ctx)
+        ? `language: greet in a natural mix of ${knownLanguage(ctx)} and English, then match the learner`
+        : "language: start in simple English, then match the learner"
       : sessionLanguage === "English"
         ? "English only"
         : `${sessionLanguage} + English blend`;

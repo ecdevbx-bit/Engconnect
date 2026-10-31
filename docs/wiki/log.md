@@ -205,3 +205,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-29] feature | K.AI follows the language heard in earlier calls (comfort_language for everyone), answers Marathi in Marathi (D-063, [[features/ai-partner]])
 
 ## [2026-10-31] fix | K.AI accent rule: Indian English + native pronunciation of Hindi/Marathi; no "Roman letters" for Beginners (D-064, [[features/ai-partner]])
+
+## [2026-10-31] fix | K.AI speaks the learner's known language from the greeting; notes can't force English-only; memory never logs mixing as a mistake (D-065, [[features/ai-partner]], [[features/k-ai-instructions]])

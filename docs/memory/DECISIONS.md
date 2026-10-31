@@ -754,3 +754,24 @@
 - Probes (text turns, Beginner): Marathi profile → Marathi greeting and replies; English learner → English only.
   Text replies may now use the native script (Devanagari); live captions come from Google's transcription anyway.
   The accent itself is not measurable here — owner to listen.
+
+## D-065 · K.AI speaks the learner's own language from the first line; notes can't force English-only — 2026-10-31
+- Owner: "K.AI is speaking only in English, it should speak in the user's language". Supersedes the "open in English,
+  stay in English if they answer in English" part of D-059.
+- Evidence (owner's own calls, profile Hindi, comfort "Hindi + English", Intermediate): "क्या पूछूं, क्या नहीं पूछूं?"
+  and "matlab bahut kuch aisa enjoy" were answered in English, and K.AI asked him to "try to do it all in English".
+  Three causes: (1) his Pro memory file listed "Eliminate code-switching to Hindi" as a goal and "without switching
+  to Hindi" as next time — written by the compaction model, then fed into the locked prompt; (2) Intermediate's
+  blend was "mostly English, the language for warmth only", Expert's "English almost entirely"; (3) one English
+  answer ("It's good. How about you?") kept K.AI in English.
+- Now (`tutorPrompt.ts`): `knownLanguage()` = what K.AI heard in earlier calls, else the profile's mother tongue
+  (English / "" → none). With a known language K.AI greets in a natural mix of it and English (the kickoff says so
+  too) and doesn't drop it after one English line; without one it opens in English and switches when they do. Any
+  line in their language → the next reply starts in it. Only the learner can ask for English only; notes saying
+  "avoid code-switching / only English" are ignored. Never "say it all in English".
+- `levels.ts` `autoMix` (Auto calls only; old X + English sessions keep `blend`): Beginner about half, Intermediate
+  some in every reply (Hinglish-style), Expert mostly English but starts in their language when they use it.
+- `memory.ts`: digest and memory-file rules — speaking their own language or mixing is welcome, never a mistake,
+  challenge, goal or next-time task; such lines are deleted on the next merge.
+- Probes (Intermediate, Hindi profile, the owner's lines): Hinglish greeting and Hindi in every reply, also with a
+  seeded "Eliminate code-switching to Hindi" memory file (`PROBE_MEMORY_MD`); no known language → English only.

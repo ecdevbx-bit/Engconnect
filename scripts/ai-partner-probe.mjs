@@ -71,6 +71,11 @@ try {
   if (process.env.PROBE_NATIVE) {
     await fetch(`${SB}/rest/v1/profiles?id=eq.${userId}`, { method: "PATCH", headers: { ...admin, Prefer: "return=minimal" }, body: JSON.stringify({ native_lang: process.env.PROBE_NATIVE }) });
   }
+  // PROBE_MEMORY_MD="## About them…" makes the throwaway user Pro for a day and seeds K.AI's memory file.
+  if (process.env.PROBE_MEMORY_MD) {
+    await fetch(`${SB}/rest/v1/profiles?id=eq.${userId}`, { method: "PATCH", headers: { ...admin, Prefer: "return=minimal" }, body: JSON.stringify({ premium_until: new Date(Date.now() + 86400e3).toISOString() }) });
+    await fetch(`${SB}/rest/v1/learner_memory`, { method: "POST", headers: { ...admin, Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify({ user_id: userId, memory_md: process.env.PROBE_MEMORY_MD, memory_md_updated_at: new Date().toISOString(), sessions: 3 }) });
+  }
   if (process.env.PROBE_COMFORT) {
     await fetch(`${SB}/rest/v1/learner_memory`, { method: "POST", headers: { ...admin, Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify({ user_id: userId, comfort_language: process.env.PROBE_COMFORT }) });
   }

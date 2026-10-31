@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T08:29:20.500Z",
+  "generatedAt": "2026-10-31T08:47:52.200Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -837,6 +837,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-065",
+      "title": "K.AI speaks the learner's own language from the first line; notes can't force English-only",
+      "type": "decision",
+      "date": "2026-10-31",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1251,6 +1259,11 @@
     },
     {
       "source": "features/ai-partner",
+      "target": "D-065",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
       "target": "D-032",
       "kind": "cites"
     },
@@ -1357,6 +1370,11 @@
     {
       "source": "features/k-ai-instructions",
       "target": "D-032",
+      "kind": "cites"
+    },
+    {
+      "source": "features/k-ai-instructions",
+      "target": "D-065",
       "kind": "cites"
     },
     {
@@ -2030,6 +2048,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-065",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2392,6 +2415,11 @@
     {
       "source": "memory/status",
       "target": "D-064",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-065",
       "kind": "cites"
     },
     {

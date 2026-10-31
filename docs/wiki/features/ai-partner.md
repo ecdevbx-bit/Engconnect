@@ -26,7 +26,9 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
      language they actually spoke (`learner_memory.comfort_language`, e.g. "Marathi + English") and the
      next call uses that instead (D-063). It answers in the language of the learner's last message
      (Marathi ≠ Hindi); the live model still sometimes takes Devanagari Marathi for Hindi. English is spoken with an
-     Indian English accent, Indian languages like a native speaker would (D-064). Sessions store `language = 'Auto'`; a language sent by an old page is ignored.
+     Indian English accent, Indian languages like a native speaker would (D-064). When K.AI knows their language
+     (earlier calls, else the profile) it speaks it from the greeting on, at every level; old notes can't force
+     English-only and mixing is never written down as a mistake (D-065). Sessions store `language = 'Auto'`; a language sent by an old page is ignored.
    - **Level**: Beginner / Intermediate / Expert — each has its own instruction block (Beginner = soft,
      slow voice, very simple words, "say with me"); the chosen level's description shows under the
      pills. See [[features/k-ai-instructions]].

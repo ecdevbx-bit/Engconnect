@@ -26,6 +26,8 @@ export type LevelInstruction = {
   correction: string;
   /** How much of the learner's own language to use when K.AI blends it in. */
   blend: (language: string) => string;
+  /** Auto calls (D-065): how much of the learner's own language to use once K.AI knows it. */
+  autoMix: string;
   /** Hard limit for each reply. */
   replyLength: string;
   /** Extra line for the very first greeting. */
@@ -57,6 +59,8 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
     blend: (language) =>
       `* Use more of ${language} than usual for explanations and comfort (up to half), but keep the practice sentences in English.
 * Explain the meaning of a new English word in ${language}, then say the English word again slowly.`,
+    autoMix:
+      "* About half of each reply in their language (meanings, comfort, the question), the practice sentence in English. Explain every new English word in their language.",
     replyLength:
       "1–2 very short sentences with ONE simple question OR one 'say with me' task (never both) — under 20 words. You may repeat a question in their language right after the English.",
     greeting:
@@ -80,6 +84,8 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
 * Prioritise errors that change meaning or repeat often (tenses, did + base verb, articles, prepositions).`,
     blend: (language) =>
       `* Keep the 70/30 balance: mostly English, ${language} for warmth and quick clarifications only.`,
+    autoMix:
+      "* Every reply has some of their language, mixed the way they mix (like Hinglish): their language for reactions, meanings and quick explanations, English for the question and the practice sentence.",
     replyLength: "1–2 short spoken sentences, under 25 words, ending with one open question or task.",
     greeting: "Greet them naturally and get them talking about something real in their life.",
     pauseMs: 1300,
@@ -99,6 +105,8 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
 * Keep corrections fast and light (one line), then continue the discussion.`,
     blend: (language) =>
       `* Use English almost entirely. Use ${language} only if they are clearly stuck or ask for a translation.`,
+    autoMix:
+      "* Mostly English, but when they say something in their language, start your reply in it (a few words), then carry on in English.",
     replyLength: "1–2 natural sentences, under 30 words, ending with a thought-provoking question.",
     greeting: "Greet them confidently and open with an interesting question.",
     pauseMs: 1000,
