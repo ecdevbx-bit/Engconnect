@@ -42,8 +42,9 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 4. **Start session** → K.AI greets by name (and opens the chosen practice mode).
 5. **Just talk — hands-free, like GPT voice mode** (D-039): the mic opens by itself when the call
    connects; K.AI answers when the learner pauses (longer pause allowed for Beginners); talking over
-   K.AI interrupts it — when the voice is clearly above K.AI's echo on that device and ≥ 40 % of the
-   learner's usual level for 200 ms (D-062; a fixed bar used to block quiet mics). Controls: **mute** (mic button or Space) and a red **✕ End call** beside it,
+   K.AI interrupts it — 180 ms of voice within any 450 ms above K.AI's echo peaks on that device, or 200 ms
+   of steady voice over the echo on loud speakers (D-066; D-062's one-run rule never filled up on real,
+   syllable-shaped speech). Simulation: `scripts/barge-in-sim.mjs`. Controls: **mute** (mic button or Space) and a red **✕ End call** beside it,
    which ends the conversation (saved and digested as usual) and returns to the start card (D-060). Mute keeps the mic open and
    just stops sending, so a phone never switches audio mode mid-call (K.AI's volume used to drop) (D-054).
    **Live captions** (D-054): K.AI's words appear as they are spoken (bubble + one-line caption in the

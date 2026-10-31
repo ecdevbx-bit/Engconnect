@@ -54,6 +54,14 @@
   mixing as a mistake/goal (and deletes such lines on the next merge). Probes (Intermediate, Hindi): Hinglish greeting
   + Hindi in every reply, also with an "eliminate code-switching" memory file; no known language → English.
   `ai-partner-probe.mjs` gained `PROBE_MEMORY_MD`. tsc ✓, eslint ✓.
+- After `4847916` (local, **not committed yet**): **interrupting K.AI fixed again** (D-066) — owner: "I can't interrupt
+  in the middle of its speaking". A simulation with syllable-shaped speech showed D-062's gate NEVER let a learner
+  through with good echo cancelling, a quiet mic, headphones or a phone that turns them down (each dip between
+  syllables took back 2× what the loud part earned); D-062 was tested on a steady voice. Now a syllable rule
+  (180 ms of voice in any 450 ms, over K.AI's echo peaks) OR the old steady rule (loud speakers). Simulated over
+  8 random voices (`scripts/barge-in-sim.mjs`): ~0.2–0.35 s on phones/headphones, no false barge-in on echo
+  alone, a 150 ms cough, a "mm" or knocks. Still blocked: a very quiet mic on a phone that ducks the learner.
+  Real-device check needed. tsc ✓, eslint ✓.
 - Mute does NOT pause — the call and the clock keep running, no audio is sent (a real pause with auto-end was
   offered, not built).
 - Owner asked where YouPI can run: needs an always-on Node 24 host with a disk (small Linux VPS in Mumbai, or an

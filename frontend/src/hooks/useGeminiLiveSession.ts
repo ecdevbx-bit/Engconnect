@@ -53,31 +53,40 @@ const REPLY_TIMEOUT_MS = 15_000;
 const MAX_RECONNECTS = 4;
 const HISTORY_REPLAY_TURNS = 12;
 // Echo gate: while K.AI's audio plays, mic frames are sent as silence unless
-// the learner is barging in for BARGE_CONFIRM_MS in a row (one loud frame used
-// to be enough, so a cough, a "mm" or K.AI's own echo cut K.AI off — ~10 % of
-// its replies in October). Once confirmed, frames pass for BARGE_HOLD_MS so
-// Gemini hears the learner and interrupts K.AI.
-// The bar is relative, measured on this device (D-062): above K.AI's own echo
-// (learned while it plays) × BARGE_ECHO_RATIO and above BARGE_VOICE_SHARE of
-// the learner's usual level. It used to be a fixed RMS 0.05 — with the browser's
-// auto-gain off (D-054) many phone/laptop mics put a normal voice at 0.02–0.04,
-// so learners could not interrupt at all. The echo part is capped at
-// BARGE_ECHO_CAP of their voice, so a loud echo estimate can't lock them out.
-const BARGE_MIN_RMS = 0.015;
-const BARGE_ECHO_RATIO = 2.5; // ≈ 8 dB over the echo
-const BARGE_ECHO_CAP = 0.8;
-const BARGE_VOICE_SHARE = 0.4;
-const BARGE_CONFIRM_MS = 200;
+// the learner is barging in (one loud frame used to be enough, so a cough, a
+// "mm" or K.AI's own echo cut K.AI off — ~10 % of its replies in October).
+// Once confirmed, frames pass for BARGE_HOLD_MS so Gemini hears the learner and
+// interrupts K.AI. Two rules; either one confirms (D-066):
+// * Syllable rule: BARGE_NEED_MS of frames over the bar within the last
+//   BARGE_WINDOW_MS. Speech rises and falls with every syllable, so a rule that
+//   needs one unbroken run never filled up on a phone or headphones with good
+//   echo cancelling — learners could not interrupt at all. The bar is above
+//   the PEAKS of K.AI's echo × BARGE_PEAK_RATIO and BARGE_VOICE_SHARE of their
+//   usual level (phones turn the learner down while K.AI plays).
+// * Steady rule (D-062): STEADY_CONFIRM_MS over the bar, losing 2× for every
+//   frame under it. On loud speakers K.AI's echo fills the learner's syllable
+//   dips, so this one is faster there. Its bar is above the echo's quiet level
+//   × STEADY_ECHO_RATIO (capped at STEADY_ECHO_CAP of their voice, so a loud
+//   echo can't lock them out) and above STEADY_VOICE_SHARE of their voice.
+// A 150 ms cough, a "mm" or K.AI's echo alone pass neither (simulated).
+const BARGE_MIN_RMS = 0.008;
+const BARGE_PEAK_RATIO = 1.6; // ≈ 4 dB over the echo's peaks
+const BARGE_VOICE_SHARE = 0.2;
+const BARGE_NEED_MS = 180;
+const BARGE_WINDOW_MS = 450;
+const STEADY_MIN_RMS = 0.015;
+const STEADY_ECHO_RATIO = 2.5; // ≈ 8 dB over the echo's quiet level
+const STEADY_ECHO_CAP = 0.8;
+const STEADY_VOICE_SHARE = 0.4;
+const STEADY_CONFIRM_MS = 200;
 const BARGE_HOLD_MS = 1500;
-const ECHO_START_RMS = 0.03;
 
-// The bar a mic frame must clear to count towards a barge-in.
-export function bargeThreshold(echoRms: number, voiceRms: number): number {
-  return Math.max(
-    BARGE_MIN_RMS,
-    Math.min(echoRms * BARGE_ECHO_RATIO, voiceRms * BARGE_ECHO_CAP),
-    voiceRms * BARGE_VOICE_SHARE,
-  );
+// The bars a mic frame must clear: [syllable rule, steady rule].
+export function bargeThresholds(echoPeak: number, echoFloor: number, voiceRms: number): [number, number] {
+  return [
+    Math.max(BARGE_MIN_RMS, echoPeak * BARGE_PEAK_RATIO, voiceRms * BARGE_VOICE_SHARE),
+    Math.max(STEADY_MIN_RMS, Math.min(echoFloor * STEADY_ECHO_RATIO, voiceRms * STEADY_ECHO_CAP), voiceRms * STEADY_VOICE_SHARE),
+  ];
 }
 const POLL_MS = 100;
 // Caption pieces are shown this far ahead of their audio (reading lag).
@@ -254,11 +263,15 @@ export function useGeminiLiveSession({
   const mutedRef = useRef(false);
   const micBusyRef = useRef(false);
   const bargeUntilRef = useRef(0);
-  const bargeMsRef = useRef(0);
-  // K.AI's own voice as it reaches the mic (after echo cancellation), learned
-  // while it plays. Starts high (cautious) and drops to the real echo within
-  // ~0.5 s, so loud speakers don't count as a barge-in before it's learned.
-  const echoRmsRef = useRef(ECHO_START_RMS);
+  // Syllable rule: recent frames while K.AI plays, [duration ms, over the bar?].
+  const bargeFramesRef = useRef<[number, boolean][]>([]);
+  // Steady rule: ms over its bar (minus 2× for frames under it).
+  const steadyMsRef = useRef(0);
+  // K.AI's own voice as it reaches the mic (after echo cancelling), learned
+  // while it plays from frames under the bar: its peaks (up in ~160 ms, down
+  // over 1.5 s) and its quiet level (down fast, up over 1.5 s).
+  const echoPeakRef = useRef(0.02);
+  const echoFloorRef = useRef(0.03);
   const speakingMsRef = useRef(0);
   const usageRef = useRef({ promptTokens: 0, responseTokens: 0 });
   const pendingTurnsRef = useRef<Turn[]>([]);
@@ -517,22 +530,41 @@ export function useGeminiLiveSession({
     const mic = new MicPcmStream();
     micRef.current = mic;
     mic.gate = (rms, frameMs) => {
+      const frames = bargeFramesRef.current;
       if (!playerRef.current?.isPlaying()) {
-        bargeMsRef.current = 0;
+        frames.length = 0;
+        steadyMsRef.current = 0;
         return true;
       }
       const now = performance.now();
       if (now < bargeUntilRef.current) return true;
-      if (rms > bargeThreshold(echoRmsRef.current, mic.voiceLevel)) {
-        bargeMsRef.current += frameMs;
-      } else {
-        bargeMsRef.current = Math.max(0, bargeMsRef.current - frameMs * 2);
-        // Learn the echo: follow it down fast, up over ~1.5 s.
-        const e = echoRmsRef.current;
-        echoRmsRef.current = e + (rms - e) * (rms > e ? frameMs / 1500 : 0.05);
+      const [bar, steadyBar] = bargeThresholds(echoPeakRef.current, echoFloorRef.current, mic.voiceLevel);
+      const over = rms > bar;
+      if (!over) {
+        const e = echoPeakRef.current;
+        echoPeakRef.current = e + (rms - e) * Math.min(1, frameMs / (rms > e ? 160 : 1500));
       }
-      if (bargeMsRef.current < BARGE_CONFIRM_MS) return false;
-      bargeMsRef.current = 0;
+      if (rms > steadyBar) {
+        steadyMsRef.current += frameMs;
+      } else {
+        steadyMsRef.current = Math.max(0, steadyMsRef.current - frameMs * 2);
+        const e = echoFloorRef.current;
+        echoFloorRef.current = e + (rms - e) * (rms > e ? frameMs / 1500 : 0.05);
+      }
+      frames.push([frameMs, over]);
+      let span = 0;
+      let voiced = 0;
+      for (let i = frames.length - 1; i >= 0; i--) {
+        span += frames[i][0];
+        if (span > BARGE_WINDOW_MS) {
+          frames.splice(0, i + 1);
+          break;
+        }
+        if (frames[i][1]) voiced += frames[i][0];
+      }
+      if (voiced < BARGE_NEED_MS && steadyMsRef.current < STEADY_CONFIRM_MS) return false;
+      frames.length = 0;
+      steadyMsRef.current = 0;
       bargeUntilRef.current = now + BARGE_HOLD_MS;
       // Gemini only reports `interrupted` while it is still generating; once
       // the reply is complete, stop the rest of its playback ourselves.

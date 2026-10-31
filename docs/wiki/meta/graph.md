@@ -9,7 +9,7 @@ updated: 2026-10-31
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(93 nodes · 333 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(94 nodes · 337 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -194,7 +194,7 @@ flowchart LR
 | [[architecture/storage-r2]] | D-036 |
 | [[architecture/system]] | D-002 |
 | [[features/admin]] | D-023, D-018, D-042, D-031, D-061 |
-| [[features/ai-partner]] | D-060, D-059, D-063, D-064, D-065, D-032, D-048, D-039, D-062, D-054, D-052, D-053, D-056, D-047, D-049, D-033 |
+| [[features/ai-partner]] | D-060, D-059, D-063, D-064, D-065, D-032, D-048, D-039, D-066, D-062, D-054, D-052, D-053, D-056, D-047, D-049, D-033 |
 | [[features/jumble-words]] | D-060, D-043 |
 | [[features/k-ai-instructions]] | D-032, D-065, D-059 |
 | [[features/learn]] | D-042 |
@@ -202,7 +202,7 @@ flowchart LR
 | [[features/pronunciation]] | D-038, D-035, D-057, D-036 |
 | [[features/support]] | D-029, D-034 |
 | [[index]] | D-061 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058, D-059, D-060, D-061, D-062, D-063, D-064, D-065 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058, D-059, D-060, D-061, D-062, D-063, D-064, D-065, D-066 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023, D-044 |
 | [[operations/deployment]] | D-022 |
@@ -279,6 +279,7 @@ flowchart LR
 | D-063 | Language matching follows what K.AI heard in earlier calls, not only the sign-up answer | active | [[features/ai-partner]] [[log]] [[memory/status]] |
 | D-064 | K.AI speaks Indian English and says Indian languages like a native speaker | active | [[features/ai-partner]] [[log]] [[memory/status]] |
 | D-065 | K.AI speaks the learner's own language from the first line; notes can't force English-only | active | [[features/ai-partner]] [[features/k-ai-instructions]] [[log]] [[memory/status]] |
+| D-066 | Barge-in counts voice within a window (syllable rule), plus the old steady rule | active | [[features/ai-partner]] [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

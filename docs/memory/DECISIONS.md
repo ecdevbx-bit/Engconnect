@@ -775,3 +775,22 @@
   challenge, goal or next-time task; such lines are deleted on the next merge.
 - Probes (Intermediate, Hindi profile, the owner's lines): Hinglish greeting and Hindi in every reply, also with a
   seeded "Eliminate code-switching to Hindi" memory file (`PROBE_MEMORY_MD`); no known language → English only.
+
+## D-066 · Barge-in counts voice within a window (syllable rule), plus the old steady rule — 2026-10-31
+- Owner (after D-062 was live): "I can't interrupt in the middle of its speaking". Partly supersedes D-062's
+  detector (its relative bars stay as the steady rule).
+- Cause, found by simulating speech with real syllable shape (~4 syllables/s, 15–20 dB between peak and dip, gaps
+  between words): D-062 needed 200 ms over the bar while every frame under it took back 2× its length. Speech
+  dips under 40 % of the learned (peak-leaning) voice level between syllables, so the count never reached 200 ms
+  — blocked in every case with good echo cancelling (normal or quiet mic, headphones, a phone that ducks the
+  learner). D-062's own simulation used a steady voice, which hid this. On loud speakers it still worked
+  because K.AI's echo fills the dips.
+- Now (`useGeminiLiveSession.ts`, `bargeThresholds()`): a barge-in is confirmed by EITHER
+  - syllable rule: ≥ 180 ms of frames over max(0.008, echo peaks × 1.6, voice × 0.2) within the last 450 ms; the
+    echo-peak estimate learns from frames under the bar (up ~160 ms, down 1.5 s; starts 0.02); no cap — a cap at
+    0.8 × voice let K.AI's own echo through when it was as loud as the learner; or
+  - steady rule (D-062 unchanged): 200 ms over max(0.015, min(echo floor × 2.5, voice × 0.8), voice × 0.4).
+- Simulated over 8 random voices (`scripts/barge-in-sim.mjs`): good echo cancelling 0.19–0.24 s, quiet mic
+  0.27–0.34 s, headphones 0.21–0.29 s, phone ducking 6 dB 0.27–0.33 s, loud speakers 0.06–0.21 s; no barge-in
+  on K.AI's echo alone (even as loud as the learner), a 150 ms cough, a "mm" or two knocks. Not covered: a very
+  quiet mic on a phone that turns the learner down 6 dB (blocked in 3 of 8). Real phone + laptop test needed.
