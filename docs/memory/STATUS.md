@@ -42,7 +42,7 @@
   answers Marathi in Marathi when the profile/notes say so (D-063; the live model still sometimes reads
   Devanagari Marathi as Hindi); checkout sends `X-Merchant-Key` for a non-default merchant (payments probe 14/14);
   YouPI cloud-server guide in the wiki (`operations/youpi-gateway`). tsc ✓, eslint ✓.
-- After `4ee4142` (local, **not committed yet**): **accent rule** (D-064) — K.AI speaks English with an Indian
+- **Deployed `292fe02` READY, production smoke 32/32 (2026-10-31): accent rule** (D-064) — K.AI speaks English with an Indian
   English accent and Hindi/Marathi/other languages like a native speaker; Beginner no longer says "Roman letters";
   a line in the learner's language before they speak uses the profile/notes language, not Hindi. Probes (text):
   Marathi learner → Marathi greeting + replies, English learner → English only. The accent itself can only be
