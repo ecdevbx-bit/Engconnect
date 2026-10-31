@@ -54,7 +54,7 @@
   mixing as a mistake/goal (and deletes such lines on the next merge). Probes (Intermediate, Hindi): Hinglish greeting
   + Hindi in every reply, also with an "eliminate code-switching" memory file; no known language → English.
   `ai-partner-probe.mjs` gained `PROBE_MEMORY_MD`. tsc ✓, eslint ✓.
-- After `4847916` (local, **not committed yet**): **interrupting K.AI fixed again** (D-066) — owner: "I can't interrupt
+- **Deployed `6b5d83c` READY, production smoke 32/32 (2026-10-31): interrupting K.AI fixed again** (D-066) — owner: "I can't interrupt
   in the middle of its speaking". A simulation with syllable-shaped speech showed D-062's gate NEVER let a learner
   through with good echo cancelling, a quiet mic, headphones or a phone that turns them down (each dip between
   syllables took back 2× what the loud part earned); D-062 was tested on a steady voice. Now a syllable rule
