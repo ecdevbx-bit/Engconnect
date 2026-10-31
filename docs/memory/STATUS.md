@@ -47,7 +47,7 @@
   a line in the learner's language before they speak uses the profile/notes language, not Hindi. Probes (text):
   Marathi learner → Marathi greeting + replies, English learner → English only. The accent itself can only be
   judged by ear — owner to listen on a call. tsc ✓, eslint ✓.
-- After `292fe02` (local, **not committed yet**): **K.AI speaks the learner's language** (D-065) — owner: "K.AI is
+- **Deployed `4847916` READY, production smoke 32/32 (2026-10-31): K.AI speaks the learner's language** (D-065) — owner: "K.AI is
   speaking only English". His own calls: Hindi lines answered in English, K.AI asked for "all in English"; his Pro
   memory file said "Eliminate code-switching to Hindi". Now: a known language (earlier calls, else profile) is used
   from the greeting on, every level mixes it in (`autoMix`), notes can't force English-only, memory never records
