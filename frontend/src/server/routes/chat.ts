@@ -163,6 +163,7 @@ async function learnerContext(
 
   return {
     memoryDoc: opts.pro ? ((mem?.memory_md as string | undefined) ?? "") : "",
+    comfortLanguage: (mem?.comfort_language as string | null | undefined) ?? "",
     lastSession,
     continuation,
     name: profile.name,

@@ -43,6 +43,7 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | [[operations/deployment]] | Vercel project, env vars, GitHub flow |
 | [[operations/credentials]] | Every secret/config value: where it lives, who provides it, status |
 | [[operations/monitoring]] | Sentry: what's reported, privacy filters, traceId lookup, source maps |
+| [[operations/youpi-gateway]] | Run the YouPI UPI payment gateway on a cloud server, pair the phone, switch payments on (D-061) |
 
 ## Memory (outside the wiki)
 - `docs/memory/DECISIONS.md` — append-only decision log (why things are the way they are)

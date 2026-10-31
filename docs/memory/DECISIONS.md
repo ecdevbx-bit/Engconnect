@@ -709,3 +709,34 @@
   template, to be reviewed by the owner / counsel.
 - Proof: `scripts/payments-probe.mjs` against a fake gateway (14/14). Not done: a real YouPI install and a
   real UPI payment — the owner has to host the gateway and set `YOUPI_WEBHOOK_SECRET` on Vercel.
+
+## D-062 · Barge-in bar is relative to this device's echo and the learner's voice (not a fixed 0.05) — 2026-10-29
+- Owner: "I can't interrupt K.AI in between". Cause: D-054 turned the browser's auto-gain off AND kept a fixed
+  barge-in floor of raw RMS 0.05. Without auto-gain many phone/laptop mics put a normal voice at 0.02–0.04 (our
+  own gain already assumes voices that quiet), so the echo gate never let the learner through.
+- Now (`useGeminiLiveSession.ts`, `bargeThreshold()`): a frame counts towards a barge-in above
+  max(0.015, min(echo × 2.5, voice × 0.8), voice × 0.4), for 200 ms in a row (was 220). `echo` = K.AI's own
+  voice at the mic, learned while it plays (starts at 0.03, falls to the real level within ~0.5 s, rises over
+  ~1.5 s); the cap at 0.8 × voice means a loud echo estimate can't lock the learner out.
+- Simulated (8 ms frames, K.AI playing): quiet mic (voice 0.025, echo 0.006) — old never, new 0.19 s after
+  they start; loud speakers with weak echo cancelling (echo 0.04, voice 0.06) — barge-in on the voice, none on
+  6 s of echo alone; a 150 ms cough or "mm" — none. A learner talking 25 % softer than usual on a very quiet
+  mic (0.015) still doesn't get through. Real-device check still needed.
+
+## D-063 · Language matching follows what K.AI heard in earlier calls, not only the sign-up answer — 2026-10-29
+- Follow-up to D-059. Owner: "if I can speak Marathi, Hindi and English I'll be comfortable if it explains in
+  Marathi"; "make it flexible — if the user is comfortable in another language than the native one they chose
+  earlier, the AI should understand and change it for them".
+- Owner's own Auto calls: K.AI switched to Hinglish when he spoke Hindi (D-059 works), but answered Bhojpuri in
+  Hindi and said "abhi focus English pe karte hain". Probes: Marathi typed in Devanagari was answered in Hindi
+  (the live model reads it as Hindi; Roman Marathi worked); an empty profile used to default to "Hindi" in the
+  prompt.
+- Prompt: answer in the language of the learner's LAST message (Marathi ≠ Hindi, Bhojpuri ≠ Hindi), mix the way
+  they mix, never tell them to stop using their language; three short examples (Marathi, Tamil, Hinglish); no
+  "Hindi" guess when the profile is empty.
+- Memory for everyone (not only Pro): the digest returns `comfortLanguage` ("Marathi + English"), stored as
+  `learner_memory.comfort_language` (migration …1029000200); the next prompt uses it INSTEAD of the profile's
+  mother tongue. Clear memory clears it.
+- Probes (Beginner, Devanagari Marathi): profile Marathi → Marathi; profile Hindi + noted "Marathi + English" →
+  Marathi 1 of 2; nothing set → Hindi. The weak point is the live model (gemini-3.1-flash-live-preview). Not
+  verified: that the digest fills `comfortLanguage` correctly on a real Marathi call.

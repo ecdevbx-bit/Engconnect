@@ -53,15 +53,32 @@ const REPLY_TIMEOUT_MS = 15_000;
 const MAX_RECONNECTS = 4;
 const HISTORY_REPLAY_TURNS = 12;
 // Echo gate: while K.AI's audio plays, mic frames are sent as silence unless
-// the learner is barging in — louder than BARGE_IN_RMS and than half their own
-// usual level, for BARGE_CONFIRM_MS in a row (one loud frame used to be enough,
-// so a cough, a "mm", a door or K.AI's own echo at the start of a reply cut
-// K.AI off — ~10 % of its replies in October). Once confirmed, frames pass
-// for BARGE_HOLD_MS so Gemini hears the learner and interrupts K.AI.
-const BARGE_IN_RMS = 0.05;
-const BARGE_VOICE_SHARE = 0.5;
-const BARGE_CONFIRM_MS = 220;
+// the learner is barging in for BARGE_CONFIRM_MS in a row (one loud frame used
+// to be enough, so a cough, a "mm" or K.AI's own echo cut K.AI off — ~10 % of
+// its replies in October). Once confirmed, frames pass for BARGE_HOLD_MS so
+// Gemini hears the learner and interrupts K.AI.
+// The bar is relative, measured on this device (D-062): above K.AI's own echo
+// (learned while it plays) × BARGE_ECHO_RATIO and above BARGE_VOICE_SHARE of
+// the learner's usual level. It used to be a fixed RMS 0.05 — with the browser's
+// auto-gain off (D-054) many phone/laptop mics put a normal voice at 0.02–0.04,
+// so learners could not interrupt at all. The echo part is capped at
+// BARGE_ECHO_CAP of their voice, so a loud echo estimate can't lock them out.
+const BARGE_MIN_RMS = 0.015;
+const BARGE_ECHO_RATIO = 2.5; // ≈ 8 dB over the echo
+const BARGE_ECHO_CAP = 0.8;
+const BARGE_VOICE_SHARE = 0.4;
+const BARGE_CONFIRM_MS = 200;
 const BARGE_HOLD_MS = 1500;
+const ECHO_START_RMS = 0.03;
+
+// The bar a mic frame must clear to count towards a barge-in.
+export function bargeThreshold(echoRms: number, voiceRms: number): number {
+  return Math.max(
+    BARGE_MIN_RMS,
+    Math.min(echoRms * BARGE_ECHO_RATIO, voiceRms * BARGE_ECHO_CAP),
+    voiceRms * BARGE_VOICE_SHARE,
+  );
+}
 const POLL_MS = 100;
 // Caption pieces are shown this far ahead of their audio (reading lag).
 const CAPTION_LEAD_S = 0.08;
@@ -238,6 +255,10 @@ export function useGeminiLiveSession({
   const micBusyRef = useRef(false);
   const bargeUntilRef = useRef(0);
   const bargeMsRef = useRef(0);
+  // K.AI's own voice as it reaches the mic (after echo cancellation), learned
+  // while it plays. Starts high (cautious) and drops to the real echo within
+  // ~0.5 s, so loud speakers don't count as a barge-in before it's learned.
+  const echoRmsRef = useRef(ECHO_START_RMS);
   const speakingMsRef = useRef(0);
   const usageRef = useRef({ promptTokens: 0, responseTokens: 0 });
   const pendingTurnsRef = useRef<Turn[]>([]);
@@ -502,8 +523,14 @@ export function useGeminiLiveSession({
       }
       const now = performance.now();
       if (now < bargeUntilRef.current) return true;
-      if (rms > Math.max(BARGE_IN_RMS, mic.voiceLevel * BARGE_VOICE_SHARE)) bargeMsRef.current += frameMs;
-      else bargeMsRef.current = Math.max(0, bargeMsRef.current - frameMs * 2);
+      if (rms > bargeThreshold(echoRmsRef.current, mic.voiceLevel)) {
+        bargeMsRef.current += frameMs;
+      } else {
+        bargeMsRef.current = Math.max(0, bargeMsRef.current - frameMs * 2);
+        // Learn the echo: follow it down fast, up over ~1.5 s.
+        const e = echoRmsRef.current;
+        echoRmsRef.current = e + (rms - e) * (rms > e ? frameMs / 1500 : 0.05);
+      }
       if (bargeMsRef.current < BARGE_CONFIRM_MS) return false;
       bargeMsRef.current = 0;
       bargeUntilRef.current = now + BARGE_HOLD_MS;

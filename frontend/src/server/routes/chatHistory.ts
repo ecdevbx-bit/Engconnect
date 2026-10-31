@@ -180,6 +180,7 @@ export function registerChatHistoryRoutes(r: Router) {
           vocabulary: [],
           sessions: 0,
           memory_md: "",
+          comfort_language: null,
           memory_md_sessions: 0,
           memory_md_updated_at: new Date().toISOString(),
         })

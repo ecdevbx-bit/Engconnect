@@ -41,6 +41,8 @@ export type SessionDigest = {
   mistakes: { wrong: string; correct: string; why: string }[];
   vocabulary: { word: string; meaning: string }[];
   nextTime: string;
+  /** The language(s) the learner spoke most comfortably, e.g. "Marathi + English" ("" = unclear). */
+  comfortLanguage?: string;
 };
 
 type Mistake = { wrong: string; correct: string; why?: string; count: number; lastSeen: string };
@@ -80,6 +82,11 @@ const DIGEST_SCHEMA = {
       description: "Up to 6 useful words/phrases the learner used or was taught, with a short meaning.",
     },
     nextTime: { type: Type.STRING, description: "One concrete idea for the next conversation, max 20 words." },
+    comfortLanguage: {
+      type: Type.STRING,
+      description:
+        "The language(s) the learner was most comfortable speaking in THIS conversation, the way they mixed them — e.g. 'English', 'Hindi + English', 'Marathi + Hindi + English', 'Bhojpuri'. Name what they actually spoke, not their profile. Empty if unclear.",
+    },
     learnerSummary: { type: Type.STRING, description: "Updated running summary of who the learner is, their level, interests and progress (max 80 words; merge with the previous one)." },
   },
   required: ["title", "summary", "topics", "facts", "mistakes", "vocabulary", "nextTime", "learnerSummary"],
@@ -264,6 +271,7 @@ ${material}`,
       .filter((v) => v.word)
       .slice(0, 6),
     nextTime: clip(raw.nextTime, 160),
+    comfortLanguage: clip(raw.comfortLanguage, 60),
   };
   const learnerSummary = clip(raw.learnerSummary, 800) || existing?.summary || "";
 
@@ -387,6 +395,7 @@ async function mergedMemory(
     mistakes: mistakes.slice(0, 20),
     vocabulary: vocab.slice(0, 30),
     sessions: ((existing?.sessions as number) ?? 0) + 1,
+    comfort_language: digest.comfortLanguage || ((existing?.comfort_language as string | null) ?? null),
     ...(memoryMd !== undefined
       ? {
           memory_md: memoryMd,

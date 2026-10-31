@@ -66,6 +66,14 @@ try {
   userId = u.id;
   token = (await fetch(`${SB}/auth/v1/token?grant_type=password`, { method: "POST", headers: { apikey: PUB, "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) }).then((r) => r.json())).access_token;
   await api("/session/start", { method: "POST" });
+  // PROBE_NATIVE=Marathi sets the profile's mother tongue; PROBE_COMFORT="Marathi + English" seeds
+  // the language K.AI noted last time (D-059).
+  if (process.env.PROBE_NATIVE) {
+    await fetch(`${SB}/rest/v1/profiles?id=eq.${userId}`, { method: "PATCH", headers: { ...admin, Prefer: "return=minimal" }, body: JSON.stringify({ native_lang: process.env.PROBE_NATIVE }) });
+  }
+  if (process.env.PROBE_COMFORT) {
+    await fetch(`${SB}/rest/v1/learner_memory`, { method: "POST", headers: { ...admin, Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify({ user_id: userId, comfort_language: process.env.PROBE_COMFORT }) });
+  }
 
   const s = await api("/chat/sessions", { method: "POST", body: JSON.stringify({ language: LANGUAGE, level: LEVEL, scenario: SCENARIO, voice: "Charon" }) });
   if (!s.success) throw new Error(`session: ${s.message}`);

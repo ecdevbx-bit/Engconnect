@@ -2,7 +2,7 @@
 title: Premium (Pro)
 type: feature
 tags: [premium, pro, trial, payments, quotas]
-links: [features/learn, features/admin, features/jumble-words, features/pronunciation, features/ai-partner]
+links: [operations/youpi-gateway, features/learn, features/admin, features/jumble-words, features/pronunciation, features/ai-partner]
 updated: 2026-10-29
 ---
 
@@ -54,6 +54,7 @@ Over-limit responses: `DAILY_QUOTA_REACHED` (games) / `AI_TIME_LIMIT_REACHED` (A
    - Off → the Pay button disappears and `/v3/premium` shows the trial form; the webhook keeps working
      so a payment in flight still counts. Terms §4 (payments & refunds) and Privacy (payments) cover it.
    - Proof: `scripts/payments-probe.mjs` (fake gateway on localhost, 14 checks).
+   - Hosting YouPI on a cloud server: [[operations/youpi-gateway]].
 4. **Razorpay subscriptions** — older code (`/api/payments/plans|subscriptions|webhook`), inactive
    until `RAZORPAY_*` env vars are set; its UI isn't mounted.
 

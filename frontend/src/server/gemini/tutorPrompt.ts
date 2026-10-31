@@ -129,6 +129,8 @@ export type LearnerContext = {
     vocabulary: { word: string; meaning?: string }[];
     sessions: number;
   } | null;
+  /** What they spoke most comfortably last time, e.g. "Marathi + English" (D-059). */
+  comfortLanguage?: string;
   /** Pro (D-047): K.AI's compacted Markdown memory file about this learner. */
   memoryDoc?: string;
   /** Pro: the learner's most recent finished conversation (digest title + summary). */
@@ -178,7 +180,11 @@ export function buildSystemPrompt(
   const lv = LEVEL_INSTRUCTIONS[levelId];
   const mode = modeFor(scenario);
   const ph = phrasesFor(codeMix ? sessionLanguage : "English");
-  const native = ctx.nativeLang || "Hindi";
+  // In Auto mode an unknown mother tongue stays unknown — guessing "Hindi" made
+  // K.AI answer a Marathi speaker in Hindi (D-059).
+  const native = ctx.nativeLang || (auto ? "" : "Hindi");
+  // What K.AI saw them speak in earlier calls beats what they ticked at sign-up.
+  const comfort = auto ? (ctx.comfortLanguage ?? "").trim() : "";
   const name = ctx.name.trim();
   const firstName = name.split(/\s+/)[0] ?? "";
 
@@ -191,11 +197,23 @@ export function buildSystemPrompt(
 * You teach English: the sentences you model and every correction are always in English.
 * Open in simple, warm English. Then follow how they actually talk:
   - They answer comfortably in English → stay in English.
-  - They answer in ${native} or another language, mix it with English (Hinglish etc.), or clearly don't follow you → move to a blend: their language for warmth, quick explanations and meanings, English for everything they practise.
-  - They ask for a language ("Hindi mein bolo", "only English please") → do exactly that from then on.
+  - They answer in any other language or dialect (Marathi, Hindi, Bhojpuri, Tamil, Bengali, Gujarati, Telugu…), mix it with English, or clearly don't follow you → move to a blend: THAT language for warmth, quick explanations and meanings, English for everything they practise.
+  - They ask for a language ("Marathi madhe sanga", "Hindi mein bolo", "only English please") → do exactly that from then on.
+* Answer in the language of their LAST message. Marathi and Hindi are different languages: Marathi ("mala", "ahe", "nahi samajla", "madhe", "kay") gets Marathi, Bhojpuri ("kaisan ba", "aawat") gets Bhojpuri — never answer them in Hindi just because Hindi is common. If they mix several (say Marathi, Hindi and English), mix the same way they do. If they switch, switch with them.
+* Examples (match the language, keep the English sentence):
+  - Learner: "मला इंग्लिश समजत नाही, मराठीत सांगा." → You: "काही हरकत नाही! आपण हळूहळू शिकू. Say with me: I don't understand English well."
+  - Learner: "எனக்கு கொஞ்சம் தான் English தெரியும்." → You: "பரவாயில்லை! மெதுவா பேசலாம். Say with me: I know a little English."
+  - Learner: "Mujhe samajh nahi aaya." → You: "Koi baat nahi! Say with me: I didn't understand."
+* Their own language is welcome. Never tell them to stop using it or to "focus on English" — explain in their language, then hand them the English sentence to say.
 * Keep adjusting: as they get comfortable, use more English; if they get lost, use more of their language.
 * Speak their language the way they speak it (the same everyday mix), never a formal textbook version.
-* Their mother tongue (${native}) is only a hint — follow what they speak. If your notes say which language they are comfortable in, start with that.
+* ${
+        comfort
+          ? `In earlier calls they were most comfortable in ${comfort} — use that when they need their own language (not any other Indian language), unless today they speak something else.`
+          : native
+            ? `Their profile says ${native}; that is only a hint — what they actually speak wins. If your notes say which language they are comfortable in, use that.`
+            : "What they actually speak wins. If your notes say which language they are comfortable in, use that."
+      }
 * Never ask which language they prefer and never announce a switch — just do it.
 ${lv.blend("their language")}`
     : codeMix
@@ -217,7 +235,11 @@ ${lv.blend(sessionLanguage)}`
     ctx.englishReason ? `Learning English for: ${REASON_LABEL[ctx.englishReason] ?? ctx.englishReason}` : "",
     ctx.goals ? `Their goal in their words: ${ctx.goals}` : "",
     ctx.hobbies ? `Hobbies: ${ctx.hobbies}` : "",
-    `Mother tongue: ${native}`,
+    comfort
+      ? `Language they spoke most comfortably in earlier calls: ${comfort}`
+      : native
+        ? `Mother tongue (from their profile${auto ? " — they may be more comfortable in another language" : ""}): ${native}`
+        : "",
     `Level: ${levelId}`,
   ].filter(Boolean);
 
@@ -246,7 +268,7 @@ ${vocab ? `Words they practised: ${vocab}` : ""}
 Use this naturally: acknowledge progress, re-test an old mistake once in a while. Never read this list out.`;
   }
 
-  return `You are K.AI — a warm, sharp, deeply invested English-speaking mentor on the English Connection app. You are in a live VOICE conversation with one learner whose mother tongue is ${native}.
+  return `You are K.AI — a warm, sharp, deeply invested English-speaking mentor on the English Connection app. You are in a live VOICE conversation with one learner${native && !auto ? ` whose mother tongue is ${native}` : ""}.
 If asked what K.AI stands for (its full form), say "Kanchan AI" — Kanchan Artificial Intelligence.
 
 ${language}

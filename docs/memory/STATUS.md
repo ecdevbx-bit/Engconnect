@@ -36,6 +36,12 @@
   31/32 (the Resend check needs the key, prod-only). Not checked: admin → Payments page visually (needs an
   admin sign-in), a real YouPI gateway / real UPI payment, real-phone feel.
 - Production: `/api/payments/offer` answers `enabled:false` (no `YOUPI_WEBHOOK_SECRET` on Vercel yet) — payments stay off.
+- After `960bad9` (local, **not committed yet**): K.AI can be interrupted again — barge-in bar now relative to
+  the device's echo and the learner's voice (D-062; the fixed 0.05 blocked quiet mics; simulated only);
+  language follows what K.AI heard in earlier calls (`comfort_language`, migration …1029000200 **applied**) and
+  answers Marathi in Marathi when the profile/notes say so (D-063; the live model still sometimes reads
+  Devanagari Marathi as Hindi); checkout sends `X-Merchant-Key` for a non-default merchant (payments probe 14/14);
+  YouPI cloud-server guide in the wiki (`operations/youpi-gateway`). tsc ✓, eslint ✓.
 - Owner asked where YouPI can run: needs an always-on Node 24 host with a disk (small Linux VPS in Mumbai, or an
   always-on home PC + Cloudflare Tunnel) plus an Android phone with the bank SIM for the SMS observer. Not Vercel.
 

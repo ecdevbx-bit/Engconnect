@@ -22,8 +22,10 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
    - **Language: K.AI decides.** It opens in simple English and follows how the learner talks —
      comfortable English → English; Hindi/Hinglish/Tamil… or lost → a blend (their language for warmth
      and meanings, English for everything they practise); "Hindi mein bolo" / "only English" → that.
-     The profile's mother tongue is only a hint; the Pro memory file notes the language they're
-     comfortable in. Sessions store `language = 'Auto'`; a language sent by an old page is ignored.
+     The profile's mother tongue is only a hint: after every call (free and Pro) the digest notes the
+     language they actually spoke (`learner_memory.comfort_language`, e.g. "Marathi + English") and the
+     next call uses that instead (D-063). It answers in the language of the learner's last message
+     (Marathi ≠ Hindi); the live model still sometimes takes Devanagari Marathi for Hindi. Sessions store `language = 'Auto'`; a language sent by an old page is ignored.
    - **Level**: Beginner / Intermediate / Expert — each has its own instruction block (Beginner = soft,
      slow voice, very simple words, "say with me"); the chosen level's description shows under the
      pills. See [[features/k-ai-instructions]].
@@ -37,7 +39,8 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
 4. **Start session** → K.AI greets by name (and opens the chosen practice mode).
 5. **Just talk — hands-free, like GPT voice mode** (D-039): the mic opens by itself when the call
    connects; K.AI answers when the learner pauses (longer pause allowed for Beginners); talking over
-   K.AI interrupts it. Controls: **mute** (mic button or Space) and a red **✕ End call** beside it,
+   K.AI interrupts it — when the voice is clearly above K.AI's echo on that device and ≥ 40 % of the
+   learner's usual level for 200 ms (D-062; a fixed bar used to block quiet mics). Controls: **mute** (mic button or Space) and a red **✕ End call** beside it,
    which ends the conversation (saved and digested as usual) and returns to the start card (D-060). Mute keeps the mic open and
    just stops sending, so a phone never switches audio mode mid-call (K.AI's volume used to drop) (D-054).
    **Live captions** (D-054): K.AI's words appear as they are spoken (bubble + one-line caption in the

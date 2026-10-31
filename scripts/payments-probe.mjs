@@ -36,7 +36,7 @@ const gateway = http.createServer((req, res) => {
   req.on("end", () => {
     if (req.method === "POST" && req.url === "/api/v1/payments") {
       const b = JSON.parse(body);
-      created.push({ ...b, idem: req.headers["idempotency-key"], merchant: req.headers["x-merchant-id"] });
+      created.push({ ...b, idem: req.headers["idempotency-key"], merchant: req.headers["x-merchant-id"], key: req.headers["x-merchant-key"] });
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ paymentId: crypto.randomUUID(), orderId: b.orderId, amount: b.amount, status: "ACTIVE", checkoutUrl: `http://localhost:6199/checkout/${b.orderId}` }));
       return;
@@ -89,7 +89,7 @@ try {
   const orderId = co.data?.orderId;
   check("checkout returns the gateway's checkout URL", !!orderId && co.data.checkoutUrl.endsWith(orderId), co.message);
   const g = created.at(-1);
-  check("gateway got amount 250.00, our order id, idempotency key, merchant id", g?.amount === "250.00" && g.orderId === orderId && g.idem === orderId && g.merchant === "probe-merchant");
+  check("gateway got amount 250.00, our order id, idempotency key, merchant id + key", g?.amount === "250.00" && g.orderId === orderId && g.idem === orderId && g.merchant === "probe-merchant" && g.key === HOOK);
   check("return URL comes back to /v3/premium", !!g?.returnUrl?.includes(`/v3/premium?payment=${orderId}`));
 
   const bad = await webhook({ event: "RECONCILED", orderId, amountPaise: 25000, settlementState: "RECONCILED" }, { badSig: true });

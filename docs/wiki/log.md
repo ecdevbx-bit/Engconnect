@@ -197,3 +197,9 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-29] ux | Phone-first pass: onboarding sheet, End-call ✕, lighter start card + dashboard, tours on request, no sideways scroll (D-060, [[features/ai-partner]], [[features/jumble-words]])
 
 ## [2026-10-29] feature | Pro payments via self-hosted YouPI PG behind admin → Payments (price, discount, on/off); Terms + Privacy updated (D-061, [[features/premium]], [[features/admin]])
+
+## [2026-10-29] ops | Cloud-server setup guide for the YouPI gateway; checkout sends X-Merchant-Key for a non-default merchant (D-061, [[operations/youpi-gateway]])
+
+## [2026-10-29] fix | Barge-in bar relative to the device's echo + learner's voice — K.AI can be interrupted again (D-062, [[features/ai-partner]])
+
+## [2026-10-29] feature | K.AI follows the language heard in earlier calls (comfort_language for everyone), answers Marathi in Marathi (D-063, [[features/ai-partner]])

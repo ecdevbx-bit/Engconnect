@@ -198,7 +198,9 @@ export function registerPaymentRoutes(r: Router) {
         headers: {
           "Content-Type": "application/json",
           "Idempotency-Key": created.id,
-          ...(s.merchantId ? { "X-Merchant-Id": s.merchantId } : {}),
+          // A non-default merchant must prove itself with its webhook secret
+          // (YouPI answers 401 MISSING_MERCHANT_KEY otherwise). Server-to-server only.
+          ...(s.merchantId ? { "X-Merchant-Id": s.merchantId, "X-Merchant-Key": env.youpiWebhookSecret() } : {}),
         },
         body: JSON.stringify({
           orderId: created.id,

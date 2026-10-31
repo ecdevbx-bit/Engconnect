@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T03:24:59.702Z",
+  "generatedAt": "2026-10-29T03:43:15.467Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -289,6 +289,19 @@
       ],
       "updated": "2026-09-24",
       "path": "docs/wiki/operations/runbook.md"
+    },
+    {
+      "id": "operations/youpi-gateway",
+      "title": "YouPI payment gateway — cloud server setup",
+      "type": "operations",
+      "tags": [
+        "ops",
+        "payments",
+        "youpi",
+        "upi"
+      ],
+      "updated": "2026-10-29",
+      "path": "docs/wiki/operations/youpi-gateway.md"
     },
     {
       "id": "overview",
@@ -800,6 +813,22 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-062",
+      "title": "Barge-in bar is relative to this device's echo and the learner's voice (not a fixed 0.05)",
+      "type": "decision",
+      "date": "2026-10-29",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-063",
+      "title": "Language matching follows what K.AI heard in earlier calls, not only the sign-up answer",
+      "type": "decision",
+      "date": "2026-10-29",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1204,6 +1233,11 @@
     },
     {
       "source": "features/ai-partner",
+      "target": "D-063",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
       "target": "D-032",
       "kind": "cites"
     },
@@ -1215,6 +1249,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-039",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-062",
       "kind": "cites"
     },
     {
@@ -1346,6 +1385,11 @@
       "source": "features/learn",
       "target": "D-042",
       "kind": "cites"
+    },
+    {
+      "source": "features/premium",
+      "target": "operations/youpi-gateway",
+      "kind": "links"
     },
     {
       "source": "features/premium",
@@ -1619,6 +1663,11 @@
     },
     {
       "source": "index",
+      "target": "operations/youpi-gateway",
+      "kind": "links"
+    },
+    {
+      "source": "index",
       "target": "log",
       "kind": "links"
     },
@@ -1626,6 +1675,11 @@
       "source": "index",
       "target": "meta/graph",
       "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "D-061",
+      "kind": "cites"
     },
     {
       "source": "log",
@@ -1715,6 +1769,11 @@
     {
       "source": "log",
       "target": "architecture/database",
+      "kind": "links"
+    },
+    {
+      "source": "log",
+      "target": "operations/youpi-gateway",
       "kind": "links"
     },
     {
@@ -1943,6 +2002,16 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-062",
+      "kind": "cites"
+    },
+    {
+      "source": "log",
+      "target": "D-063",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2133,6 +2202,31 @@
       "kind": "cites"
     },
     {
+      "source": "operations/youpi-gateway",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "operations/youpi-gateway",
+      "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "operations/youpi-gateway",
+      "target": "operations/deployment",
+      "kind": "links"
+    },
+    {
+      "source": "operations/youpi-gateway",
+      "target": "operations/credentials",
+      "kind": "links"
+    },
+    {
+      "source": "operations/youpi-gateway",
+      "target": "D-061",
+      "kind": "cites"
+    },
+    {
       "source": "overview",
       "target": "features/jumble-words",
       "kind": "links"
@@ -2265,6 +2359,16 @@
     {
       "source": "memory/status",
       "target": "D-061",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-062",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-063",
       "kind": "cites"
     },
     {
