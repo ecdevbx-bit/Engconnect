@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T03:43:15.467Z",
+  "generatedAt": "2026-10-31T05:48:10.172Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -321,7 +321,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-10-29",
+      "updated": "2026-10-31",
       "path": "docs/wiki/meta/graph.md"
     },
     {

@@ -3,7 +3,7 @@ title: Knowledge graph
 type: meta
 tags: [graph, memory]
 links: [index, meta/how-this-wiki-works]
-updated: 2026-10-29
+updated: 2026-10-31
 ---
 
 # Knowledge graph (generated — do not edit by hand)

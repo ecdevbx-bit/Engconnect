@@ -3,7 +3,7 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-10-29 (session 6). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
+> Last updated: 2026-10-31 (session 6). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
@@ -36,12 +36,15 @@
   31/32 (the Resend check needs the key, prod-only). Not checked: admin → Payments page visually (needs an
   admin sign-in), a real YouPI gateway / real UPI payment, real-phone feel.
 - Production: `/api/payments/offer` answers `enabled:false` (no `YOUPI_WEBHOOK_SECRET` on Vercel yet) — payments stay off.
-- After `960bad9` (local, **not committed yet**): K.AI can be interrupted again — barge-in bar now relative to
+- **Deployed `4ee4142` READY, production smoke 32/32 (2026-10-31):** K.AI can be interrupted again — barge-in bar now relative to
   the device's echo and the learner's voice (D-062; the fixed 0.05 blocked quiet mics; simulated only);
   language follows what K.AI heard in earlier calls (`comfort_language`, migration …1029000200 **applied**) and
   answers Marathi in Marathi when the profile/notes say so (D-063; the live model still sometimes reads
   Devanagari Marathi as Hindi); checkout sends `X-Merchant-Key` for a non-default merchant (payments probe 14/14);
   YouPI cloud-server guide in the wiki (`operations/youpi-gateway`). tsc ✓, eslint ✓.
+- Open questions from the owner (2026-10-31): mute does NOT pause — the call and the clock keep running, no
+  audio is sent (offered a real pause with auto-end); "the Hindi accent is lost" — proposed an accent rule
+  (Indian English + native pronunciation of Hindi/Marathi) and dropping the Beginner "Roman letters" line.
 - Owner asked where YouPI can run: needs an always-on Node 24 host with a disk (small Linux VPS in Mumbai, or an
   always-on home PC + Cloudflare Tunnel) plus an Android phone with the bank SIM for the SMS observer. Not Vercel.
 
