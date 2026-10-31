@@ -62,7 +62,7 @@
   8 random voices (`scripts/barge-in-sim.mjs`): ~0.2–0.35 s on phones/headphones, no false barge-in on echo
   alone, a 150 ms cough, a "mm" or knocks. Still blocked: a very quiet mic on a phone that ducks the learner.
   Real-device check needed. tsc ✓, eslint ✓.
-- **Pronunciation "Try again"** (D-067, not deployed yet) — owner: "if the pronunciation is not that correct or the
+- **Deployed `68f7e52` READY, production smoke 32/32 (2026-10-31): Pronunciation "Try again"** (D-067; retry probe all ✓ on prod too) — owner: "if the pronunciation is not that correct or the
   student wants to retry". Try again on Feedback + Improve (main button under 80 %) → same sentence from Listen;
   free: 3 tries per sentence per day, a retry doesn't use a free sentence; the day's best try's XP counts (a better
   retry pays the difference). `scripts/pronunciation-retry-probe.mjs` all ✓ locally; layout checked at 375 px.
