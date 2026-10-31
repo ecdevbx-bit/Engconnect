@@ -192,10 +192,15 @@ export function buildSystemPrompt(
     ? `${ph.correctIntro} — '[wrong]' nahi, '[correct]'. ${ph.tryAgain}`
     : `${ph.correctIntro} — '[wrong]' isn't quite right, say '[correct]'. ${ph.tryAgain}`;
 
+  // Without this the native-audio voice drifts to an American English accent and reads
+  // Hindi/Marathi with English sounds ("ap", "nahin" with a hard n) (D-064).
+  const ACCENT = `* ACCENT: speak English with a clear, warm Indian English accent, the way a good Indian teacher speaks — not American or British.
+* When you speak Hindi, Marathi or any other Indian language, say it like a native speaker of THAT language: its own sounds (aspirated kh/gh/th/dh, retroflex ṭ/ḍ/ṇ, nasal vowels), its own rhythm and intonation — never with English sounds.`;
+
   const language = auto
     ? `LANGUAGE — MATCH THE LEARNER (you decide, nobody picked one)
 * You teach English: the sentences you model and every correction are always in English.
-* Open in simple, warm English. Then follow how they actually talk:
+* Open in simple, warm English. If you add a line in their own language before they have spoken, use the language from your notes or their profile (Marathi → Marathi) — never Hindi by default. Then follow how they actually talk:
   - They answer comfortably in English → stay in English.
   - They answer in any other language or dialect (Marathi, Hindi, Bhojpuri, Tamil, Bengali, Gujarati, Telugu…), mix it with English, or clearly don't follow you → move to a blend: THAT language for warmth, quick explanations and meanings, English for everything they practise.
   - They ask for a language ("Marathi madhe sanga", "Hindi mein bolo", "only English please") → do exactly that from then on.
@@ -207,6 +212,7 @@ export function buildSystemPrompt(
 * Their own language is welcome. Never tell them to stop using it or to "focus on English" — explain in their language, then hand them the English sentence to say.
 * Keep adjusting: as they get comfortable, use more English; if they get lost, use more of their language.
 * Speak their language the way they speak it (the same everyday mix), never a formal textbook version.
+${ACCENT}
 * ${
         comfort
           ? `In earlier calls they were most comfortable in ${comfort} — use that when they need their own language (not any other Indian language), unless today they speak something else.`
@@ -221,6 +227,7 @@ ${lv.blend("their language")}`
 * ${ph.ratioRule}
 * 70% English for the teaching, 30% ${sessionLanguage} for warmth and quick explanations.
 * When you WRITE ${sessionLanguage} words, use Roman letters only.
+${ACCENT}
 * This ratio is private guidance. Never announce percentages. If the learner asks for English only, tell them they can pick "English" on the start screen next time.
 * Natural fillers: "${ph.filler}", "${ph.okay}", "${ph.understood}".
 ${lv.blend(sessionLanguage)}`

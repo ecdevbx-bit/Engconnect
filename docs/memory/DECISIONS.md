@@ -740,3 +740,17 @@
 - Probes (Beginner, Devanagari Marathi): profile Marathi → Marathi; profile Hindi + noted "Marathi + English" →
   Marathi 1 of 2; nothing set → Hindi. The weak point is the live model (gemini-3.1-flash-live-preview). Not
   verified: that the digest fills `comfortLanguage` correctly on a real Marathi call.
+
+## D-064 · K.AI speaks Indian English and says Indian languages like a native speaker — 2026-10-31
+- Owner: "the Hindi accent is lost". The Auto prompt (D-059) had no accent line (only the old English-only
+  branch said "Indian English"), and the Beginner blend told K.AI to give meanings in "Roman letters", which the
+  native-audio voice reads with English sounds.
+- `tutorPrompt.ts`: an ACCENT rule in the Auto and the old X + English branches — English in a clear, warm Indian
+  English accent (not American/British); Hindi, Marathi and other Indian languages with that language's own
+  sounds (aspirates, retroflex, nasal vowels), rhythm and intonation. `levels.ts`: "(Roman letters)" dropped from
+  the Beginner blend (old X + English sessions keep their own Roman-script rule). A line in the learner's
+  language before they have spoken uses the notes/profile language — never Hindi by default (a Marathi profile
+  got a Hindi greeting line in the probe).
+- Probes (text turns, Beginner): Marathi profile → Marathi greeting and replies; English learner → English only.
+  Text replies may now use the native script (Devanagari); live captions come from Google's transcription anyway.
+  The accent itself is not measurable here — owner to listen.

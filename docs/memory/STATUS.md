@@ -42,9 +42,13 @@
   answers Marathi in Marathi when the profile/notes say so (D-063; the live model still sometimes reads
   Devanagari Marathi as Hindi); checkout sends `X-Merchant-Key` for a non-default merchant (payments probe 14/14);
   YouPI cloud-server guide in the wiki (`operations/youpi-gateway`). tsc ✓, eslint ✓.
-- Open questions from the owner (2026-10-31): mute does NOT pause — the call and the clock keep running, no
-  audio is sent (offered a real pause with auto-end); "the Hindi accent is lost" — proposed an accent rule
-  (Indian English + native pronunciation of Hindi/Marathi) and dropping the Beginner "Roman letters" line.
+- After `4ee4142` (local, **not committed yet**): **accent rule** (D-064) — K.AI speaks English with an Indian
+  English accent and Hindi/Marathi/other languages like a native speaker; Beginner no longer says "Roman letters";
+  a line in the learner's language before they speak uses the profile/notes language, not Hindi. Probes (text):
+  Marathi learner → Marathi greeting + replies, English learner → English only. The accent itself can only be
+  judged by ear — owner to listen on a call. tsc ✓, eslint ✓.
+- Mute does NOT pause — the call and the clock keep running, no audio is sent (a real pause with auto-end was
+  offered, not built).
 - Owner asked where YouPI can run: needs an always-on Node 24 host with a disk (small Linux VPS in Mumbai, or an
   always-on home PC + Cloudflare Tunnel) plus an Android phone with the bank SIM for the SMS observer. Not Vercel.
 

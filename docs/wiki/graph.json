@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T05:48:10.172Z",
+  "generatedAt": "2026-10-31T07:53:52.314Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -829,6 +829,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-064",
+      "title": "K.AI speaks Indian English and says Indian languages like a native speaker",
+      "type": "decision",
+      "date": "2026-10-31",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1234,6 +1242,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-063",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-064",
       "kind": "cites"
     },
     {
@@ -2012,6 +2025,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-064",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2369,6 +2387,11 @@
     {
       "source": "memory/status",
       "target": "D-063",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-064",
       "kind": "cites"
     },
     {

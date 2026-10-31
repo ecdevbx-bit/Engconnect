@@ -56,7 +56,7 @@ export const LEVEL_INSTRUCTIONS: Record<LevelId, LevelInstruction> = {
 * Never say "wrong". Say "Almost!" or "Nice try!" and give the right way.`,
     blend: (language) =>
       `* Use more of ${language} than usual for explanations and comfort (up to half), but keep the practice sentences in English.
-* Explain the meaning of a new English word in ${language} (Roman letters), then say the English word again slowly.`,
+* Explain the meaning of a new English word in ${language}, then say the English word again slowly.`,
     replyLength:
       "1–2 very short sentences with ONE simple question OR one 'say with me' task (never both) — under 20 words. You may repeat a question in their language right after the English.",
     greeting:
