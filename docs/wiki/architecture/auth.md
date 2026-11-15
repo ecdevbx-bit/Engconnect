@@ -65,6 +65,12 @@ is served from must be listed** or Google sign-in lands signed out on the site U
 ## Single active session (D-009)
 Each login stores the JWT's `session_id` in `profiles.active_session_id`; any request from an older
 session gets `SESSION_SUPERSEDED` and that device signs out ("signed in elsewhere").
+- The check (`requireUser`, `server/guards.ts`) uses a 5 s per-instance cache of the active login; on a
+  mismatch it re-reads the database before refusing, and a read that started before a login was recorded
+  never overwrites the cache (D-069).
+- The browser (`lib/sessionSupersede.ts`) waits 1.5 s and asks `GET /session` again before signing out,
+  so requests fired while `POST /session/start` is in flight don't throw a fresh login out.
+  `scripts/session-race-probe.mjs` checks both.
 
 ## Admins
 `ADMIN_EMAILS` (currently ec.devbx@gmail.com — D-023) → `isAdmin` on the session and `/v3/admin/*`.

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T03:35:00.426Z",
+  "generatedAt": "2026-11-15T03:40:52.657Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -869,6 +869,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-069",
+      "title": "\"Signed in elsewhere\" is double-checked before a fresh login is thrown out",
+      "type": "decision",
+      "date": "2026-11-15",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -994,6 +1002,11 @@
     {
       "source": "architecture/auth",
       "target": "D-009",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-069",
       "kind": "cites"
     },
     {
@@ -2112,6 +2125,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-069",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2469,6 +2487,11 @@
     {
       "source": "memory/status",
       "target": "D-068",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-069",
       "kind": "cites"
     },
     {

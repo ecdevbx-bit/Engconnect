@@ -9,7 +9,7 @@ updated: 2026-11-15
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(96 nodes · 347 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(97 nodes · 350 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -187,7 +187,7 @@ flowchart LR
 | Page | Decisions |
 |---|---|
 | [[architecture/api]] | D-043 |
-| [[architecture/auth]] | D-008, D-024, D-050, D-025, D-020, D-051, D-068, D-055, D-009, D-023 |
+| [[architecture/auth]] | D-008, D-024, D-050, D-025, D-020, D-051, D-068, D-055, D-009, D-069, D-023 |
 | [[architecture/database]] | D-043, D-049, D-047, D-013 |
 | [[architecture/gemini-key-pool]] | D-040, D-027, D-011 |
 | [[architecture/gemini-live]] | D-026, D-039, D-048 |
@@ -202,7 +202,7 @@ flowchart LR
 | [[features/pronunciation]] | D-038, D-035, D-067, D-057, D-036 |
 | [[features/support]] | D-029, D-034 |
 | [[index]] | D-061 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058, D-059, D-060, D-061, D-062, D-063, D-064, D-065, D-066, D-067, D-068 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058, D-059, D-060, D-061, D-062, D-063, D-064, D-065, D-066, D-067, D-068, D-069 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023, D-044 |
 | [[operations/deployment]] | D-022, D-068, D-056 |
@@ -282,6 +282,7 @@ flowchart LR
 | D-066 | Barge-in counts voice within a window (syllable rule), plus the old steady rule | active | [[features/ai-partner]] [[log]] [[memory/status]] |
 | D-067 | Pronunciation: "Try again" on the same sentence; the best try of the day counts | active | [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-068 | Cut Vercel CPU: proxy only for signed-in visitors, shared client requests, heartbeats end dead calls, no server tracing | active | [[architecture/auth]] [[features/ai-partner]] [[log]] [[operations/deployment]] [[operations/monitoring]] [[memory/status]] |
+| D-069 | "Signed in elsewhere" is double-checked before a fresh login is thrown out | active | [[architecture/auth]] [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

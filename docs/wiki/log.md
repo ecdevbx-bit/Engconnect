@@ -219,3 +219,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-11-15] change | Vercel CPU cuts (D-068): proxy only with a session cookie, shared /chat/access + attributes requests, heartbeats end over-cap / >2 h K.AI sessions, Sentry server tracing off — cpu-cuts-probe all ✓ locally
 
 ## [2026-11-15] deploy | cd64bbd (D-068 CPU cuts) READY — production smoke 32/32, cpu-cuts-probe all ✓, signed-out landing served from the CDN cache
+
+## [2026-11-15] fix | False "signed in elsewhere" right after sign-in (D-069): supersede check re-reads the DB before refusing, stale reads can't poison the cache, browser re-asks before signing out — session-race-probe 5/5 (prod before: 1/5)

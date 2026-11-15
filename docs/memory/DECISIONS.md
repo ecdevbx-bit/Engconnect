@@ -828,3 +828,18 @@
 - Proof: `scripts/cpu-cuts-probe.mjs` all ✓ locally (signed out "/" 200, signed in "/" → /dashboard, heartbeat
   past the 1200 s allowance ends the session as `cap`); dashboard load in the browser: attributes once (was twice).
   Not measurable here: the effect on Vercel's CPU bill — read Observability after a few days.
+
+## D-069 · "Signed in elsewhere" is double-checked before a fresh login is thrown out — 2026-11-15
+- Found while checking D-068: signing in when the account was last used on another device bounced to
+  `/login?reason=signed_in_elsewhere` once; the second try worked. Learners on phone + laptop hit this.
+- Cause: `requireUser` caches each account's active login for 5 s per server instance. A request fired on the
+  sign-in event (before `POST /session/start` finished) read the OLD session id from the database and wrote it
+  back into the cache after `/session/start` had recorded the new one — every request for the next 5 s got
+  `SESSION_SUPERSEDED`, and `handleSessionSuperseded` signed out at once (only `GET /session` had a retry). On
+  Vercel each instance has its own cache, so a request landing on another instance failed too.
+- Now: a mismatch re-reads `profiles.active_session_id` before refusing (one query, only on the rare path); a
+  cache fill doesn't overwrite a login remembered while its read was in flight; the browser waits 1.5 s and
+  re-asks `GET /session` before signing out. A genuinely older device still signs out (~1.5 s later than before).
+- Proof: `scripts/session-race-probe.mjs` — production before the fix failed 4 of 5 rounds, the fix 5 of 5 with
+  the old device still refused; in the browser a sign-in after another device landed on the dashboard first try,
+  and a later sign-in elsewhere still signed that tab out.

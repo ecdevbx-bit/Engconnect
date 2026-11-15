@@ -28,9 +28,11 @@
   Sentry server tracing off. tsc ✓, eslint ✓ (changed files), production build ✓,
   `scripts/cpu-cuts-probe.mjs` all ✓ locally, dashboard checked in the browser (attributes once, was twice).
   Effect on the bill: read Vercel → Observability after a few days (the REST API has no CPU numbers).
-- Found, not fixed: signing in when the account was last used on another device can bounce to
-  `/login?reason=signed_in_elsewhere` once — the dashboard's first calls race `POST /session/start` and only
-  `GET /session` retries (other 403s sign out at once). Second try works.
+- **Fixed, NOT committed/deployed yet (D-069):** signing in when the account was last used on another device
+  bounced to `/login?reason=signed_in_elsewhere` once (a racing request put the old login back into the
+  server's 5 s cache). Supersede check re-reads the DB before refusing, stale reads can't poison the cache,
+  the browser re-asks before signing out. `scripts/session-race-probe.mjs` 5/5 locally (production before: 1/5);
+  browser: sign-in after another device → dashboard first try; a later sign-in elsewhere still signs out.
 
 ## Session 6 (2026-10-29) 🔧 — deployed `960bad9` READY, production smoke **32/32**
 - **K.AI picks the language itself** (D-059): no language picker; sessions are `Auto`; K.AI opens in English

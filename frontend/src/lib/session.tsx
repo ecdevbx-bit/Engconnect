@@ -87,6 +87,15 @@ async function fetchSessionUser(token: string): Promise<{ user?: SessionUser; co
   }
 }
 
+// A "signed in elsewhere" answer can be a race with POST /session/start right
+// after this device signed in. Wait a moment and ask again before believing it.
+export async function confirmSuperseded(): Promise<boolean> {
+  await new Promise((r) => setTimeout(r, 1500));
+  if (!liveAccessToken) return true;
+  const { code } = await fetchSessionUser(liveAccessToken);
+  return code === "SESSION_SUPERSEDED";
+}
+
 export function SessionProvider({ children }: { children: ReactNode }) {
   const supabase = supabaseBrowser();
   // undefined = still reading the stored session

@@ -1,4 +1,4 @@
-import { signOut } from "@/lib/session";
+import { confirmSuperseded, signOut } from "@/lib/session";
 
 // Called when the backend reports the account is active elsewhere — either an
 // HTTP response with errorCode "SESSION_SUPERSEDED", or the chat socket closing
@@ -12,5 +12,10 @@ export const SESSION_SUPERSEDED_CODE = "SESSION_SUPERSEDED";
 export function handleSessionSuperseded(): void {
   if (typeof window === "undefined" || signingOut) return;
   signingOut = true;
-  void signOut({ callbackUrl: "/login?reason=signed_in_elsewhere" });
+  // Just after a sign-in, requests can race the server recording the new
+  // login — check once more so a fresh login isn't thrown out.
+  void confirmSuperseded().then((superseded) => {
+    if (superseded) void signOut({ callbackUrl: "/login?reason=signed_in_elsewhere" });
+    else signingOut = false;
+  });
 }

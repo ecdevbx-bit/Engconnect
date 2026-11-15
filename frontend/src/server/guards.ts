@@ -62,12 +62,17 @@ export function rememberActiveSession(userId: string, sid: string | null) {
   activeCache.set(userId, { sid, at: Date.now() });
 }
 
-async function activeSessionOf(userId: string): Promise<string | null> {
+async function activeSessionOf(userId: string, fresh = false): Promise<string | null> {
   const hit = activeCache.get(userId);
-  if (hit && Date.now() - hit.at < ACTIVE_TTL_MS) return hit.sid;
+  if (!fresh && hit && Date.now() - hit.at < ACTIVE_TTL_MS) return hit.sid;
+  const asked = Date.now();
   const { data } = await db().from("profiles").select("active_session_id").eq("id", userId).maybeSingle();
   const sid = (data?.active_session_id as string | null) ?? null;
-  rememberActiveSession(userId, sid);
+  // Don't overwrite a login recorded while this read was in flight: a request
+  // racing POST /session/start would put the OLD session back in the cache and
+  // sign the new login out for the next few seconds.
+  const now = activeCache.get(userId);
+  if (!now || now.at <= asked) rememberActiveSession(userId, sid);
   return sid;
 }
 
@@ -76,7 +81,10 @@ async function activeSessionOf(userId: string): Promise<string | null> {
 export async function requireUser(req: Request): Promise<AuthedUser> {
   const u = await verifyToken(req);
   if (u.sessionId) {
-    const active = await activeSessionOf(u.id);
+    let active = await activeSessionOf(u.id);
+    // The cache is per server instance and up to 5 s old — another instance
+    // may have just recorded this very login. Ask the database before refusing.
+    if (active && active !== u.sessionId) active = await activeSessionOf(u.id, true);
     if (active && active !== u.sessionId) {
       throw fail.forbidden(
         "You've been signed out because your account was opened on another device.",
