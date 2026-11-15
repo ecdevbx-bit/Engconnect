@@ -22,7 +22,7 @@
 
 ## Session 7 (2026-11-14/15) 🔧
 - Vercel Hobby team paused for Fluid Active CPU (2026-11-13) → owner upgraded to **Pro** (back up, smoke 32/32).
-- **CPU cuts built (D-068), NOT committed/deployed yet:** proxy runs only with a session cookie (signed-out
+- **CPU cuts (D-068) deployed `cd64bbd` READY, production smoke 32/32, `cpu-cuts-probe` all ✓ on prod, signed-out "/" = `x-vercel-cache: HIT`:** proxy runs only with a session cookie (signed-out
   pages = CDN, no function); `/chat/access` + `/users/me/attributes` shared in the browser
   (`lib/sharedRequest.ts`); a heartbeat ≥ 30 s past the allowance or from a > 2 h session ends it;
   Sentry server tracing off. tsc ✓, eslint ✓ (changed files), production build ✓,
