@@ -8,6 +8,7 @@
 // downstream.
 
 import { ApiError, v3Fetch, type JumbleBatch, type SubmitJumbleAnswerRequest, type SubmitJumbleAnswerResponse } from "./apiClient";
+import { sharedRequest } from "./sharedRequest";
 import { DAILY_QUOTA_REACHED_CODE, difficultyFromPath, gameFromPath, QuotaReachedError, triggerQuotaPrompt } from "./quotaPrompt";
 
 
@@ -243,7 +244,11 @@ export async function v3PutLevels(
 // and never refreshed), so anything that needs current values reads
 // this on load and on demand.
 export async function v3FetchMyAttributes(accessToken: string): Promise<V3UserAttributes> {
-  return v3Get<V3UserAttributes>("/users/me/attributes", accessToken);
+  // The app shell and the dashboard both load this on mount; share calls made
+  // within 3 s (short, so a refresh after a solve still sees new XP).
+  return sharedRequest(`attributes:${accessToken}`, 3_000, () =>
+    v3Get<V3UserAttributes>("/users/me/attributes", accessToken),
+  );
 }
 
 // v3FetchMyBadges returns the user's earned badge IDs (e.g. "xp:1000",

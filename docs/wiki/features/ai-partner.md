@@ -75,7 +75,9 @@ out loud, gently corrects mistakes, asks one follow-up, and **remembers** the le
   Deepgram / browser speech recognition anymore.
 - Every ~20 s the browser posts **progress** (talk-time + new transcript lines). The server clamps
   talk-time (≤ wall-clock, ≤ ~2 s per recognised word), awards XP, bills time against the cap and
-  tells the browser if the cap is reached.
+  tells the browser if the cap is reached. A heartbeat 30 s past the allowance, or from a session older
+  than 2 h, **ends the session** (`end_reason` `cap` / `too_long`) and answers `sessionActive:false`, so
+  the tab closes the call — one forgotten tab used to post heartbeats for 7 h (D-068).
 - If a key hits its quota mid-session, the browser asks the server for a token on **another key**
   and replays the recent conversation so K.AI continues seamlessly. Plain network drops resume
   the same Gemini session with its resumption handle.

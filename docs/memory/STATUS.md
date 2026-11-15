@@ -3,7 +3,7 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-10-31 (session 6). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
+> Last updated: 2026-11-15 (session 7). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
@@ -19,6 +19,18 @@
   Wiki & memory, Gemini keys, content, settings).
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
   (wiki: operations/monitoring, D-044). **Verified working in production 2026-09-24** (`scripts/sentry-check.mjs`).
+
+## Session 7 (2026-11-14/15) 🔧
+- Vercel Hobby team paused for Fluid Active CPU (2026-11-13) → owner upgraded to **Pro** (back up, smoke 32/32).
+- **CPU cuts built (D-068), NOT committed/deployed yet:** proxy runs only with a session cookie (signed-out
+  pages = CDN, no function); `/chat/access` + `/users/me/attributes` shared in the browser
+  (`lib/sharedRequest.ts`); a heartbeat ≥ 30 s past the allowance or from a > 2 h session ends it;
+  Sentry server tracing off. tsc ✓, eslint ✓ (changed files), production build ✓,
+  `scripts/cpu-cuts-probe.mjs` all ✓ locally, dashboard checked in the browser (attributes once, was twice).
+  Effect on the bill: read Vercel → Observability after a few days (the REST API has no CPU numbers).
+- Found, not fixed: signing in when the account was last used on another device can bounce to
+  `/login?reason=signed_in_elsewhere` once — the dashboard's first calls race `POST /session/start` and only
+  `GET /session` retries (other 403s sign out at once). Second try works.
 
 ## Session 6 (2026-10-29) 🔧 — deployed `960bad9` READY, production smoke **32/32**
 - **K.AI picks the language itself** (D-059): no language picker; sessions are `Auto`; K.AI opens in English
@@ -167,6 +179,17 @@
    site — fine once the domain moves to this app; until then the Vercel URL pages canonicalise away.
 
 ## Blocked on the owner 🙋
+- ✅ **Back up 2026-11-14 — owner upgraded the team to Pro** (softBlock cleared, production smoke 32/32). Was down
+  2026-11-13 23:17 IST → 2026-11-14: Vercel paused the Hobby team (`softBlock`
+  `FAIR_USE_LIMITS_EXCEEDED`, overage `fluidCpuDuration` = Fluid Active CPU); every URL answers `402
+  DEPLOYMENT_DISABLED`. Pro bills CPU past the included amount instead of pausing — the cuts below still save money.
+  Found 2026-11-14: function invocations grew ~4k/week (late Sept) → 58–66k/week (late Oct / early Nov) for ~30
+  active learners; invocations ≈ every cache miss. Local CPU per request (M-series): proxy-only static page
+  2–8 ms, signed-in dashboard page 20–36 ms, API 8–17 ms; a fresh server ~1 s. One cold dashboard load = page +
+  13 API calls (`/api/chat/access` ×5, `/api/users/me/attributes` ×2). The proxy runs `getClaims()` on EVERY page
+  incl. the static landing and bots. One K.AI tab sent heartbeats for 7 h after its 1-h cap (~1.3k calls).
+  CPU cuts built 2026-11-15 (D-068, see Session 7). Supabase `sbp_` + Sentry tokens in
+  credentials.txt / Vercel are invalid now (rotated) — `scripts/sentry-check.mjs` and migration apply need new ones.
 - **Payments (D-061)**: host YouPI PG yourself (VPS/home server + its Android observer or Gmail), create a
   merchant, paste our webhook URL (shown on admin → Payments) into it, put its webhook secret in Vercel as
   `YOUPI_WEBHOOK_SECRET`, then fill in admin → Payments and switch it on. Have Terms §4 / refunds reviewed.

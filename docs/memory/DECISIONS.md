@@ -809,3 +809,22 @@
   one pays nothing. Combo follows each try as before.
 - Proof: `scripts/pronunciation-retry-probe.mjs` all ✓ locally (80 % → +16 XP, retry 100 % → +4 XP, 80 % → +0,
   4th refused, one free sentence used). Phone layout checked at 375 px.
+
+## D-068 · Cut Vercel CPU: proxy only for signed-in visitors, shared client requests, heartbeats end dead calls, no server tracing — 2026-11-15
+- Owner: "why is Vercel compute CPU hours too much?" → the Hobby team was paused 2026-11-13 (Fluid Active CPU);
+  owner upgraded to Pro and said "Yes, cut CPU". Invocations had grown ~4k → ~60k/week for ~30 active learners.
+- `src/proxy.ts`: matcher `has` the `sb-uycpxwajvhcigyhvepci-auth-token` (or `.0`) cookie, plus an in-code
+  check. Signed-out visits (landing, /login, bots) are served from the CDN without a function. Signed-in
+  behaviour unchanged ("/" → /dashboard, cookie refresh). Trade-off: the project ref is hard-coded (matchers
+  must be constants) — on a new Supabase project the names must change or the proxy never runs.
+- `lib/sharedRequest.ts`: same-key calls share one request; successes reused for a TTL, failures forgotten.
+  `/chat/access` (asked by every AI Partner link: nav, tab bar, cards — up to 5 per load) 5 min;
+  `/users/me/attributes` (app shell + dashboard) 3 s, short so XP after a solve stays fresh.
+- `POST /chat/sessions/:id/progress`: ends the session when the learner is ≥ 30 s past the allowance
+  (`end_reason` `cap`) or the session is > 2 h old (`too_long`), releases the lease, compiles memory, answers
+  `sessionActive:false`; the client closes without the "opened in another tab" error when `capReached`.
+  Before, a capped tab kept a live row and heartbeated (one ran 7 h, ~1.3k calls).
+- Sentry server `tracesSampleRate` removed (was 5 %): errors only, no span bookkeeping per request.
+- Proof: `scripts/cpu-cuts-probe.mjs` all ✓ locally (signed out "/" 200, signed in "/" → /dashboard, heartbeat
+  past the 1200 s allowance ends the session as `cap`); dashboard load in the browser: attributes once (was twice).
+  Not measurable here: the effect on Vercel's CPU bill — read Observability after a few days.

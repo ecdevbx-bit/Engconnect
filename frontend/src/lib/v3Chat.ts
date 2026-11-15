@@ -4,6 +4,7 @@
 // (auth happens via the first WS frame instead — see chat_ws.go).
 
 import { v3Fetch } from "@/lib/apiClient";
+import { sharedRequest } from "@/lib/sharedRequest";
 
 export interface V3ChatSession {
   sessionID: string;
@@ -86,7 +87,11 @@ export function v3FetchAIUsage(accessToken: string): Promise<V3AIUsage> {
 }
 
 export function v3FetchAIPartnerAccess(accessToken: string): Promise<V3AIPartnerAccess> {
-  return v3Fetch<V3AIPartnerAccess>("/chat/access", accessToken);
+  // Asked by every AI Partner link on the page (nav, tab bar, cards…); the
+  // answer is an admin beta switch, so one call per 5 minutes is plenty.
+  return sharedRequest(`chat-access:${accessToken}`, 5 * 60_000, () =>
+    v3Fetch<V3AIPartnerAccess>("/chat/access", accessToken),
+  );
 }
 
 export function v3EndSession(accessToken: string, sessionID: string): Promise<unknown> {

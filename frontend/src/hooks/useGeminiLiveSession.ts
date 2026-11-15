@@ -420,9 +420,9 @@ export function useGeminiLiveSession({
       });
       applyProgress(p);
       if (!p.sessionActive) {
-        // Ended on the server (opened in another tab, swept as stale…): stop
-        // the mic, socket and heartbeat so nothing keeps running for it.
-        setError("This conversation was ended (maybe opened in another tab).");
+        // Ended on the server (time used up, opened in another tab, swept as
+        // stale…): stop the mic, socket and heartbeat so nothing keeps running.
+        if (!p.capReached) setError("This conversation was ended (maybe opened in another tab).");
         closeRef.current();
       }
     } catch (err) {

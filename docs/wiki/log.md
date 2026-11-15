@@ -211,3 +211,9 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-10-31] fix | Barge-in: syllable-window rule + D-062 steady rule; D-062 alone never let real speech through with good echo cancelling (D-066, [[features/ai-partner]])
 
 ## [2026-10-31] feature | Pronunciation "Try again": same sentence, 3 tries/day free, best try's XP counts, retries don't use a free sentence (D-067, [[features/pronunciation]])
+
+## [2026-11-14] incident | Vercel paused the Hobby team for Fluid Active CPU (fair-use) — production 402 since 2026-11-13 23:17 IST; causes + proposed cuts in STATUS
+
+## [2026-11-14] incident | Team upgraded to Pro by the owner — pause lifted, production smoke 32/32
+
+## [2026-11-15] change | Vercel CPU cuts (D-068): proxy only with a session cookie, shared /chat/access + attributes requests, heartbeats end over-cap / >2 h K.AI sessions, Sentry server tracing off — cpu-cuts-probe all ✓ locally

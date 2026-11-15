@@ -45,7 +45,9 @@ is served from must be listed** or Google sign-in lands signed out on the site U
 (our API also requires a letter and a number); email confirmation **off** for now (D-050).
 
 ## Sessions
-- `@supabase/ssr` keeps the session in cookies; `src/proxy.ts` refreshes it on page requests.
+- `@supabase/ssr` keeps the session in cookies; `src/proxy.ts` refreshes it on page requests — only
+  when an `sb-<ref>-auth-token` (or `.0`) cookie is present (matcher `has`, D-068), so signed-out visits
+  never start a Vercel function. The matcher names hold the project ref: update them on a new project.
 - Client components use `useSession()` from `src/lib/session.tsx` (same shape as the old NextAuth
   hook: `data.user.accessToken`, `status`, `update()`); server components use `auth()` (`src/auth.ts`).
 - API calls send the Supabase access token as `Bearer`; `src/server/guards.ts` verifies it via JWKS.

@@ -196,6 +196,11 @@ function livePayload(g: LiveGrant, kickoff?: string) {
   };
 }
 
+// Heartbeats end a session this long past the learner's allowance (lets K.AI's
+// last reply finish), or any session older than MAX_SESSION_AGE_SECONDS.
+const CAP_GRACE_SECONDS = 30;
+const MAX_SESSION_AGE_SECONDS = 2 * 60 * 60;
+
 // End sessions whose tab disappeared without saying goodbye.
 async function sweepStale(userId?: string) {
   const cutoff = new Date(Date.now() - STALE_AFTER_SECONDS * 1000).toISOString();
@@ -337,6 +342,7 @@ async function applyProgress(
     capSeconds: usage.cap,
     remainingSeconds: usage.cap > 0 ? Math.max(0, usage.cap - usage.used - elapsed) : 0,
     capReached,
+    overCapSeconds: usage.cap > 0 ? Math.max(0, usage.used + elapsed - usage.cap) : 0,
   };
 }
 
@@ -477,6 +483,26 @@ export function registerChatRoutes(r: Router) {
       return ok({ ...(await applyProgress(u, s, {}, false, true)), sessionActive: false });
     }
     const progress = await applyProgress(u, s, await readJson(req), false);
+    // A tab left open past the allowance (or for hours) kept posting heartbeats
+    // — one ran 7 h, ~1.3k function calls. Gemini's token has expired by then,
+    // so end the session here; the client closes on sessionActive:false.
+    const ageSeconds = (Date.now() - new Date(s.started_at).getTime()) / 1000;
+    const reason =
+      progress.overCapSeconds >= CAP_GRACE_SECONDS ? "cap" : ageSeconds > MAX_SESSION_AGE_SECONDS ? "too_long" : null;
+    if (reason) {
+      await db().from("chat_sessions")
+        .update({ status: "ended", ended_at: new Date().toISOString(), end_reason: reason })
+        .eq("id", s.id).eq("status", "active");
+      if (s.lease_id) await releaseLease(s.lease_id, "ok", `ended by heartbeat: ${reason}`, progress.totalSeconds);
+      after(async () => {
+        try {
+          await compileSessionMemory(u.id, s.id);
+        } catch (err) {
+          console.warn("[memory] compile failed:", err instanceof Error ? err.message : err);
+        }
+      });
+      return ok({ ...progress, sessionActive: false });
+    }
     return ok({ ...progress, sessionActive: true });
   });
 

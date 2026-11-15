@@ -16,7 +16,7 @@ updated: 2026-09-24
 |---|---|---|
 | Unhandled API errors (the learner sees "Something went wrong" + a code) | `server/http.ts → errorResponse` | tagged `traceId` = the code the learner sees — search it |
 | Deliberate 5xx (`AI_MODEL_BUSY`, `AI_CAPACITY_EXHAUSTED`, …) | same place, as **warnings**, one issue per code | shows how often "K.AI is busy" happens ([[architecture/gemini-key-pool]]) |
-| Server component / route errors | `instrumentation.ts → onRequestError` | 5 % of server requests also traced (slow Gemini calls) |
+| Server component / route errors | `instrumentation.ts → onRequestError` | errors only — server tracing switched off to save Vercel CPU (D-068) |
 | Browser errors | `instrumentation-client.ts`, `app/error.tsx`, `app/global-error.tsx` | errors only — no tracing, no session replay (keeps pages light) |
 
 Only **Vercel deployments** report (`VERCEL_ENV` / `NEXT_PUBLIC_APP_ENV`); local dev and local

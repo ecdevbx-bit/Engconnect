@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T11:42:38.473Z",
+  "generatedAt": "2026-11-15T02:50:08.720Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -262,7 +262,7 @@
         "vercel",
         "github"
       ],
-      "updated": "2026-09-22",
+      "updated": "2026-11-15",
       "path": "docs/wiki/operations/deployment.md"
     },
     {
@@ -321,7 +321,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-10-31",
+      "updated": "2026-11-15",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -861,6 +861,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-068",
+      "title": "Cut Vercel CPU: proxy only for signed-in visitors, shared client requests, heartbeats end dead calls, no server tracing",
+      "type": "decision",
+      "date": "2026-11-15",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -971,6 +979,11 @@
     {
       "source": "architecture/auth",
       "target": "D-051",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-068",
       "kind": "cites"
     },
     {
@@ -1321,6 +1334,11 @@
     {
       "source": "features/ai-partner",
       "target": "D-056",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ai-partner",
+      "target": "D-068",
       "kind": "cites"
     },
     {
@@ -2089,6 +2107,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-068",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2184,6 +2207,16 @@
       "kind": "cites"
     },
     {
+      "source": "operations/deployment",
+      "target": "D-068",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/deployment",
+      "target": "D-056",
+      "kind": "cites"
+    },
+    {
       "source": "operations/monitoring",
       "target": "architecture/gemini-key-pool",
       "kind": "links"
@@ -2211,6 +2244,11 @@
     {
       "source": "operations/monitoring",
       "target": "D-044",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/monitoring",
+      "target": "D-068",
       "kind": "cites"
     },
     {
@@ -2426,6 +2464,11 @@
     {
       "source": "memory/status",
       "target": "D-044",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-068",
       "kind": "cites"
     },
     {

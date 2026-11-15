@@ -12,8 +12,8 @@ export async function register() {
     enabled: !!dsn && !!env,
     environment: env ?? "local",
     dataCollection: DATA_COLLECTION,
-    // A few server traces show where slow requests (Gemini calls) spend time.
-    tracesSampleRate: process.env.NEXT_RUNTIME === "nodejs" ? 0.05 : 0,
+    // No tracing (errors only): leaving tracesSampleRate unset keeps span
+    // bookkeeping off every request — Vercel bills the CPU it costs.
     beforeSend: scrubEvent,
     beforeBreadcrumb: scrubBreadcrumb,
   });
