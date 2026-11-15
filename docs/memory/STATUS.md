@@ -28,7 +28,7 @@
   Sentry server tracing off. tsc ✓, eslint ✓ (changed files), production build ✓,
   `scripts/cpu-cuts-probe.mjs` all ✓ locally, dashboard checked in the browser (attributes once, was twice).
   Effect on the bill: read Vercel → Observability after a few days (the REST API has no CPU numbers).
-- **Fixed, NOT committed/deployed yet (D-069):** signing in when the account was last used on another device
+- **Fixed — deployed `7373ccf` READY, production smoke 32/32, `session-race-probe` 5/5 on prod (D-069):** signing in when the account was last used on another device
   bounced to `/login?reason=signed_in_elsewhere` once (a racing request put the old login back into the
   server's 5 s cache). Supersede check re-reads the DB before refusing, stale reads can't poison the cache,
   the browser re-asks before signing out. `scripts/session-race-probe.mjs` 5/5 locally (production before: 1/5);
