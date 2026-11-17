@@ -36,7 +36,9 @@
 
 - **Vercel bill (2026-11-17):** billing feed works on Pro — $0 billed 14–17 Nov, usage ~$0.30/day (≈ $9/month, inside the
   included $20). Invocations ~7k/day → 2.7–4.3k/day after D-068. **Landing cached a day + refreshed on flag save (D-070),
-  NOT committed/deployed yet.** Users 17 Nov: 130 accounts, 102 practised, 21 new in 7 days, 42 active in 7 days.
+  deployed `9a22b3c` READY** — production smoke 32/32, cpu-cuts / session-race / pronunciation-retry probes all ✓,
+  landing `x-vercel-cache: HIT` with the Learn link. Open-tab fix confirmed on real data: no call since 15 Nov kept
+  heartbeating past its time (before: 12 calls > 75 min, one ~12 days). Users 17 Nov: 130 accounts, 102 practised, 21 new in 7 days, 42 active in 7 days.
 
 ## Session 6 (2026-10-29) 🔧 — deployed `960bad9` READY, production smoke **32/32**
 - **K.AI picks the language itself** (D-059): no language picker; sessions are `Auto`; K.AI opens in English

@@ -225,3 +225,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-11-15] deploy | 7373ccf (D-069) READY — production smoke 32/32, session-race-probe 5/5, cpu-cuts-probe all ✓
 
 ## [2026-11-17] change | Landing cached for a day, refreshed on admin flag save (D-070) — ISR writes were the largest Vercel usage line; bill $0 over the Pro credit
+
+## [2026-11-17] deploy | 9a22b3c (D-070) READY — production smoke 32/32, cpu-cuts, session-race and pronunciation-retry probes all ✓, landing served from the CDN cache
