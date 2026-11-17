@@ -48,5 +48,9 @@ export async function getFeatureFlagsAction(): Promise<FeatureFlagsResponse> {
 export async function saveFeatureFlagsAction(flags: Record<string, boolean>) {
   const res = await call<FeatureFlagsResponse>("/api/admin/feature-flags", "PUT", { flags });
   revalidatePath("/v3/admin/feature-flags");
+  // The landing (Learn link) and sitemap are cached pages that read the flags;
+  // refresh them now instead of on a timer (D-070).
+  revalidatePath("/");
+  revalidatePath("/sitemap.xml");
   return res;
 }

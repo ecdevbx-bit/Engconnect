@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T03:54:27.637Z",
+  "generatedAt": "2026-11-17T17:43:26.944Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -321,7 +321,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-11-15",
+      "updated": "2026-11-17",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -877,6 +877,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-070",
+      "title": "Landing refreshes when flags are saved, not every minute",
+      "type": "decision",
+      "date": "2026-11-17",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -997,6 +1005,11 @@
     {
       "source": "architecture/auth",
       "target": "D-055",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-070",
       "kind": "cites"
     },
     {
@@ -2130,6 +2143,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-070",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2232,6 +2250,11 @@
     {
       "source": "operations/deployment",
       "target": "D-056",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/deployment",
+      "target": "D-070",
       "kind": "cites"
     },
     {
@@ -2492,6 +2515,11 @@
     {
       "source": "memory/status",
       "target": "D-069",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-070",
       "kind": "cites"
     },
     {

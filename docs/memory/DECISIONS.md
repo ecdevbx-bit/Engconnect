@@ -843,3 +843,12 @@
 - Proof: `scripts/session-race-probe.mjs` — production before the fix failed 4 of 5 rounds, the fix 5 of 5 with
   the old device still refused; in the browser a sign-in after another device landed on the dashboard first try,
   and a later sign-in elsewhere still signed that tab out.
+
+## D-070 · Landing refreshes when flags are saved, not every minute — 2026-11-17
+- Owner: "why is the Vercel bill so high". Billing feed (Pro, 14–17 Nov): $0 billed; usage ~$0.30/day (≈ $9/month,
+  inside Pro's included $20). The largest usage line was **ISR Writes** (66k in 3 days, ~25k/day) — the landing
+  (`revalidate = 60`, D-055) re-rendered every minute it was visited, only so the Learn link followed its switch.
+- Now `app/page.tsx` `revalidate = 86400`; `saveFeatureFlagsAction` (used by the admin Learn card and the flags
+  page) calls `revalidatePath("/")` and `revalidatePath("/sitemap.xml")`. A flag changed outside the admin pages
+  shows within a day. Locally: `/` is `x-nextjs-cache: HIT`, `s-maxage=86400`, Learn link present. Not tested:
+  the refresh on save (would flip the shared production flag).

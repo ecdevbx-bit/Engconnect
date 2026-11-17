@@ -40,9 +40,11 @@ const JSON_LD = {
 // who hits `/` is sent straight to their dashboard by src/proxy.ts, so this
 // page reads no cookies and is pre-rendered: served from Vercel's CDN instead
 // of being rendered for every visit (it used to take ~0.9 s before the first
-// byte — the slow part of signing out). The Learn link re-checks its admin
-// switch every minute.
-export const revalidate = 60;
+// byte — the slow part of signing out). The Learn link follows its admin
+// switch: saving flags refreshes this page (feature-flags/actions.ts). It used
+// to re-render every minute, ~25k cache writes a day on Vercel (D-070); the
+// daily refresh only covers a flag changed outside the admin pages.
+export const revalidate = 86400;
 
 export default async function Page() {
   return (

@@ -57,7 +57,8 @@ is served from must be listed** or Google sign-in lands signed out on the site U
   A full-screen "Signing out…" cover (plain DOM) is painted first: until the next page has downloaded,
   the browser keeps showing the old one, and on phones the tap looked like it did nothing.
 - Signed-in visitors of `/` are sent to `/dashboard` by `src/proxy.ts`, so the landing is a static,
-  CDN-cached page (`revalidate = 60`), not rendered per visit (~0.9 s before the first byte).
+  CDN-cached page (`revalidate = 86400`, refreshed when admin flags are saved — D-070), not rendered per
+  visit (~0.9 s before the first byte).
 - Cookies last 400 days, and the server refreshes an expired access token (checked 2026-10-28 against
   production), so closing the browser doesn't sign you out. Each address (englishconnection.in, www.,
   the Vercel URL) has its own cookies, though: signing in on one and opening another looks signed out.

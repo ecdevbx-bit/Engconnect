@@ -27,7 +27,10 @@ Where each value comes from: [[operations/credentials]].
 - Every function call costs CPU (a page ~20–35 ms, an API call ~6–20 ms locally, a cold start ~1 s), so
   keep calls down: the proxy runs only for signed-in visitors, the browser shares repeated requests
   (`lib/sharedRequest.ts`: `/chat/access` 5 min, `/users/me/attributes` 3 s), dead K.AI sessions stop
-  heartbeating, Sentry server tracing is off.
+  heartbeating, Sentry server tracing is off. The landing is cached for a day and refreshed when the admin
+  saves feature flags (D-070) — it used to re-render every minute (~25k ISR writes/day, the largest usage line).
+- Billing: `GET /v1/billing/charges?teamId&from&to` (FOCUS rows, Pro only) gives cost and consumed quantity per
+  meter per day. 14–17 Nov: $0 billed, ~$0.30/day effective usage, covered by Pro's included $20.
 - Per-route CPU is only on Vercel → Observability (web); the REST API gives requests/invocations
   (`/v2/usage?type=requests`) but not CPU. `scripts/cpu-cuts-probe.mjs` checks the cuts.
 

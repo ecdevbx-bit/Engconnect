@@ -223,3 +223,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-11-15] fix | False "signed in elsewhere" right after sign-in (D-069): supersede check re-reads the DB before refusing, stale reads can't poison the cache, browser re-asks before signing out — session-race-probe 5/5 (prod before: 1/5)
 
 ## [2026-11-15] deploy | 7373ccf (D-069) READY — production smoke 32/32, session-race-probe 5/5, cpu-cuts-probe all ✓
+
+## [2026-11-17] change | Landing cached for a day, refreshed on admin flag save (D-070) — ISR writes were the largest Vercel usage line; bill $0 over the Pro credit

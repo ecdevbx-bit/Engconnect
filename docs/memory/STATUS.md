@@ -3,7 +3,7 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-11-15 (session 7). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
+> Last updated: 2026-11-17 (session 7). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
@@ -33,6 +33,10 @@
   server's 5 s cache). Supersede check re-reads the DB before refusing, stale reads can't poison the cache,
   the browser re-asks before signing out. `scripts/session-race-probe.mjs` 5/5 locally (production before: 1/5);
   browser: sign-in after another device → dashboard first try; a later sign-in elsewhere still signs out.
+
+- **Vercel bill (2026-11-17):** billing feed works on Pro — $0 billed 14–17 Nov, usage ~$0.30/day (≈ $9/month, inside the
+  included $20). Invocations ~7k/day → 2.7–4.3k/day after D-068. **Landing cached a day + refreshed on flag save (D-070),
+  NOT committed/deployed yet.** Users 17 Nov: 130 accounts, 102 practised, 21 new in 7 days, 42 active in 7 days.
 
 ## Session 6 (2026-10-29) 🔧 — deployed `960bad9` READY, production smoke **32/32**
 - **K.AI picks the language itself** (D-059): no language picker; sessions are `Auto`; K.AI opens in English
