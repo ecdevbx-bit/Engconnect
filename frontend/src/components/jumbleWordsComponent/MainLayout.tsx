@@ -635,11 +635,11 @@ export default function MainLayout() {
         <div className="flex flex-col gap-3 pb-[calc(60px_+_env(safe-area-inset-bottom))] md:pb-[160px]">
             {/* Compact header — title and progress */}
             <div id="tour-title" className="flex flex-wrap items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-words-soft text-words">
                     <Puzzle className="h-5 w-5" />
                 </span>
-                <h1 className="text-2xl font-bold text-heading">Jumble Words</h1>
-                <span className="hidden text-sm text-muted-foreground md:inline">
+                <h1 className="text-[22px] font-extrabold text-heading md:text-[28px]">Jumble Words</h1>
+                <span className="hidden text-[15px] font-semibold text-muted-foreground md:inline">
                     · Question {currentIndex + 1} of {totalQuestions}
                 </span>
 
@@ -657,16 +657,16 @@ export default function MainLayout() {
                     onClick={handleStartTour}
                     aria-label="Show how to play"
                     title="How to play"
-                    className="ml-auto flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+                    className="ml-auto flex h-10 items-center gap-1.5 rounded-full bg-surface-2 px-3 text-[14px] font-bold text-body transition-colors hover:bg-surface-3 hover:text-heading"
                 >
-                    <HelpCircle className="h-4 w-4" />
+                    <HelpCircle className="h-5 w-5" />
                     <span className="hidden sm:inline">How to play</span>
                 </button>
             </div>
 
             <div className="grid grid-cols-1 items-start gap-x-6 gap-y-4 lg:grid-cols-[minmax(0,1fr)_340px]">
                 {/* ── Left Panel — the board ── */}
-                <div className="c-box overflow-hidden rounded-2xl">
+                <div className="ec-card overflow-hidden rounded-[22px]">
                     {/* One combined control row: progress journey · difficulty · timer · audio */}
                     <div id="tour-controlbar" className="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2 md:px-6">
                         <div className="min-w-[180px] flex-1">
@@ -692,24 +692,24 @@ export default function MainLayout() {
                             disabled={loading || submitting || !sentences[currentIndex]}
                             aria-label="Get a hint"
                             title="Get a hint"
-                            className="flex items-center gap-1 rounded-xl bg-surface-2 px-2 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-surface-3 disabled:opacity-50"
+                            className="flex h-11 items-center gap-1.5 rounded-xl bg-words-soft px-3 text-[15px] font-bold text-words transition-colors hover:brightness-95 disabled:opacity-50"
                         >
-                            <Lightbulb className="h-4 w-4" />
-                            <span className="hidden sm:inline">Hint</span>
+                            <Lightbulb className="h-5 w-5" />
+                            <span>Hint</span>
                         </button>
                         <button
                             onClick={speakSentence}
                             aria-label="Hear your sentence"
                             title="Hear your sentence"
-                            className="rounded-xl bg-surface-2 p-1.5 text-primary transition-colors hover:bg-surface-3"
+                            className="grid h-11 w-11 place-items-center rounded-xl bg-surface-2 text-heading transition-colors hover:bg-surface-3"
                         >
-                            <HiSpeakerWave className="text-base" />
+                            <HiSpeakerWave className="text-xl" />
                         </button>
                     </div>
 
                     {/* Prompt */}
-                    <h2 className="px-3 pt-4 text-lg font-semibold text-heading sm:text-xl md:px-6">
-                        Unjumble the words to make a correct English sentence.
+                    <h2 className="px-4 pt-5 text-[18px] font-bold text-heading sm:text-xl md:px-6">
+                        Tap the words in the right order to make a sentence.
                     </h2>
 
                     <WordDragDrop
@@ -738,7 +738,7 @@ export default function MainLayout() {
                     {/* AI Coach Card — tablet/desktop only. On phones it's
                         replaced by the disposable <CoachFeedbackCard/> that pops
                         up on submit. (Kept in the DOM as the tour anchor.) */}
-                    <div id="tour-coach" className="glass-glow hidden items-center gap-3 rounded-2xl p-4 md:flex">
+                    <div id="tour-coach" className="ec-card hidden items-center gap-3 p-4 md:flex">
                         <span
                             className={cn(
                                 "mascot-ring",
@@ -759,9 +759,9 @@ export default function MainLayout() {
                                 className={cn(
                                     "mt-0.5 text-sm transition-colors",
                                     feedback === "wrong"
-                                        ? "text-[#ef4444]"
+                                        ? "text-bad"
                                         : feedback === "correct"
-                                            ? "text-[#22c55e]"
+                                            ? "text-good"
                                             : "text-muted-foreground"
                                 )}
                             >

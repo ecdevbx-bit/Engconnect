@@ -59,7 +59,7 @@ type ZoneId = "pool-zone" | "sentence-zone";
 type DerailVec = { x: number; y: number; r: number };
 
 const TILE_BASE =
-    "select-none touch-none px-3 py-2 text-sm font-medium tracking-wide border shadow-sm transition-colors duration-150";
+    "select-none touch-none min-h-12 px-4 py-2.5 text-[17px] font-semibold border shadow-sm transition-colors duration-150";
 
 // Coach colour variants — a varied, cheerful train.
 const COACH_PALETTES = [
@@ -637,7 +637,7 @@ function WordDragDropInner({
                 {/* Word pool / yard */}
                 <div id="tour-pool">
                     {isTrain && (
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                        <p className="mb-2 text-[14px] font-bold text-muted-foreground">
                             🚉 Word yard
                         </p>
                     )}
@@ -667,7 +667,7 @@ function WordDragDropInner({
                 {/* Inline build zone — directly below the yard */}
                 <div id="tour-sentence">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                        <p className="text-[14px] font-bold text-muted-foreground">
                             {theme.emoji} Your sentence
                         </p>
                         {/* Re-jumble — compact button beside the label to save a row.
@@ -678,13 +678,13 @@ function WordDragDropInner({
                                 onClick={handleReset}
                                 disabled={isCorrect || nothingMoved || isSubmitting}
                                 className={cn(
-                                    "flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide transition-all duration-150",
+                                    "flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[14px] font-bold transition-all duration-150",
                                     !isCorrect && !nothingMoved
                                         ? "c-box cursor-pointer border-border text-heading hover:border-primary/40 active:scale-[0.98]"
                                         : "cursor-not-allowed border-border bg-surface-2 text-muted-foreground"
                                 )}
                             >
-                                <span className="text-primary">Re-Jumble</span>
+                                <span className="text-primary">Start over</span>
                                 <BsShuffle className="text-base text-primary" />
                             </button>
                         )}
