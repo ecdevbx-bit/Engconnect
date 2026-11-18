@@ -852,3 +852,22 @@
   page) calls `revalidatePath("/")` and `revalidatePath("/sitemap.xml")`. A flag changed outside the admin pages
   shows within a day. Locally: `/` is `x-nextjs-cache: HIT`, `s-maxage=86400`, Learn link present. Not tested:
   the refresh on save (would flip the shared production flag).
+
+## D-071 · UI overhaul "Calm Saffron": one brand colour, pictures over words, big type and targets — 2026-11-18
+- Owner: "I like the UI but I want a complete overhaul — more user friendly, simple, good for all age
+  groups, looking like a premium app"; approved the proposal page (six rules + mockups), default theme =
+  the phone's setting, tabs Home · Words · Talk · Speak · Ranks. Then: "too much text — like Duolingo,
+  12 min with a circle", "change the landing page accordingly".
+- Built on branch `claude/ui-overhaul-b33f7f` only (Vercel preview); `main`/production untouched until
+  the owner approves. UI only: API contract, `src/lib/v3*`, proxy cookie matcher, `sharedRequest`, the
+  landing's `revalidate = 86400` + flag-save refresh (D-068–D-070) unchanged.
+- Tokens keep their names, values change (`globals.css`): saffron `--primary` in BOTH themes (light was
+  blue), warm neutrals; new `--kai/--speak/--words/--learn` (+ `-soft`) and `--good/--warn/--bad`.
+  Tailwind `text-xs/sm/base` = 13/15/17 px; arbitrary 8–12.5 px sizes in learner code raised to 13 px.
+  Buttons 44/56 px, inputs 48 px. Glass and ambient colour blobs removed (solid cards, soft shadow in
+  light) — lighter on cheap phones (D-037 spirit). Landing drops Space Grotesk for the app's heading font.
+- "Less text": amounts as rings (`components/ui/stat-ring.tsx`), practices as icon tiles, stats as
+  icon + number, Pronunciation steps as three icons; helper sentences removed, kept as screen-reader text.
+- Home now also calls `/chat/usage` (one cheap call) for the K.AI minutes ring; heatmap/weekly chart
+  moved to `/dashboard/activity`. Ranks shows the board before badges.
+- Not reworked yet: Profile, Learn, onboarding, Help panel, K.AI history (tokens/sizes only).

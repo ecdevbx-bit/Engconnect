@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T18:01:24.758Z",
+  "generatedAt": "2026-11-18T12:30:00.954Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -203,6 +203,19 @@
       "path": "docs/wiki/features/support.md"
     },
     {
+      "id": "features/ui-design",
+      "title": "UI design system (Calm Saffron)",
+      "type": "feature",
+      "tags": [
+        "ui",
+        "design",
+        "accessibility",
+        "phone"
+      ],
+      "updated": "2026-11-18",
+      "path": "docs/wiki/features/ui-design.md"
+    },
+    {
       "id": "features/word-bank",
       "title": "Word Bank",
       "type": "feature",
@@ -321,7 +334,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-11-17",
+      "updated": "2026-11-18",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -881,6 +894,14 @@
       "title": "Landing refreshes when flags are saved, not every minute",
       "type": "decision",
       "date": "2026-11-17",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
+      "id": "D-071",
+      "title": "UI overhaul \"Calm Saffron\": one brand colour, pictures over words, big type and targets",
+      "type": "decision",
+      "date": "2026-11-18",
       "status": "active",
       "path": "docs/memory/DECISIONS.md"
     },
@@ -1638,6 +1659,46 @@
       "kind": "cites"
     },
     {
+      "source": "features/ui-design",
+      "target": "features/ai-partner",
+      "kind": "links"
+    },
+    {
+      "source": "features/ui-design",
+      "target": "features/pronunciation",
+      "kind": "links"
+    },
+    {
+      "source": "features/ui-design",
+      "target": "features/jumble-words",
+      "kind": "links"
+    },
+    {
+      "source": "features/ui-design",
+      "target": "features/progress-and-rewards",
+      "kind": "links"
+    },
+    {
+      "source": "features/ui-design",
+      "target": "features/premium",
+      "kind": "links"
+    },
+    {
+      "source": "features/ui-design",
+      "target": "features/learn",
+      "kind": "links"
+    },
+    {
+      "source": "features/ui-design",
+      "target": "D-071",
+      "kind": "cites"
+    },
+    {
+      "source": "features/ui-design",
+      "target": "D-070",
+      "kind": "cites"
+    },
+    {
       "source": "features/word-bank",
       "target": "features/pronunciation",
       "kind": "links"
@@ -1700,6 +1761,11 @@
     {
       "source": "index",
       "target": "features/admin",
+      "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "features/ui-design",
       "kind": "links"
     },
     {
@@ -1776,6 +1842,11 @@
       "source": "index",
       "target": "meta/graph",
       "kind": "links"
+    },
+    {
+      "source": "index",
+      "target": "D-071",
+      "kind": "cites"
     },
     {
       "source": "index",
@@ -2148,6 +2219,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-071",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2496,6 +2572,11 @@
       "source": "D-066",
       "target": "D-062",
       "kind": "supersedes"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-071",
+      "kind": "cites"
     },
     {
       "source": "memory/status",

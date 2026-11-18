@@ -23,6 +23,7 @@ The compiled knowledge base for the product (Karpathy "LLM Wiki" pattern, see
 | [[features/premium]] | Pro: trial program, /pro invite link, quotas, Razorpay |
 | [[features/support]] | "Something wrong?" Help dropdown → ticket + email to the team (Resend) |
 | [[features/admin]] | Admin panel: Pro applications, support inbox, wiki & memory, Gemini keys, content, settings, Learn switch |
+| [[features/ui-design]] | UI design system "Calm Saffron" (D-071, overhaul branch): tokens, type scale, rings/tiles, nav names, per-screen layout |
 | [[features/learn]] | Learn library: 39 visual grammar/speaking lessons, Pro-locked lessons, admin "show to everyone" switch |
 
 ## Architecture

@@ -3,13 +3,13 @@ title: Knowledge graph
 type: meta
 tags: [graph, memory]
 links: [index, meta/how-this-wiki-works]
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Knowledge graph (generated — do not edit by hand)
 
 Regenerate with `node docs/wiki/build-graph.mjs`. Machine-readable version: `docs/wiki/graph.json`
-(98 nodes · 354 edges). See [[index]] and [[meta/how-this-wiki-works]].
+(100 nodes · 366 edges). See [[index]] and [[meta/how-this-wiki-works]].
 
 ## Map of pages
 ```mermaid
@@ -33,6 +33,7 @@ flowchart LR
     features_progress_and_rewards["Progress & rewards"]
     features_pronunciation["Pronunciation Coach"]
     features_support["Customer support ('Something wrong?')"]
+    features_ui_design["UI design system (Calm Saffron)"]
     features_word_bank["Word Bank"]
   end
   subgraph index
@@ -140,6 +141,12 @@ flowchart LR
   features_support --> features_admin
   features_support --> architecture_auth
   features_support --> architecture_api
+  features_ui_design --> features_ai_partner
+  features_ui_design --> features_pronunciation
+  features_ui_design --> features_jumble_words
+  features_ui_design --> features_progress_and_rewards
+  features_ui_design --> features_premium
+  features_ui_design --> features_learn
   features_word_bank --> features_pronunciation
   features_word_bank --> features_admin
   meta_how_this_wiki_works --> log
@@ -201,8 +208,9 @@ flowchart LR
 | [[features/premium]] | D-033, D-010, D-061 |
 | [[features/pronunciation]] | D-038, D-035, D-067, D-057, D-036 |
 | [[features/support]] | D-029, D-034 |
-| [[index]] | D-061 |
-| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058, D-059, D-060, D-061, D-062, D-063, D-064, D-065, D-066, D-067, D-068, D-069, D-070 |
+| [[features/ui-design]] | D-071, D-070 |
+| [[index]] | D-071, D-061 |
+| [[log]] | D-008, D-011, D-009, D-019, D-021, D-022, D-026, D-024, D-025, D-023, D-029, D-027, D-028, D-030, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-040, D-041, D-042, D-043, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-056, D-057, D-058, D-059, D-060, D-061, D-062, D-063, D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071 |
 | [[meta/how-this-wiki-works]] | D-028, D-031 |
 | [[operations/credentials]] | D-027, D-024, D-025, D-023, D-044 |
 | [[operations/deployment]] | D-022, D-068, D-056, D-070 |
@@ -283,7 +291,8 @@ flowchart LR
 | D-067 | Pronunciation: "Try again" on the same sentence; the best try of the day counts | active | [[features/pronunciation]] [[log]] [[memory/status]] |
 | D-068 | Cut Vercel CPU: proxy only for signed-in visitors, shared client requests, heartbeats end dead calls, no server tracing | active | [[architecture/auth]] [[features/ai-partner]] [[log]] [[operations/deployment]] [[operations/monitoring]] [[memory/status]] |
 | D-069 | "Signed in elsewhere" is double-checked before a fresh login is thrown out | active | [[architecture/auth]] [[log]] [[memory/status]] |
-| D-070 | Landing refreshes when flags are saved, not every minute | active | [[architecture/auth]] [[log]] [[operations/deployment]] [[memory/status]] |
+| D-070 | Landing refreshes when flags are saved, not every minute | active | [[architecture/auth]] [[features/ui-design]] [[log]] [[operations/deployment]] [[memory/status]] |
+| D-071 | UI overhaul "Calm Saffron": one brand colour, pictures over words, big type and targets | active | [[features/ui-design]] [[index]] [[log]] [[memory/status]] |
 
 ## Lint
 - ✅ no broken links, mismatches or orphans

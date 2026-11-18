@@ -227,3 +227,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-11-17] change | Landing cached for a day, refreshed on admin flag save (D-070) — ISR writes were the largest Vercel usage line; bill $0 over the Pro credit
 
 ## [2026-11-17] deploy | 9a22b3c (D-070) READY — production smoke 32/32, cpu-cuts, session-race and pronunciation-retry probes all ✓, landing served from the CDN cache
+
+## [2026-11-18] change | UI overhaul on branch claude/ui-overhaul-b33f7f (D-071) — "Calm Saffron": one saffron brand colour, 13/15/17 px type, solid cards, tabs Home·Words·Talk·Speak·Ranks, new Home (Today ring, icon tiles, K.AI minutes ring), K.AI/Pronunciation/Jumble/Ranks/login/landing redrawn with less text; not on main

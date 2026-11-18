@@ -5,6 +5,13 @@
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
 > Last updated: 2026-11-17 (session 7). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
 
+## UI overhaul branch 🎨 (only on `claude/ui-overhaul-b33f7f`, NOT on main)
+- D-071 "Calm Saffron" redesign + "less text" pass (rings, icon tiles) incl. landing. Preview (Vercel
+  login needed): https://engconnect-git-claude-ui-overhaul-b33f7f-engconnect.vercel.app — same
+  database as production. tsc ✓, production build ✓, eslint: no new errors. Checked in the browser:
+  login + landing (375 px, light/dark). Signed-in screens not yet checked in the browser (needs the
+  owner's sign-in). Waiting for the owner's OK before merging to main.
+
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
   `frontend`, pnpm 11 via explicit commands — D-022). Auto-deploys on push to `main`.
