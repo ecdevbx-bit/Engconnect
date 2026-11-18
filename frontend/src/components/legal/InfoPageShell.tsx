@@ -18,7 +18,7 @@ export function InfoPageShell({
 }) {
   return (
     <div className="min-h-screen bg-[#18181c] font-body text-body antialiased">
-      <nav className="sticky top-0 z-10 border-b border-white/[0.06] bg-[#18181c]/80 backdrop-blur-md">
+      <nav className="sticky top-0 z-10 border-b border-border bg-[#18181c]/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3">
           <Link
             href="/"
@@ -40,7 +40,7 @@ export function InfoPageShell({
         <div className="mt-10 space-y-10">{children}</div>
       </main>
 
-      <footer className="border-t border-white/[0.06]">
+      <footer className="border-t border-border">
         <div className="mx-auto flex max-w-3xl flex-col gap-2 px-5 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 English Connection · Built for India&apos;s ambitious learners</span>
           <div className="flex gap-4">

@@ -66,8 +66,8 @@ export function ChatBubble({
       <div
         className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border ${
           isUser
-            ? "border-white/[0.06] bg-surface-2"
-            : "border-white/[0.06] bg-surface-2"
+            ? "border-border bg-surface-2"
+            : "border-border bg-surface-2"
         }`}
       >
         {isUser ? (
@@ -96,7 +96,7 @@ export function ChatBubble({
         className={[
           "max-w-[520px] rounded-[18px] px-5 py-4",
           isUser
-            ? "bg-surface-2 border border-white/[0.08] md:mr-4"
+            ? "bg-surface-2 border border-border md:mr-4"
             : "c-box",
         ].join(" ")}
       >
@@ -108,7 +108,7 @@ export function ChatBubble({
         >
           {renderInlineMarkdown(message.body)}
         </p>
-        <p className={`mt-3 text-[12px] text-muted-foreground ${isUser ? "text-right" : ""}`}>
+        <p className={`mt-3 text-[13px] text-muted-foreground ${isUser ? "text-right" : ""}`}>
           {message.time}
         </p>
       </div>

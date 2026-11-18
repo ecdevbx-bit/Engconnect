@@ -57,7 +57,7 @@ export default function LevelsPopover({
       aria-label="Levels"
       // Centered under the navbar on phones (the chip sits mid-bar so a
       // right-anchored panel runs off-screen); right-aligned dropdown from sm up.
-      className="fixed inset-x-3 top-[80px] z-50 w-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-2 shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[360px]"
+      className="fixed inset-x-3 top-[80px] z-50 w-auto overflow-hidden rounded-2xl border border-border bg-surface-2 shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[360px]"
       style={{ animation: "popIn 0.15s ease-out both" }}
     >
       {/* Header */}
@@ -75,7 +75,7 @@ export default function LevelsPopover({
         </div>
       </div>
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="h-px bg-surface-2" />
 
       {/* Shared gradient/filter defs for the plant art — rendered once. */}
       <PlantArtDefs />
@@ -131,7 +131,7 @@ function LevelRow({
   // by state so the current level still stands out.
   const pill =
     state === "current"
-      ? "bg-primary text-[#0b0e14]"
+      ? "bg-primary text-primary-foreground"
       : state === "earned"
         ? "bg-cyan/15 text-cyan"
         : "bg-surface-3 text-muted-foreground";
@@ -147,11 +147,11 @@ function LevelRow({
         <p className={`text-sm truncate ${state === "current" ? "font-bold text-heading" : "font-semibold text-body"}`}>
           {plantStageName(stage)}
         </p>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[13px] text-muted-foreground">
           {def.threshold === 0 ? "Earned at start" : `${def.threshold.toLocaleString()} XP`}
         </p>
       </div>
-      <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide ${pill}`}>
+      <span className={`shrink-0 rounded-full px-2.5 py-1 text-[13px] font-bold tracking-wide ${pill}`}>
         LV {def.level}
       </span>
     </div>

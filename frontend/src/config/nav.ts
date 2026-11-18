@@ -3,7 +3,7 @@
 
 import type { ComponentType } from "react";
 import { KaiIcon } from "@/components/layout/navIcons";
-import { User, Puzzle, House, Speech, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, Link2, ToggleRight, KeyRound, LayoutGrid, Inbox, BadgeCheck, BookOpen, GraduationCap } from "lucide-react";
+import { User, Puzzle, House, Blocks, Activity, Shield, Award, Star, Mic, MessageCircle, Trophy, Link2, ToggleRight, KeyRound, LayoutGrid, Inbox, BadgeCheck, BookOpen, GraduationCap } from "lucide-react";
 
 export interface NavItem {
   id: string;
@@ -141,14 +141,15 @@ export const adminMenu: NavItem[] = [
 ];
 
 /**
- * Primary destinations for the app-style bottom navigation bar shown on
- * small screens (mirrors the navbar's NavTabs subset). Short labels keep the
- * five-up bar readable on narrow phones.
+ * Primary destinations — the phone tab bar (BottomNav) and the desktop navbar
+ * tabs (NavTabs) both read this list, so the names are the same everywhere.
+ * Short plain words (D-071): they stay readable at the larger type size on a
+ * 360 px phone. K.AI ("Talk") sits in the middle as the raised button.
  */
 export const primaryNav: NavItem[] = [
-  { id: "dashboard", label: "Home", href: "/dashboard", icon: House },
-  { id: "jumble", label: "Jumble", href: "/dashboard/jumble", icon: Puzzle },
-  { id: "ai-partner", label: "K.AI", href: "/dashboard/ai-partner", icon: KaiIcon },
-  { id: "pronunciation", label: "Pronounce", href: "/dashboard/pronunciation", icon: Speech },
-  { id: "leaderboard", label: "Ranks", href: "/dashboard/leaderboard", icon: Trophy },
+  { id: "dashboard", label: "Home", href: "/dashboard", icon: House, description: "Home" },
+  { id: "jumble", label: "Words", href: "/dashboard/jumble", icon: Blocks, description: "Jumble Words" },
+  { id: "ai-partner", label: "Talk", href: "/dashboard/ai-partner", icon: KaiIcon, description: "Talk to K.AI" },
+  { id: "pronunciation", label: "Speak", href: "/dashboard/pronunciation", icon: Mic, description: "Pronunciation" },
+  { id: "leaderboard", label: "Ranks", href: "/dashboard/leaderboard", icon: Trophy, description: "Leaderboard" },
 ];

@@ -70,7 +70,7 @@ export function ProgressStatsCard({
           XP-to-next below. Header, Score and round dots are dropped here. */}
       {mobileCompact && (
         <div className="md:hidden">
-          <div className="mb-1.5 flex items-center justify-between text-[11px]">
+          <div className="mb-1.5 flex items-center justify-between text-[13px]">
             <span className="font-semibold text-heading">Level {level}</span>
             <span className="inline-flex items-center gap-1 font-semibold text-pink">
               <Flame className={cn("h-3.5 w-3.5", combo >= 2 && "anim-flame")} />
@@ -84,7 +84,7 @@ export function ProgressStatsCard({
               style={{ width: `${pct}%` }}
             />
           </div>
-          <div className="mt-1 text-right text-[11px] text-muted-foreground">
+          <div className="mt-1 text-right text-[13px] text-muted-foreground">
             {atMax ? "Max level" : `${xpToNext.toLocaleString()} XP to Level ${level + 1}`}
           </div>
           {xpGain && (
@@ -122,7 +122,7 @@ export function ProgressStatsCard({
 
         {/* Level progress — how much XP until the next level. */}
         <div className="mb-3">
-          <div className="mb-1.5 flex items-center justify-between text-[11px]">
+          <div className="mb-1.5 flex items-center justify-between text-[13px]">
             <span className="font-semibold text-heading">Level {level}</span>
             <span className="text-muted-foreground">
               {atMax ? "Max level" : `${xpToNext.toLocaleString()} XP to Level ${level + 1}`}

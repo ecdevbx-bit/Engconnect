@@ -11,25 +11,53 @@
 /* Dark is the default theme. The values double as the shadcn/ui token contract.
    next-themes adds `.light` on <html> for the light theme (see the .light block
    below); `.dark` is also matched here so a forced-dark subtree re-uses these. */
+/* ══════════════════════════════════════════════════════════════════════════
+   "Calm Saffron" — design system (UI overhaul, D-071)
+   One saffron brand colour in both themes, warm neutrals, solid surfaces.
+   Token NAMES are unchanged so every component re-skins from here; only the
+   values moved. Dark = :root/.dark, light = .light (next-themes, follows the
+   phone by default). Feature colours: K.AI = teal (--kai), Pronunciation =
+   violet (--secondary-*), Jumble = amber (--words), Learn = blue (--learn).
+   ══════════════════════════════════════════════════════════════════════════ */
 :root,
 .dark {
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
-  /* Raw palette — neutral dark ramp built around the #18181C base. */
-  --bg: #18181c;
-  --surface-1: #1f1f24;
-  --surface-2: #26262c;
-  --surface-3: #303036;
-  --primary-1: #f59e0b;
-  --primary-2: #f97316;
-  --secondary-1: #b79fff;
-  --secondary-2: #ab8eff;
-  --cyan: #00e3fd;
-  --pink: #ff6c95;
-  --heading: #ecedf6;
-  --body: #a9abb3;
-  --ghost: rgba(255, 255, 255, 0.06);
-  --ghost-top: rgba(255, 255, 255, 0.10);
+  /* Raw palette — warm charcoal ramp. */
+  --bg: #121214;
+  --surface-1: #1c1c20;
+  --surface-2: #26262b;
+  --surface-3: #313137;
+  --primary-1: #ff9a4d;
+  --primary-2: #ff7a1a;
+  --secondary-1: #b8a3ff;
+  --secondary-2: #a78bfa;
+  --cyan: #22d3ee;
+  --pink: #fb7185;
+  --heading: #f4f4f5;
+  --body: #c9c9d0;
+  --muted-text: #a1a1aa;
+  --ghost: rgba(255, 255, 255, 0.08);
+  --ghost-top: rgba(255, 255, 255, 0.12);
+
+  /* Feature + state colours (text/icon colour, and a soft tile fill). */
+  --kai: #2dd4bf;
+  --kai-soft: rgba(45, 212, 191, 0.14);
+  --speak: #a78bfa;
+  --speak-soft: rgba(167, 139, 250, 0.15);
+  --words: #fbbf24;
+  --words-soft: rgba(251, 191, 36, 0.14);
+  --learn: #60a5fa;
+  --learn-soft: rgba(96, 165, 250, 0.15);
+  --brand-soft: rgba(255, 122, 26, 0.16);
+  --good: #4ade80;
+  --good-soft: rgba(74, 222, 128, 0.14);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.14);
+  --bad: #f87171;
+  --bad-soft: rgba(248, 113, 113, 0.15);
+  --card-shadow: none;
+  --raised-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 
   /* shadcn/ui token contract — mapped onto the palette above */
   --background: var(--bg);
@@ -39,102 +67,118 @@
   --popover: var(--surface-2);
   --popover-foreground: var(--heading);
   --primary: var(--primary-2);
-  --primary-foreground: #0b0e14;
+  --primary-foreground: #1a1206;
   --secondary: var(--surface-2);
   --secondary-foreground: var(--heading);
   --muted: var(--surface-2);
-  --muted-foreground: var(--body);
+  --muted-foreground: var(--muted-text);
   --accent: var(--surface-3);
   --accent-foreground: var(--heading);
-  --destructive: #ff5470;
-  --destructive-foreground: #ffffff;
+  --destructive: #f87171;
+  --destructive-foreground: #1a0606;
   --border: var(--ghost);
-  --input: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
   --ring: var(--primary-2);
 
   --chart-1: var(--secondary-2);
-  --chart-2: var(--cyan);
-  --chart-3: var(--pink);
+  --chart-2: var(--kai);
+  --chart-3: var(--primary-2);
   --chart-4: #c8b4ff;
   --chart-5: #8c64ff;
 
   --sidebar: var(--surface-1);
   --sidebar-foreground: var(--heading);
   --sidebar-primary: var(--primary-2);
-  --sidebar-primary-foreground: #0b0e14;
+  --sidebar-primary-foreground: #1a1206;
   --sidebar-accent: var(--surface-3);
   --sidebar-accent-foreground: var(--heading);
   --sidebar-border: var(--ghost);
   --sidebar-ring: var(--primary-2);
 
-  /* Activity heatmap ramp — amber on dark. */
-  --heat-0: #262b35;
-  --heat-1: #7c4a15;
-  --heat-2: #b45309;
-  --heat-3: #d97706;
-  --heat-4: #f59e0b;
+  /* Activity heatmap ramp — saffron on dark. */
+  --heat-0: #26262b;
+  --heat-1: #6b3a14;
+  --heat-2: #a8501a;
+  --heat-3: #e0661b;
+  --heat-4: #ff8a33;
 
-  /* Training-card tints (dark — the original muted accents). */
-  --tint-jumble: linear-gradient(to right, rgba(146, 64, 14, 0.76) 0%, rgba(249, 115, 22, 0.5) 40%, rgba(249, 115, 22, 0.1) 100%);
-  --tint-pron: linear-gradient(to right, rgba(76, 58, 122, 0.78) 0%, rgba(171, 142, 255, 0.48) 40%, rgba(171, 142, 255, 0.1) 100%);
-  --tint-ai: linear-gradient(to right, rgba(6, 78, 59, 0.78) 0%, rgba(16, 185, 129, 0.46) 40%, rgba(16, 185, 129, 0.1) 100%);
-  --tint-lead: linear-gradient(to right, rgba(14, 89, 109, 0.78) 0%, rgba(6, 182, 212, 0.46) 40%, rgba(6, 182, 212, 0.1) 100%);
-  --tint-wordbank: linear-gradient(to right, rgba(112, 26, 63, 0.78) 0%, rgba(244, 114, 182, 0.46) 40%, rgba(244, 114, 182, 0.1) 100%);
+  /* Training-card tints — kept for components not yet redrawn; flat soft
+     fills now instead of heavy gradients. */
+  --tint-jumble: linear-gradient(135deg, rgba(251, 191, 36, 0.20), rgba(251, 191, 36, 0.06));
+  --tint-pron: linear-gradient(135deg, rgba(167, 139, 250, 0.22), rgba(167, 139, 250, 0.06));
+  --tint-ai: linear-gradient(135deg, rgba(45, 212, 191, 0.20), rgba(45, 212, 191, 0.06));
+  --tint-lead: linear-gradient(135deg, rgba(96, 165, 250, 0.20), rgba(96, 165, 250, 0.06));
+  --tint-wordbank: linear-gradient(135deg, rgba(251, 113, 133, 0.20), rgba(251, 113, 133, 0.06));
 
-  /* PRO / status card (dark — the original orange). */
-  --pro-card: linear-gradient(160deg, #fbbf24 0%, #f97316 45%, #ea580c 100%);
-  --pro-pill: linear-gradient(110deg, #fbbf24 0%, #f97316 55%, #ea580c 100%);
+  /* PRO / status card + pills — the one saffron gradient. */
+  --pro-card: linear-gradient(150deg, #ffb066 0%, #ff7a1a 55%, #e85d0c 100%);
+  --pro-pill: linear-gradient(120deg, #ff9a4d 0%, #ff7a1a 60%, #f0640f 100%);
 }
 
-/* ── Light theme · "Lumina Learning" ─────────────────────────────────────────
-   Only the raw palette + the handful of literals that flip are overridden here;
-   every derived/shadcn token is `var(--raw)` so it re-resolves automatically.
-   next-themes toggles the `.light` class on <html>. ── */
+/* ── Light theme — same brand, warm off-white base. Only raw values and the
+   literals that flip are overridden; derived tokens re-resolve. ── */
 .light {
   color-scheme: light;
 
-  /* "Lumina Learning" — clean off-white base, sky-blue primary, marigold
-     secondary, on a breathable cool-gray neutral ramp. */
-  --bg: #f8f9fb;
+  --bg: #f6f5f3;
   --surface-1: #ffffff;
-  --surface-2: #f2f4f6;
-  --surface-3: #e7e8ea;
+  --surface-2: #f0eeea;
+  --surface-3: #e5e2dd;
 
-  --primary-1: #2976c7;
-  --primary-2: #005da7;
-  --secondary-1: #ffb955;
-  --secondary-2: #835500;
+  /* --primary-2 is used for orange TEXT on white (text-primary, 4.8:1) and for
+     buttons with white text; --primary-1 is the lighter saffron for fills. */
+  --primary-1: #f0731f;
+  --primary-2: #c9480c;
+  --secondary-1: #8b6cf0;
+  --secondary-2: #6d4fd8;
   --cyan: #0e7490;
-  --pink: #c84f7c;
+  --pink: #be3a64;
 
-  --heading: #191c1e;
-  --body: #414751;
-  --ghost: rgba(20, 28, 46, 0.1);
-  --ghost-top: rgba(20, 28, 46, 0.04);
+  --heading: #1c1917;
+  --body: #44403c;
+  --muted-text: #6f6a66;
+  --ghost: rgba(28, 25, 23, 0.10);
+  --ghost-top: rgba(28, 25, 23, 0.05);
+
+  --kai: #0f766e;
+  --kai-soft: #d7f2ee;
+  --speak: #6d4fd8;
+  --speak-soft: #ebe5fb;
+  --words: #b45309;
+  --words-soft: #fbedd3;
+  --learn: #1d4ed8;
+  --learn-soft: #dfe8fb;
+  --brand-soft: #fdeadb;
+  --good: #15803d;
+  --good-soft: #dcf3e2;
+  --warn: #b45309;
+  --warn-soft: #fbecd2;
+  --bad: #dc2626;
+  --bad-soft: #fde2e2;
+  --card-shadow: 0 1px 2px rgba(28, 25, 23, 0.05), 0 8px 24px rgba(28, 25, 23, 0.07);
+  --raised-shadow: 0 10px 30px rgba(28, 25, 23, 0.14);
 
   /* Literals that must flip with the theme */
   --primary-foreground: #ffffff;
-  --destructive: #ba1a1a;
-  --input: rgba(20, 28, 46, 0.12);
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --input: rgba(28, 25, 23, 0.16);
   --sidebar-primary-foreground: #ffffff;
 
-  /* Activity heatmap ramp — blue tints on light. */
-  --heat-0: #e7e8ea;
-  --heat-1: #cfe1f5;
-  --heat-2: #8fbce8;
-  --heat-3: #3f8fd6;
-  --heat-4: #005da7;
+  --heat-0: #e5e2dd;
+  --heat-1: #fbd7b8;
+  --heat-2: #f6a465;
+  --heat-3: #e8701f;
+  --heat-4: #c9480c;
 
-  /* Training-card tints (light — vibrant Lumina color blocks). */
-  --tint-jumble: linear-gradient(to right, rgba(194, 93, 7, 0.95) 0%, rgba(240, 138, 20, 0.8) 45%, rgba(245, 158, 11, 0.5) 100%);
-  --tint-pron: linear-gradient(to right, rgba(11, 121, 150, 0.95) 0%, rgba(8, 160, 196, 0.8) 45%, rgba(6, 182, 212, 0.5) 100%);
-  --tint-ai: linear-gradient(to right, rgba(6, 130, 90, 0.95) 0%, rgba(13, 170, 118, 0.8) 45%, rgba(16, 185, 129, 0.5) 100%);
-  --tint-lead: linear-gradient(to right, rgba(0, 80, 145, 0.95) 0%, rgba(20, 108, 190, 0.8) 45%, rgba(0, 93, 167, 0.5) 100%);
-  --tint-wordbank: linear-gradient(to right, rgba(157, 23, 77, 0.95) 0%, rgba(219, 39, 119, 0.8) 45%, rgba(236, 72, 153, 0.5) 100%);
+  --tint-jumble: linear-gradient(135deg, #fdf0d8, #fbe6bf);
+  --tint-pron: linear-gradient(135deg, #efeafd, #e2d9fb);
+  --tint-ai: linear-gradient(135deg, #ddf4f0, #c9ede7);
+  --tint-lead: linear-gradient(135deg, #e3ebfc, #d3e0fa);
+  --tint-wordbank: linear-gradient(135deg, #fde7ec, #fbd5de);
 
-  /* PRO / status card (light — royal purple). */
-  --pro-card: linear-gradient(160deg, #6f5fea 0%, #5644d0 50%, #3f2aa8 100%);
-  --pro-pill: linear-gradient(110deg, #2976c7 0%, #005da7 55%, #004883 100%);
+  --pro-card: linear-gradient(150deg, #f58a3a 0%, #e0601a 55%, #c9480c 100%);
+  --pro-pill: linear-gradient(120deg, #f0731f 0%, #d9550f 60%, #c9480c 100%);
 }
 
 /* ── force-dark ──────────────────────────────────────────────────────────────
@@ -145,21 +189,21 @@
 .force-dark {
   color-scheme: dark;
 
-  --bg: #18181c;
-  --surface-1: #1f1f24;
-  --surface-2: #26262c;
-  --surface-3: #303036;
-  --primary-1: #f59e0b;
-  --primary-2: #f97316;
+  --bg: #121214;
+  --surface-1: #1c1c20;
+  --surface-2: #26262b;
+  --surface-3: #313137;
+  --primary-1: #ff9a4d;
+  --primary-2: #ff7a1a;
   --secondary-1: #b79fff;
   --secondary-2: #ab8eff;
-  --cyan: #00e3fd;
+  --cyan: #22d3ee;
   --pink: #ff6c95;
-  --heading: #ecedf6;
-  --body: #a9abb3;
+  --heading: #f4f4f5;
+  --body: #c9c9d0;
   --ghost: rgba(255, 255, 255, 0.06);
   --ghost-top: rgba(255, 255, 255, 0.1);
-  --primary-foreground: #0b0e14;
+  --primary-foreground: #1a1206;
   --destructive: #ff5470;
   --input: rgba(255, 255, 255, 0.08);
 
@@ -170,7 +214,7 @@
   --color-popover: var(--surface-2);
   --color-popover-foreground: var(--heading);
   --color-primary: var(--primary-2);
-  --color-primary-foreground: #0b0e14;
+  --color-primary-foreground: #1a1206;
   --color-secondary: var(--surface-2);
   --color-secondary-foreground: var(--heading);
   --color-muted: var(--surface-2);
@@ -200,6 +244,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -233,6 +279,33 @@
   --color-primary-2: var(--primary-2);
   --color-secondary-1: var(--secondary-1);
   --color-secondary-2: var(--secondary-2);
+  --color-kai: var(--kai);
+  --color-kai-soft: var(--kai-soft);
+  --color-speak: var(--speak);
+  --color-speak-soft: var(--speak-soft);
+  --color-words: var(--words);
+  --color-words-soft: var(--words-soft);
+  --color-learn: var(--learn);
+  --color-learn-soft: var(--learn-soft);
+  --color-brand-soft: var(--brand-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+
+  /* Readable type scale (D-071): every step a little larger than Tailwind's
+     default so small labels stay legible for older learners. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.15rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.4rem;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.6rem;
+
+  --shadow-card: var(--card-shadow);
+  --shadow-raised: var(--raised-shadow);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -267,7 +340,10 @@
     background: var(--bg);
     color: var(--body);
     font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
@@ -297,38 +373,36 @@
    no-op.
    ══════════════════════════════════════════════════════════════════════════ */
 
-.c-box {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-}
-
-.glass {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-}
-
+.c-box,
+.glass,
 .glass-glow {
   position: relative;
   background: var(--surface-1);
   border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
 }
 
-/* Glow border removed for the flat theme. */
+/* Glow border removed (flat, solid surfaces). */
 .glass-glow::before,
 .glass-glow::after {
   content: none;
 }
 
-/* Light mode adds soft elevation (Lumina "tonal layering") so white cards lift
-   off the off-white background. Dark mode stays intentionally flat. */
-.light .c-box,
-.light .glass,
-.light .glass-glow {
-  /* Faint cool sheen so cards pick up the bluish theme instead of flat white. */
-  background-image: linear-gradient(155deg, rgba(0, 93, 167, 0.05), transparent 55%);
-  box-shadow:
-    0 1px 2px rgba(20, 28, 46, 0.04),
-    0 6px 20px rgba(20, 28, 46, 0.06);
+/* Generic redesign helpers. */
+.ec-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 1.375rem;
+  box-shadow: var(--card-shadow);
+}
+.ec-press {
+  transition: transform 150ms ease-out, background-color 150ms ease-out, opacity 150ms ease-out;
+}
+.ec-press:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ec-press, .ec-press:active { transition: none; transform: none; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

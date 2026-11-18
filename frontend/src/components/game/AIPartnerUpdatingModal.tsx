@@ -45,7 +45,7 @@ export default function AIPartnerUpdatingModal({
         />
 
         <DialogHeader className="relative">
-          <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-primary">
+          <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-[13px] font-extrabold uppercase tracking-wide text-primary">
             <Wrench className="h-3.5 w-3.5" strokeWidth={2.5} />
             AI Partner · Upgrading
           </span>
@@ -85,14 +85,14 @@ export default function AIPartnerUpdatingModal({
           <Link
             href="/dashboard/jumble"
             onClick={onClose}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-sm font-bold text-[#0b0e14] transition hover:brightness-105"
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:brightness-105"
           >
             <Puzzle className="h-4 w-4" strokeWidth={2.5} /> Play Jumble Words
           </Link>
           <Link
             href="/dashboard/pronunciation"
             onClick={onClose}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/[0.1] bg-surface-2/60 py-3 text-sm font-bold text-heading transition hover:bg-surface-2"
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border bg-surface-2/60 py-3 text-sm font-bold text-heading transition hover:bg-surface-2"
           >
             <Mic className="h-4 w-4" strokeWidth={2.5} /> Train pronunciation
           </Link>

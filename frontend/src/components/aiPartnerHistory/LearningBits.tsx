@@ -23,7 +23,7 @@ export function CorrectionList({ items }: { items: Correction[] }) {
               {m.wrong}
             </span>
             {typeof m.count === "number" && m.count > 1 && (
-              <span className="ml-auto shrink-0 rounded-full bg-surface-3 px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+              <span className="ml-auto shrink-0 rounded-full bg-surface-3 px-2 py-0.5 text-[13px] font-bold text-muted-foreground">
                 ×{m.count}
               </span>
             )}

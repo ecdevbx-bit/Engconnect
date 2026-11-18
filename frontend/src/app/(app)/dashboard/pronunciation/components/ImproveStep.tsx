@@ -50,7 +50,7 @@ export function ImproveStep({
       </p>
 
       {(result.incorrectWords ?? []).length > 0 && (
-        <div className="mt-6 rounded-xl border border-white/[0.06] bg-surface-2/30 p-4">
+        <div className="mt-6 rounded-xl border border-border bg-surface-2/30 p-4">
           <p className="text-sm font-medium text-heading">Words to revisit</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Tap a word to hear the correct pronunciation.
@@ -81,7 +81,7 @@ export function ImproveStep({
         {(result.tips ?? []).map((tip) => (
           <div
             key={tip.title}
-            className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-surface-2/30 p-4"
+            className="flex items-center gap-3 rounded-xl border border-border bg-surface-2/30 p-4"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" />

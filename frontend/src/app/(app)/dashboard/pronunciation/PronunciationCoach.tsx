@@ -352,7 +352,7 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
           onClick={handleStartTour}
           aria-label="Show how to play"
           title="How to play"
-          className="ml-auto flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:border-primary/40 hover:text-heading focus-visible:ring-2 focus-visible:ring-primary"
+          className="ml-auto flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:border-primary/40 hover:text-heading focus-visible:ring-2 focus-visible:ring-primary"
         >
           <HelpCircle className="h-4 w-4" />
           <span className="hidden sm:inline">How to play</span>

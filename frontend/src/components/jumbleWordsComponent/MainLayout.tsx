@@ -68,7 +68,7 @@ function DifficultyTabs({
     // they can see at a glance which to avoid. (Empty for Pro / fresh sessions.)
     const exhausted = useExhaustedDifficulties("jumble");
     return (
-        <div className="inline-flex items-center gap-0.5 rounded-full border border-white/[0.06] bg-surface-2 p-0.5">
+        <div className="inline-flex items-center gap-0.5 rounded-full border border-border bg-surface-2 p-0.5">
             {DIFFICULTIES.map((d) => {
                 const done = exhausted.includes(d.toLowerCase());
                 return (
@@ -82,7 +82,7 @@ function DifficultyTabs({
                         className={cn(
                             "rounded-full px-3 py-1 text-xs font-semibold capitalize transition-colors",
                             value === d
-                                ? "bg-primary text-[#0b0e14]"
+                                ? "bg-primary text-primary-foreground"
                                 : done
                                     ? "bg-red-500/10 text-red-600 ring-1 ring-inset ring-red-500/25 dark:text-red-400"
                                     : "text-muted-foreground hover:text-heading disabled:opacity-50",
@@ -616,7 +616,7 @@ export default function MainLayout() {
                         </button>
                         <button
                             onClick={() => router.push("/")}
-                            className="px-6 py-3 rounded-full border border-white/[0.1] text-body hover:bg-surface-2/40 transition-colors"
+                            className="px-6 py-3 rounded-full border border-border text-body hover:bg-surface-2/40 transition-colors"
                         >
                             Done for now
                         </button>
@@ -657,7 +657,7 @@ export default function MainLayout() {
                     onClick={handleStartTour}
                     aria-label="Show how to play"
                     title="How to play"
-                    className="ml-auto flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+                    className="ml-auto flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
                 >
                     <HelpCircle className="h-4 w-4" />
                     <span className="hidden sm:inline">How to play</span>
@@ -668,7 +668,7 @@ export default function MainLayout() {
                 {/* ── Left Panel — the board ── */}
                 <div className="c-box overflow-hidden rounded-2xl">
                     {/* One combined control row: progress journey · difficulty · timer · audio */}
-                    <div id="tour-controlbar" className="flex flex-wrap items-center gap-3 border-b border-white/[0.06] px-3 py-2 md:px-6">
+                    <div id="tour-controlbar" className="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2 md:px-6">
                         <div className="min-w-[180px] flex-1">
                             {/* Progressive band: the journey shows the CURRENT set
                                 only — Easy → Medium → Hard — driven by the current
@@ -751,7 +751,7 @@ export default function MainLayout() {
                         <div className="min-w-0">
                             <div className="flex items-center gap-2 font-semibold text-heading">
                                 AI Coach
-                                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
                                     Live
                                 </span>
                             </div>

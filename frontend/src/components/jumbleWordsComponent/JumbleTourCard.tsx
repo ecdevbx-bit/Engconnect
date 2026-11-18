@@ -122,7 +122,7 @@ export default function JumbleTourCard({
             ref={rootRef}
             className={cn(
                 "relative w-[min(360px,calc(100vw-32px))] overflow-hidden rounded-2xl",
-                "border border-white/[0.08] bg-surface-1/95 text-heading backdrop-blur-xl",
+                "border border-border bg-surface-1/95 text-heading backdrop-blur-xl",
                 "shadow-[0_24px_64px_-24px_rgba(0,0,0,0.65),0_0_0_1px_rgba(171,142,255,0.10)]",
             )}
         >
@@ -141,7 +141,7 @@ export default function JumbleTourCard({
                         <PixelMascot emotion={emotion} size={isMobile ? 40 : 60} />
                     </span>
                     <div className="min-w-0 flex-1">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                             Step {currentStep + 1} of {totalSteps}
                         </div>
                         <h3 className="mt-0.5 text-base font-semibold leading-tight text-heading">
@@ -167,7 +167,7 @@ export default function JumbleTourCard({
                 {/* Progress bar */}
                 <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-surface-2">
                     <div
-                        className="h-full rounded-full bg-gradient-to-r from-[#2976c7] to-[#005da7] transition-[width] duration-300 dark:from-[#f59e0b] dark:to-[#f97316]"
+                        className="h-full rounded-full bg-gradient-to-r from-[#f0731f] to-[#c9480c] transition-[width] duration-300 dark:from-[#f59e0b] dark:to-[#f97316]"
                         style={{ width: `${progressPct}%` }}
                     />
                 </div>
@@ -180,8 +180,8 @@ export default function JumbleTourCard({
                         className={cn(
                             "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all",
                             isFirst
-                                ? "cursor-not-allowed border-white/[0.04] text-muted-foreground/50"
-                                : "cursor-pointer border-white/[0.08] bg-surface-2 text-heading hover:border-primary/40",
+                                ? "cursor-not-allowed border-border text-muted-foreground/50"
+                                : "cursor-pointer border-border bg-surface-2 text-heading hover:border-primary/40",
                         )}
                     >
                         <ChevronLeft className="h-3.5 w-3.5" />
@@ -201,7 +201,7 @@ export default function JumbleTourCard({
                         onClick={nextStep}
                         className={cn(
                             "flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all active:scale-[0.97]",
-                            "bg-gradient-to-br from-[#2976c7] to-[#005da7] text-white dark:from-[#f59e0b] dark:to-[#f97316] dark:text-[#0b0e14]",
+                            "bg-gradient-to-br from-[#f0731f] to-[#c9480c] text-white dark:from-[#f59e0b] dark:to-[#f97316] dark:text-[#0b0e14]",
                             "shadow-[0_0_18px_rgba(41,118,199,0.35)] hover:opacity-90 dark:shadow-[0_0_18px_rgba(171,142,255,0.35)]",
                         )}
                     >

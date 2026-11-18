@@ -38,7 +38,7 @@ export function DifficultyTabs({
             className={cn(
               "h-8 rounded-full px-4 text-xs font-medium transition-colors",
               active
-                ? "bg-primary text-[#0b0e14] shadow-sm"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : done
                   ? "bg-red-500/10 text-red-600 ring-1 ring-inset ring-red-500/25 dark:text-red-400"
                   : "text-muted-foreground hover:text-heading",

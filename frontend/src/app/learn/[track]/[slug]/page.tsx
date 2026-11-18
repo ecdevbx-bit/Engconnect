@@ -58,7 +58,7 @@ export default async function LessonPage({ params }: Props) {
             <Clock className="h-3.5 w-3.5" aria-hidden />
             {lesson.minutes} min
           </span>
-          {lesson.pro && <ProMark locked={locked} className="px-2 py-1 text-[11px]" />}
+          {lesson.pro && <ProMark locked={locked} className="px-2 py-1 text-[13px]" />}
         </p>
       </header>
 

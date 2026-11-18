@@ -16,10 +16,10 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-white hover:brightness-110",
         outline:
-          "border border-white/[0.08] bg-transparent text-heading hover:bg-white/[0.05] hover:border-white/[0.14]",
+          "border border-border bg-transparent text-heading hover:bg-surface-2 hover:border-white/[0.14]",
         secondary:
-          "bg-surface-2 border border-white/[0.06] text-heading hover:bg-surface-3",
-        ghost: "text-heading hover:bg-white/[0.05]",
+          "bg-surface-2 border border-border text-heading hover:bg-surface-3",
+        ghost: "text-heading hover:bg-surface-2",
         link: "text-primary underline-offset-4 hover:underline rounded-none",
       },
       size: {

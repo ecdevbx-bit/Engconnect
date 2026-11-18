@@ -101,7 +101,7 @@ export default function WeeklyActivityChart({ rows, attributes, showProCard = tr
 
             {/* Concentric glow circles */}
             <div className="absolute left-1/2 top-[28%] -translate-x-1/2 -translate-y-1/2">
-              <div className="h-[160px] w-[160px] rounded-full border border-white/[0.12]" />
+              <div className="h-[160px] w-[160px] rounded-full border border-border" />
             </div>
             <div className="absolute left-1/2 top-[28%] -translate-x-1/2 -translate-y-1/2">
               <div className="h-[110px] w-[110px] rounded-full border border-white/[0.18]" />
@@ -114,7 +114,7 @@ export default function WeeklyActivityChart({ rows, attributes, showProCard = tr
               <p className="text-[36px] font-black leading-none tracking-tight text-white drop-shadow-sm">
                 {isPro ? "PRO" : "Student"}
               </p>
-              <p className="mt-1.5 text-[11px] font-semibold text-white/50">
+              <p className="mt-1.5 text-[13px] font-semibold text-white/50">
                 {isPro ? "student" : "member"}
               </p>
 
@@ -146,9 +146,9 @@ export default function WeeklyActivityChart({ rows, attributes, showProCard = tr
           return (
             <div key={d} className="flex flex-1 flex-col items-center gap-3 lg:gap-5">
               {/* Day label + checkmark pill */}
-              <div className={`flex flex-col items-center gap-2 rounded-full px-2 py-2 lg:gap-4 lg:px-3 lg:py-3 ${i === today ? "bg-black/[0.04] dark:bg-white/[0.06]" : ""}`}>
+              <div className={`flex flex-col items-center gap-2 rounded-full px-2 py-2 lg:gap-4 lg:px-3 lg:py-3 ${i === today ? "bg-black/[0.04] dark:bg-surface-2" : ""}`}>
                 <span
-                  className={`text-[11px] font-bold ${i === today ? "text-heading dark:text-white" : "text-muted-foreground dark:text-[#4a4d58]"}`}
+                  className={`text-[13px] font-bold ${i === today ? "text-heading dark:text-white" : "text-muted-foreground dark:text-[#4a4d58]"}`}
                 >
                   {d}
                 </span>
@@ -193,10 +193,10 @@ export default function WeeklyActivityChart({ rows, attributes, showProCard = tr
                   <TooltipContent
                     side="top"
                     sideOffset={8}
-                    className="w-[200px] rounded-xl border border-white/[0.08] bg-surface-2 p-0 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                    className="w-[200px] rounded-xl border border-border bg-surface-2 p-0 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
                   >
                     <div className="px-3.5 pt-3 pb-2">
-                      <p className="text-[11px] font-medium text-muted-foreground">{dateStr}</p>
+                      <p className="text-[13px] font-medium text-muted-foreground">{dateStr}</p>
                       <p className="mt-0.5 text-sm font-bold text-heading">
                         {bucket.total === 0
                           ? "No activity"
@@ -208,7 +208,7 @@ export default function WeeklyActivityChart({ rows, attributes, showProCard = tr
                     </div>
                     {bucket.xp > 0 && (
                       <>
-                        <div className="h-px bg-white/[0.06]" />
+                        <div className="h-px bg-surface-2" />
                         <div className="px-3.5 py-2 space-y-1.5">
                           {SEGMENTS.map((seg) => {
                             const xp = bucket[seg.key as keyof Bucket] as number;
@@ -222,8 +222,8 @@ export default function WeeklyActivityChart({ rows, attributes, showProCard = tr
                                 >
                                   <Icon className="h-3 w-3" style={{ color: seg.color }} />
                                 </span>
-                                <span className="flex-1 text-[11px] text-body">{seg.label}</span>
-                                <span className="text-[11px] font-bold text-heading">{xp} XP</span>
+                                <span className="flex-1 text-[13px] text-body">{seg.label}</span>
+                                <span className="text-[13px] font-bold text-heading">{xp} XP</span>
                               </div>
                             );
                           })}
@@ -244,10 +244,10 @@ export default function WeeklyActivityChart({ rows, attributes, showProCard = tr
 function StatRow({ icon, value, label }: { icon: string; value: number; label: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.18] text-[12px]">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.18] text-[13px]">
         {icon}
       </span>
-      <span className="text-[12px] leading-none text-white/80">
+      <span className="text-[13px] leading-none text-white/80">
         <span className="font-bold text-white">{value}</span>{" "}{label}
       </span>
     </div>

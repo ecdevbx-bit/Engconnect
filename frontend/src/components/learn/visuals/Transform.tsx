@@ -11,7 +11,7 @@ export function Transform({ v }: { v: TransformVisual }) {
   const compact = v.pairs.every((p) => !p.note && p.from.length <= 14 && p.to.length <= 14);
 
   const header = (
-    <p className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+    <p className="mb-3 flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
       <span>{v.from}</span>
       <ArrowRight className="h-3.5 w-3.5 text-primary" aria-hidden />
       <span className="sr-only">becomes</span>

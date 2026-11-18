@@ -190,7 +190,7 @@ export default function EditProfileDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] gap-0 overflow-hidden p-0 sm:max-w-xl">
-        <DialogHeader className="border-b border-white/[0.06] px-6 py-4">
+        <DialogHeader className="border-b border-border px-6 py-4">
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
             Update your details, avatar, and learning preferences.
@@ -214,8 +214,8 @@ export default function EditProfileDialog({
                   className={cn(
                     "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
                     s === avatarStyle
-                      ? "bg-primary text-[#0b0e14]"
-                      : "border border-white/[0.06] bg-surface-2/60 text-muted-foreground hover:text-heading",
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border bg-surface-2/60 text-muted-foreground hover:text-heading",
                   )}
                 >
                   {s}
@@ -254,7 +254,7 @@ export default function EditProfileDialog({
                       <img src={url} alt="" className="h-full w-full" loading="lazy" />
                     )}
                     {selected && (
-                      <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[#0b0e14]">
+                      <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Check className="h-2.5 w-2.5" />
                       </span>
                     )}
@@ -352,7 +352,7 @@ export default function EditProfileDialog({
               rows={3}
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm text-heading shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
             />
-            <p className="mt-1 text-right text-[10px] text-muted-foreground">{draft.goals.length}/280</p>
+            <p className="mt-1 text-right text-[13px] text-muted-foreground">{draft.goals.length}/280</p>
           </Field>
 
           {/* ── Hobbies ── */}
@@ -368,8 +368,8 @@ export default function EditProfileDialog({
                     className={cn(
                       "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
                       active
-                        ? "bg-primary text-[#0b0e14]"
-                        : "border border-white/[0.06] bg-surface-2/60 text-muted-foreground hover:text-heading",
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border bg-surface-2/60 text-muted-foreground hover:text-heading",
                     )}
                   >
                     {h}
@@ -380,7 +380,7 @@ export default function EditProfileDialog({
           </Field>
         </div>
 
-        <DialogFooter className="border-t border-white/[0.06] px-6 py-4">
+        <DialogFooter className="border-t border-border px-6 py-4">
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancel
           </Button>

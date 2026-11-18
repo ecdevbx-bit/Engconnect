@@ -97,7 +97,7 @@ export default function LeaderboardPopover({
       // to its right edge pushes it off-screen to the left. Below `sm` we pin
       // it centered just under the navbar (fixed, full-width minus a margin);
       // from `sm` up it returns to the right-aligned dropdown.
-      className="fixed inset-x-3 top-[80px] z-50 w-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-2 shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[360px]"
+      className="fixed inset-x-3 top-[80px] z-50 w-auto overflow-hidden rounded-2xl border border-border bg-surface-2 shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[360px]"
       style={{ animation: "popIn 0.15s ease-out both" }}
     >
       <div className="flex items-center gap-2 px-5 pt-5 pb-3">
@@ -117,7 +117,7 @@ export default function LeaderboardPopover({
         )}
       </div>
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="h-px bg-surface-2" />
 
       <div className="py-2 max-h-[420px] overflow-y-auto">
         {loading && <p className="px-5 py-3 text-sm text-muted-foreground">Loading…</p>}
@@ -137,7 +137,7 @@ export default function LeaderboardPopover({
         ) : null}
       </div>
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="h-px bg-surface-2" />
 
       <Link
         href="/dashboard/leaderboard"
@@ -187,7 +187,7 @@ function LeaderboardRow({
             <img src={url} alt={entry.name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
           );
         })() || (
-          <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[10px] font-bold text-[#0b0e14]">
+          <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[13px] font-bold text-[#0b0e14]">
             {initials}
           </span>
         )}

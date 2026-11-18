@@ -11,7 +11,7 @@ export default function Footer() {
   };
 
   return (
-    <footer id="footer" className="c-box border-t border-white/[0.06]">
+    <footer id="footer" className="c-box border-t border-border">
       <div className="footer-grid">
         <div>
           <a href="#" className="nav-logo text-heading font-bold">
@@ -53,7 +53,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="footer-bottom border-t border-white/[0.06]">
+      <div className="footer-bottom border-t border-border">
         <span className="text-muted-foreground">© 2026 English Connection. All rights reserved.</span>
         <span className="text-muted-foreground">Built for India&apos;s ambitious learners 🇮🇳</span>
       </div>

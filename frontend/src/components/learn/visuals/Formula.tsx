@@ -12,7 +12,7 @@ export function Formula({ v }: { v: FormulaVisual }) {
       {v.rows.map((row, ri) => (
         <div key={ri} className={ri > 0 ? "border-t border-border pt-4" : ""}>
           {row.label && (
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{row.label}</p>
+            <p className="mb-2 text-[13px] font-bold uppercase tracking-wider text-muted-foreground">{row.label}</p>
           )}
           <p className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
             {row.parts.map((p, pi) => (
@@ -30,7 +30,7 @@ export function Formula({ v }: { v: FormulaVisual }) {
                   style={tint(ROLE[p.role].color)}
                 >
                   {p.label && (
-                    <span className="rounded bg-heading/10 px-1 text-[10px] font-black uppercase tracking-wide text-heading">
+                    <span className="rounded bg-heading/10 px-1 text-[13px] font-black uppercase tracking-wide text-heading">
                       {p.label}
                     </span>
                   )}

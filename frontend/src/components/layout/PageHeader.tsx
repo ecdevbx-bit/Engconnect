@@ -35,7 +35,7 @@ export default function PageHeader({
               {icon}
             </span>
           )}
-          <p className={cn("text-[10px] font-semibold uppercase tracking-[0.22em] text-primary", eyebrowClassName)}>
+          <p className={cn("text-[13px] font-semibold uppercase tracking-[0.22em] text-primary", eyebrowClassName)}>
             {eyebrow}
           </p>
           <h1 className="font-display font-bold leading-[1.05] text-heading text-[clamp(2rem,4.5vw,3.25rem)]">

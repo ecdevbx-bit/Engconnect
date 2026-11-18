@@ -75,7 +75,7 @@ export function ComboCard({ game, count }: { game: ComboGame; count: number }) {
         </div>
 
         {/* Footer: game-labelled badge */}
-        <div className="relative z-10 flex w-full flex-col items-center border-t border-white/10 bg-gradient-to-t from-black/40 to-transparent px-3 pb-3 pt-5 backdrop-blur-md">
+        <div className="relative z-10 flex w-full flex-col items-center border-t border-border bg-gradient-to-t from-black/40 to-transparent px-3 pb-3 pt-5 backdrop-blur-md">
           <div className="absolute -top-3 right-3 flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/10 px-3 py-1 text-xs font-bold text-white shadow backdrop-blur-xl">
             <Icon className="h-3.5 w-3.5" style={{ color: t.glow }} />
             <span className="tracking-wide">{t.label}</span>

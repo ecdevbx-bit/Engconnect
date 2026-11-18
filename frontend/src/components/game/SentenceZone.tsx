@@ -41,7 +41,7 @@ export function SentenceZone({ tiles, disabled = false, status }: SentenceZonePr
                 ? "border-pink/40 ring-1 ring-pink/20"
                 : snapshot.isDraggingOver
                 ? "border-primary/40 ring-1 ring-primary/20"
-                : "border-white/[0.06]",
+                : "border-border",
             ].join(" ")}
           >
             {tiles.map((tile, idx) => (

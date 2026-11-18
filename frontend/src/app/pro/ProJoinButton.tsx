@@ -39,7 +39,7 @@ export default function ProJoinButton({ label = "Continue with Google and get Pr
       type="button"
       onClick={handleJoin}
       disabled={loading}
-      className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-primary px-6 py-3 text-base font-bold text-[#0b0e14] transition hover:bg-primary-1 disabled:opacity-60 sm:w-auto"
+      className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-primary px-6 py-3 text-base font-bold text-primary-foreground transition hover:bg-primary-1 disabled:opacity-60 sm:w-auto"
     >
       <GoogleMark />
       {loading ? "Redirecting…" : label}

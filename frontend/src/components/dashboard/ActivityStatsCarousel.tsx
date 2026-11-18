@@ -55,7 +55,7 @@ export function ActivityStatsCarousel({ rows, attributes, loading, isPro = false
       {/* Heading + Monthly/Weekly toggle, inline (same row) */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold text-heading">Your Activities</h2>
-        <div className="inline-flex rounded-full border border-white/[0.08] bg-surface-2/60 p-0.5 text-xs font-semibold">
+        <div className="inline-flex rounded-full border border-border bg-surface-2/60 p-0.5 text-xs font-semibold">
           {TABS.map((label, i) => (
             <button
               key={label}
@@ -64,7 +64,7 @@ export function ActivityStatsCarousel({ rows, attributes, loading, isPro = false
               aria-pressed={selected === i}
               className={cn(
                 "rounded-full px-3 py-1 transition-colors",
-                selected === i ? "bg-primary text-[#0b0e14]" : "text-body hover:text-heading",
+                selected === i ? "bg-primary text-primary-foreground" : "text-body hover:text-heading",
               )}
             >
               {label}

@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 import { useAIPartnerGate } from "@/hooks/useAIPartnerGate";
 
 /**
- * BottomNav — app-style tab bar for small screens (md:hidden; the navbar's
- * NavTabs cover md+). Frosted-glass island with four tabs and a raised centre
- * button for K.AI (AI Partner), the app's main speaking practice.
- * Authenticated users only. Plain links + CSS transitions — no JS animation.
+ * BottomNav — the phone tab bar (md:hidden; NavTabs covers md+).
+ * A solid bar pinned to the bottom edge (D-071): labels always visible, 56 px
+ * tall tabs, and a raised centre button for K.AI ("Talk"), the main speaking
+ * practice. Authenticated users only. Plain links + CSS — no JS animation.
  */
 export default function BottomNav() {
   const session = useSession();
@@ -25,7 +25,7 @@ export default function BottomNav() {
   const user = fromSessionUser(session.data?.user);
   if (!user?.uid || user.emailVerified !== true) return null;
 
-  // Most-specific match wins so /dashboard/jumble highlights Jumble, not Home.
+  // Most-specific match wins so /dashboard/jumble highlights Words, not Home.
   const active =
     [...primaryNav]
       .sort((a, b) => b.href.length - a.href.length)
@@ -34,10 +34,10 @@ export default function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-3 bottom-[calc(0.6rem+env(safe-area-inset-bottom))] z-30 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface-1 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:hidden"
       style={{ touchAction: "manipulation" }}
     >
-      <div className="mx-auto flex max-w-md items-end rounded-[26px] border border-white/[0.12] bg-surface-1/70 px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+      <div className="mx-auto flex max-w-md items-end px-1 pt-1.5 pb-1.5">
         {primaryNav.map((t) => {
           const Icon = t.icon;
           const isActive = t.id === active;
@@ -49,22 +49,19 @@ export default function BottomNav() {
                 key={t.id}
                 href={t.href}
                 onClick={onClick}
-                aria-label={`${t.label} with K.AI`}
+                aria-label="Talk to K.AI"
                 aria-current={isActive ? "page" : undefined}
                 className="group flex flex-1 flex-col items-center gap-1 outline-none"
               >
                 <span
                   className={cn(
-                    "-mt-7 flex h-14 w-14 items-center justify-center rounded-full text-white ring-4 ring-background transition-transform duration-150 group-active:scale-95 group-focus-visible:ring-primary",
-                    isActive
-                      ? "shadow-[0_6px_20px_rgba(249,115,22,0.55)]"
-                      : "shadow-[0_6px_16px_rgba(0,0,0,0.35)]",
+                    "-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground ring-4 ring-surface-1 transition-transform duration-150 group-active:scale-95 group-focus-visible:ring-heading",
+                    isActive ? "shadow-[0_6px_18px_rgba(255,122,26,0.45)]" : "shadow-raised",
                   )}
-                  style={{ background: "var(--pro-pill)" }}
                 >
                   <Icon className="h-7 w-7" />
                 </span>
-                <span className={cn("text-[11px] leading-none", isActive ? "font-bold text-heading" : "font-semibold text-body")}>
+                <span className={cn("text-[13px] leading-none", isActive ? "font-extrabold text-primary" : "font-bold text-muted-foreground")}>
                   {t.label}
                 </span>
               </Link>
@@ -77,17 +74,17 @@ export default function BottomNav() {
               href={t.href}
               onClick={onClick}
               aria-current={isActive ? "page" : undefined}
-              className="group flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="group flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <span
                 className={cn(
-                  "flex h-8 w-12 items-center justify-center rounded-full transition-colors duration-200 group-active:scale-95",
-                  isActive ? "bg-primary/15 text-primary" : "text-body group-hover:text-heading",
+                  "flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-200 group-active:scale-95",
+                  isActive ? "bg-brand-soft text-primary" : "text-muted-foreground group-hover:text-heading",
                 )}
               >
-                <Icon className="h-[22px] w-[22px]" />
+                <Icon className="h-6 w-6" />
               </span>
-              <span className={cn("text-[11px] leading-none", isActive ? "font-bold text-heading" : "font-medium text-body")}>
+              <span className={cn("text-[13px] leading-none", isActive ? "font-extrabold text-primary" : "font-bold text-muted-foreground")}>
                 {t.label}
               </span>
             </Link>

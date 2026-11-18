@@ -25,7 +25,7 @@ export default function JumbleSkeleton() {
         {/* ── Left — the board ── */}
         <div className="c-box overflow-hidden rounded-2xl">
           {/* Control bar */}
-          <div className="flex flex-wrap items-center gap-3 border-b border-white/[0.06] px-6 py-4">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-4">
             <Skeleton className="h-3 min-w-[180px] flex-1 rounded-full" />
             <Skeleton className="h-7 w-16 rounded-full" />
             <Skeleton className="h-9 w-9 rounded-full" />
@@ -51,7 +51,7 @@ export default function JumbleSkeleton() {
           {/* Sentence build zone */}
           <div className="px-6 pb-8 pt-6">
             <Skeleton className="mb-3 h-3 w-28" />
-            <div className="flex min-h-[88px] flex-wrap content-start gap-2 rounded-xl border border-dashed border-white/[0.08] p-4">
+            <div className="flex min-h-[88px] flex-wrap content-start gap-2 rounded-xl border border-dashed border-border p-4">
               <Skeleton className="h-11 w-24 rounded-lg" />
               <Skeleton className="h-11 w-16 rounded-lg" />
               <Skeleton className="h-11 w-20 rounded-lg" />

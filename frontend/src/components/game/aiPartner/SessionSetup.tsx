@@ -56,7 +56,7 @@ export function setupSummary(v: SessionSetupValue): string {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{children}</p>;
+  return <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-primary">{children}</p>;
 }
 
 function Pill({ active, onClick, children, title }: { active: boolean; onClick: () => void; children: React.ReactNode; title?: string }) {
@@ -67,7 +67,7 @@ function Pill({ active, onClick, children, title }: { active: boolean; onClick: 
       title={title}
       aria-pressed={active}
       className={cn(
-        "h-8 rounded-full px-3.5 text-[12px] font-semibold transition-colors",
+        "h-8 rounded-full px-3.5 text-[13px] font-semibold transition-colors",
         active
           ? "bg-gradient-to-br from-primary-1 to-primary-2 text-primary-foreground"
           : "bg-surface-3/60 text-muted-foreground hover:text-heading",
@@ -88,7 +88,7 @@ export default function SessionSetup({
   const set = (patch: Partial<SessionSetupValue>) => onChange({ ...value, ...patch });
 
   return (
-    <div className="mt-4 space-y-4 rounded-xl border border-white/[0.06] bg-surface-2/40 px-4 py-4 text-left">
+    <div className="mt-4 space-y-4 rounded-xl border border-border bg-surface-2/40 px-4 py-4 text-left">
       <div className="space-y-2">
         <Label>Level</Label>
         <div className="flex flex-wrap gap-1.5">
@@ -125,11 +125,11 @@ export default function SessionSetup({
                 "min-h-11 rounded-lg border px-3 py-2 text-left transition-colors",
                 value.voice === v.id
                   ? "border-primary/60 bg-primary/15 text-heading"
-                  : "border-white/[0.06] bg-surface-3/40 text-muted-foreground hover:text-heading",
+                  : "border-border bg-surface-3/40 text-muted-foreground hover:text-heading",
               )}
             >
               <span className="block text-[13px] font-bold">{v.tone === "female" ? "Female voice" : "Male voice"}</span>
-              <span className="block text-[11px] opacity-80">
+              <span className="block text-[13px] opacity-80">
                 {v.id} · {v.feel}
               </span>
             </button>

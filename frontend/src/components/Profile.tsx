@@ -175,7 +175,7 @@ export default function Profile() {
                     disabled={!profile}
                     aria-label="Edit profile"
                     title="Edit profile"
-                    className="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface-1 bg-primary text-[#0b0e14] shadow-md transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface-1 bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
@@ -197,7 +197,7 @@ export default function Profile() {
             <div className="c-box rounded-2xl p-6">
               {/* Shared plant-art gradient defs for the level plant below. */}
               <PlantArtDefs />
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              <h3 className="text-[13px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 Progress
               </h3>
               <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -241,7 +241,7 @@ export default function Profile() {
               Mobile: the badge deck (already expanded) sits ABOVE About you. */}
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
             <div className="order-2 c-box rounded-2xl p-6 sm:p-8 lg:order-1 lg:flex-1">
-              <h3 className="mb-5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              <h3 className="mb-5 text-[13px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 About you
               </h3>
               <div className="grid grid-cols-1 gap-4">

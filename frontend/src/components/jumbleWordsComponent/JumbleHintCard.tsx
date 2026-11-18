@@ -23,7 +23,7 @@ import type { V3JumbleClue, V3JumbleHint } from "@/lib/v3Game";
 const BTN_PRIMARY =
   "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-50";
 const BTN_SECONDARY =
-  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2 px-4 py-2 text-sm font-semibold text-heading transition-colors hover:bg-surface-3 disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-border bg-surface-2 px-4 py-2 text-sm font-semibold text-heading transition-colors hover:bg-surface-3 disabled:opacity-50";
 const BTN_GHOST =
   "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-heading disabled:opacity-50";
 
@@ -82,7 +82,7 @@ export default function JumbleHintCard({
           type="button"
           aria-label="Close"
           onClick={onDismiss}
-          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-heading"
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-surface-2 hover:text-heading"
         >
           <X className="h-4 w-4" />
         </button>
@@ -176,8 +176,8 @@ function ClueView({ clue, compact }: { clue: V3JumbleClue; compact: boolean }) {
       <ol aria-label="Sentence shape, in order" className="mt-3 flex flex-wrap items-center justify-center gap-1">
         {clue.pattern.map((block, i) => (
           <li key={i} className="flex items-center gap-1">
-            <span className="rounded-lg border border-white/[0.08] bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-heading">
-              <span className="mr-1 text-[10px] font-bold text-primary">{i + 1}</span>
+            <span className="rounded-lg border border-border bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-heading">
+              <span className="mr-1 text-[13px] font-bold text-primary">{i + 1}</span>
               {block}
             </span>
             {i < clue.pattern.length - 1 && <ArrowRight aria-hidden className="h-3.5 w-3.5 text-muted-foreground" />}
@@ -186,15 +186,15 @@ function ClueView({ clue, compact }: { clue: V3JumbleClue; compact: boolean }) {
       </ol>
 
       {!compact && clue.clue && (
-        <p className="mt-3 flex gap-2 rounded-xl bg-white/[0.03] p-3 text-sm text-heading">
+        <p className="mt-3 flex gap-2 rounded-xl bg-surface-2 p-3 text-sm text-heading">
           <Lightbulb aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <span>{clue.clue}</span>
         </p>
       )}
 
       {!compact && clue.meaning && (
-        <div className="mt-2 rounded-xl border border-white/[0.06] p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="mt-2 rounded-xl border border-border p-3">
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
             Meaning · {clue.meaningLang}
           </p>
           <p className="mt-1 text-base text-heading">{clue.meaning}</p>
@@ -222,7 +222,7 @@ function WordsView({ hintLevel, hint, showingFull }: { hintLevel: number; hint: 
             key={i}
             className={[
               "rounded-md px-2.5 py-1 text-sm",
-              w.revealed ? "bg-surface-3 font-semibold text-heading" : "bg-white/5 tracking-widest text-muted-foreground",
+              w.revealed ? "bg-surface-3 font-semibold text-heading" : "bg-surface-2 tracking-widest text-muted-foreground",
             ].join(" ")}
           >
             {w.revealed ? w.word : "•".repeat(Math.max(w.length, 2))}

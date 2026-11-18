@@ -478,7 +478,7 @@ export default function V3AIPartner() {
             <h1 className="min-w-0 flex-1 text-2xl font-bold text-gradient sm:text-3xl">Talk to K.AI</h1>
             <Link
               href="/dashboard/ai-partner/history"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2 px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
             >
               <History className="h-4 w-4" />
               History
@@ -514,7 +514,7 @@ export default function V3AIPartner() {
                 You&apos;ve used your AI Partner time for {usage.pro ? "today" : "this week"}.
               </p>
               {usage.pro ? (
-                <p className="text-[12px] text-muted-foreground">
+                <p className="text-[13px] text-muted-foreground">
                   Come back tomorrow for more practice with K.AI.
                 </p>
               ) : (
@@ -536,7 +536,7 @@ export default function V3AIPartner() {
               >
                 ▶ Start session
               </button>
-              <p className="mt-2 text-[12px] text-muted-foreground">
+              <p className="mt-2 text-[13px] text-muted-foreground">
                 {usage && usage.capSeconds > 0
                   ? `${formatMinutesLeft(usage.remainingSeconds)} left ${usage.pro ? "today" : "this week"}`
                   : `${Math.round((usage?.rewards?.sessionSeconds ?? DEFAULT_TOTAL_SECONDS) / 60)}-minute session`}
@@ -572,7 +572,7 @@ export default function V3AIPartner() {
 
         {/* Current setup + a way back to the setup card (settings are baked
             into this conversation, so changing them starts a new one). */}
-        <span className="hidden min-w-0 truncate text-[12px] text-muted-foreground md:inline">
+        <span className="hidden min-w-0 truncate text-[13px] text-muted-foreground md:inline">
           · {setupSummary(setup)}
         </span>
         <button
@@ -583,7 +583,7 @@ export default function V3AIPartner() {
             setStarted(false);
           }}
           title="Change level, mode or voice (starts a new conversation)"
-          className="ml-auto rounded-full border border-white/[0.06] bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+          className="ml-auto rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
         >
           Change setup
         </button>
@@ -593,7 +593,7 @@ export default function V3AIPartner() {
           onClick={handleStartTour}
           aria-label="Show how to play"
           title="How to play"
-          className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.06] bg-surface-2 text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+          className="grid h-8 w-8 place-items-center rounded-full border border-border bg-surface-2 text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
         >
           <HelpCircle className="h-4 w-4" />
         </button>
@@ -640,7 +640,7 @@ export default function V3AIPartner() {
                     Got it
                   </button>
                 </div>
-                <p className="mt-3 text-[11px] text-muted-foreground">
+                <p className="mt-3 text-[13px] text-muted-foreground">
                   Resets {usage?.pro === false ? "next week" : "tomorrow"}.
                 </p>
               </div>
@@ -672,7 +672,7 @@ export default function V3AIPartner() {
                     Got it
                   </button>
                 </div>
-                <p className="mt-3 text-[11px] text-muted-foreground">
+                <p className="mt-3 text-[13px] text-muted-foreground">
                   Need more time? Start a fresh session.
                 </p>
               </div>
@@ -707,7 +707,7 @@ export default function V3AIPartner() {
                     <span className="inline-flex items-baseline gap-1">
                       <FaHourglassHalf
                         className={cn(
-                          "self-center text-[12px]",
+                          "self-center text-[13px]",
                           sessionOver ? "text-muted-foreground" : "text-primary"
                         )}
                       />
@@ -719,14 +719,14 @@ export default function V3AIPartner() {
                       >
                         {formatTime(timerUsed)}
                       </span>
-                      <span className="text-[11px] font-semibold text-muted-foreground">
+                      <span className="text-[13px] font-semibold text-muted-foreground">
                         / {formatTime(timerTotal)}
                         {hasDailyCap ? (usage?.pro === false ? " this week" : " today") : ""}
                       </span>
                     </span>
 
                     {/* Talk-time + XP this session (the full card is in the xl side rail). */}
-                    <span className="text-[11px] font-semibold text-muted-foreground xl:hidden">
+                    <span className="text-[13px] font-semibold text-muted-foreground xl:hidden">
                       🎤 {formatTime(speechProgress.totalSeconds)} · +{sessionXp} XP
                     </span>
                   </div>
@@ -816,7 +816,7 @@ export default function V3AIPartner() {
                         <p className="text-[13px] font-bold text-heading">
                           That&apos;s your K.AI time for {usage?.pro === false ? "this week" : "today"}
                         </p>
-                        <p className="text-[12px] text-muted-foreground">
+                        <p className="text-[13px] text-muted-foreground">
                           Resets {usage?.pro === false ? "next week" : "tomorrow"}.
                           {usage?.pro === false ? " Go Pro for 20 min / day." : ""}
                         </p>
@@ -836,7 +836,7 @@ export default function V3AIPartner() {
                     <div className="flex flex-col items-center gap-2 py-1 text-center sm:flex-row sm:justify-between sm:text-left">
                       <div className="min-w-0">
                         <p className="text-[13px] font-bold text-destructive">Session ended</p>
-                        <p className="text-[12px] text-muted-foreground">
+                        <p className="text-[13px] text-muted-foreground">
                           Start a new session to keep practising.
                         </p>
                       </div>
@@ -857,13 +857,13 @@ export default function V3AIPartner() {
                           otherwise the call status. */}
                       <div
                         aria-live="polite"
-                        className="flex min-h-[48px] flex-1 items-center overflow-hidden rounded-2xl border border-white/[0.06] bg-surface-2/60 px-4 py-2"
+                        className="flex min-h-[48px] flex-1 items-center overflow-hidden rounded-2xl border border-border bg-surface-2/60 px-4 py-2"
                       >
                         {isConnected && caption ? (
                           <p className="line-clamp-2 select-none text-[14px] leading-5 text-heading">
                             <span
                               className={cn(
-                                "mr-1.5 text-[11px] font-bold uppercase tracking-wide",
+                                "mr-1.5 text-[13px] font-bold uppercase tracking-wide",
                                 caption.who === "kai" ? "text-primary" : "text-muted-foreground"
                               )}
                             >
@@ -902,7 +902,7 @@ export default function V3AIPartner() {
                             "relative grid h-12 w-12 select-none place-items-center rounded-full transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:w-14",
                             isMicActive
                               ? "scale-105 bg-gradient-to-br from-primary-1 to-primary-2 text-primary-foreground shadow-[0_10px_30px_-6px_rgba(15,23,42,0.6)]"
-                              : "border border-white/[0.08] bg-surface-3 text-primary hover:bg-surface-2"
+                              : "border border-border bg-surface-3 text-primary hover:bg-surface-2"
                           )}
                         >
                           {mic.muted ? (
@@ -926,8 +926,8 @@ export default function V3AIPartner() {
                     </div>
 
                     {/* Desktop hint: Space mutes / unmutes. */}
-                    <p className="mt-1.5 hidden text-center text-[11px] text-muted-foreground sm:block">
-                      <kbd className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[10px] text-heading">
+                    <p className="mt-1.5 hidden text-center text-[13px] text-muted-foreground sm:block">
+                      <kbd className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[13px] text-heading">
                         Space
                       </kbd>{" "}
                       to {mic.muted ? "unmute" : "mute"}
@@ -974,7 +974,7 @@ export default function V3AIPartner() {
 function TypingIndicator() {
   return (
     <div className="flex items-end gap-3">
-      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-surface-2 border border-white/[0.06]">
+      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-surface-2 border border-border">
         <PixelMascot isThinking size={48} />
       </div>
       <div className="c-box rounded-[18px] px-5 py-3">

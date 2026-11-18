@@ -339,7 +339,7 @@ function StepDemo({ active }: { active: number }) {
       {active !== 0 && (
         <Link
           href="/signup"
-          className="group inline-flex items-center justify-center gap-2 self-center rounded-full border border-primary/50 bg-primary/10 px-8 py-3 text-sm font-bold text-primary transition hover:bg-primary hover:text-[#0b0e14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="group inline-flex items-center justify-center gap-2 self-center rounded-full border border-primary/50 bg-primary/10 px-8 py-3 text-sm font-bold text-primary transition hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           Try now
           <span className="transition-transform group-hover:translate-x-1">→</span>

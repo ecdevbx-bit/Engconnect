@@ -96,7 +96,7 @@ export default async function LearnIndexPage() {
                 href={lessonPath(l)}
                 className="c-box group flex h-full min-h-[88px] flex-col justify-between gap-2 rounded-2xl p-4 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Step {i + 1} · {l.minutes} min</span>
+                <span className="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">Step {i + 1} · {l.minutes} min</span>
                 <span className="flex items-center justify-between gap-2 font-bold leading-snug text-heading">
                   {l.title}
                   <ArrowRight className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden />

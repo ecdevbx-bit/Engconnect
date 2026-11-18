@@ -124,7 +124,7 @@ export function PronunciationWordWallet({
   if (words.length === 0) return null;
 
   return (
-    <div className="mt-6 rounded-2xl border border-white/[0.08] bg-surface-2/30 p-4">
+    <div className="mt-6 rounded-2xl border border-border bg-surface-2/30 p-4">
       <p className="text-sm font-semibold text-heading">Save words to your Word Bank</p>
       <p className="mt-0.5 text-xs text-muted-foreground">Drag a word into the bank to save it.</p>
       <DndContext

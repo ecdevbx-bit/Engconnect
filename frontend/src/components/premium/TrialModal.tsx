@@ -29,7 +29,7 @@ function fmtDate(iso: string) {
 const btnGreen =
   "mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3f9d2c] py-3 text-base font-bold text-white shadow-lg transition hover:brightness-105 disabled:opacity-60";
 const btnMuted =
-  "mt-2 w-full rounded-2xl bg-black/[0.06] py-3 text-base font-bold text-heading transition hover:bg-black/[0.1] dark:bg-white/[0.08] dark:hover:bg-white/[0.14]";
+  "mt-2 w-full rounded-2xl bg-black/[0.06] py-3 text-base font-bold text-heading transition hover:bg-black/[0.1] dark:bg-surface-2 dark:hover:bg-white/[0.14]";
 
 export default function TrialModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { data: session } = useSession();
@@ -196,7 +196,7 @@ export default function TrialModal({ open, onClose }: { open: boolean; onClose: 
             </DialogHeader>
 
             <div className="mt-1 space-y-3">
-              <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-xl border border-black/[0.06] bg-black/[0.02] px-4 py-3 text-sm dark:border-white/[0.08] dark:bg-white/[0.03]">
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-xl border border-black/[0.06] bg-black/[0.02] px-4 py-3 text-sm dark:border-border dark:bg-surface-2">
                 <span className="text-muted-foreground">Name</span>
                 <span className="font-semibold text-heading">{name || "—"}</span>
                 <span className="text-muted-foreground">Email</span>
@@ -213,7 +213,7 @@ export default function TrialModal({ open, onClose }: { open: boolean; onClose: 
                   onChange={(e) => setPhone(e.target.value)}
                   inputMode="tel"
                   placeholder="e.g. 98765 43210"
-                  className="mt-1 w-full rounded-xl border border-black/[0.1] bg-white px-3 py-2.5 text-sm text-heading outline-none focus:border-primary dark:border-white/[0.12] dark:bg-white/[0.04]"
+                  className="mt-1 w-full rounded-xl border border-black/[0.1] bg-white px-3 py-2.5 text-sm text-heading outline-none focus:border-primary dark:border-border dark:bg-surface-2"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
                   We&apos;ll save this to your profile and use it to reach you.

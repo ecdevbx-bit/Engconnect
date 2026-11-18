@@ -38,7 +38,7 @@ export function RecordingPlayer({ blob, durationMs }: { blob: Blob; durationMs: 
     Number.isFinite(a.duration) && a.duration > 0 ? a.duration : fallbackSecs;
 
   return (
-    <div className="mt-2 flex w-full max-w-xl items-center gap-4 rounded-2xl border border-white/[0.06] bg-surface-2 p-4">
+    <div className="mt-2 flex w-full max-w-xl items-center gap-4 rounded-2xl border border-border bg-surface-2 p-4">
       <button
         type="button"
         onClick={toggle}

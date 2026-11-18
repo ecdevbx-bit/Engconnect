@@ -182,7 +182,7 @@ function WordChip({
           </div>
         </dl>
         {(word.syllables || word.native) && (
-          <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-3">
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
             <div className="min-w-0 space-y-0.5 text-sm">
               {word.syllables && <Syllables value={word.syllables} />}
               {word.native && <p className="text-heading">{word.native}</p>}
@@ -190,13 +190,13 @@ function WordChip({
             {!demo && <HearButton word={word.expected} />}
           </div>
         )}
-        <div className="mt-3 border-t border-white/[0.06] pt-3">
+        <div className="mt-3 border-t border-border pt-3">
           <p className={cn("text-sm font-semibold", heading.className)}>{heading.label}</p>
           {word.reason && (
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{word.reason}</p>
           )}
         </div>
-        <p className="mt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="mt-3 text-[13px] uppercase tracking-[0.18em] text-muted-foreground">
           Word {index + 1}
         </p>
       </PopoverContent>
@@ -348,7 +348,7 @@ export function FeedbackStep({
       )}
 
       {!demo && (
-        <div className="mt-8 flex items-start gap-3 rounded-xl border border-white/[0.06] bg-surface-2/40 p-4">
+        <div className="mt-8 flex items-start gap-3 rounded-xl border border-border bg-surface-2/40 p-4">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
             <Bot className="h-4 w-4" />
           </span>

@@ -8,7 +8,7 @@ import { TONE } from "../palette";
 export function Scale({ v }: { v: ScaleVisual }) {
   return (
     <div>
-      <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground" aria-hidden>
+      <div className="mb-3 flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-muted-foreground" aria-hidden>
         <span>{v.low}</span>
         <span className="h-1.5 flex-1 rounded-full" style={{ background: "linear-gradient(90deg, #8b5cf6, var(--primary))", opacity: 0.55 }} />
         <span className="text-heading">{v.high}</span>

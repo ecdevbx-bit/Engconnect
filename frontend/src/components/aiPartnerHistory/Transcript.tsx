@@ -71,7 +71,7 @@ export default function Transcript({ messages }: { messages: ChatTranscriptLine[
                 </p>
               </div>
               {time && (
-                <time dateTime={m.at} className="mt-1 px-1 text-[11px] text-muted-foreground">
+                <time dateTime={m.at} className="mt-1 px-1 text-[13px] text-muted-foreground">
                   {time}
                 </time>
               )}

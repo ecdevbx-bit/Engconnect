@@ -88,7 +88,7 @@ export default function AccountDropdown({
       aria-label="Account menu"
       // Portaled to <body> with a high z so it's never trapped behind the
       // navbar's backdrop-filter stacking context (z-30) or page cards.
-      className="fixed z-[100] w-[320px] overflow-y-auto overflow-x-hidden rounded-2xl border border-white/[0.08] bg-surface-2 shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
+      className="fixed z-[100] w-[320px] overflow-y-auto overflow-x-hidden rounded-2xl border border-border bg-surface-2 shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
       style={{
         top: pos?.top ?? 0,
         right: pos?.right ?? 16,
@@ -124,7 +124,7 @@ export default function AccountDropdown({
         </div>
       </div>
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="h-px bg-surface-2" />
 
       {/* 2 — item rows (config-driven) */}
       <div className="py-2">
@@ -154,7 +154,7 @@ export default function AccountDropdown({
 
       {/* Theme toggle — mobile only; on desktop it lives in the top nav. */}
       <div className="md:hidden">
-        <div className="h-px bg-white/[0.06]" />
+        <div className="h-px bg-surface-2" />
         <button
           type="button"
           role="menuitem"
@@ -178,9 +178,9 @@ export default function AccountDropdown({
           privileged surface. */}
       {user.isAdmin && adminMenu.length > 0 && (
         <>
-          <div className="h-px bg-white/[0.06]" />
+          <div className="h-px bg-surface-2" />
           <div className="py-2">
-            <p className="px-5 pb-1.5 pt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="px-5 pb-1.5 pt-1 text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
               Admin
             </p>
             {adminMenu.map((item) => {
@@ -209,7 +209,7 @@ export default function AccountDropdown({
         </>
       )}
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="h-px bg-surface-2" />
 
       {/* 3 — destructive footer */}
       <button

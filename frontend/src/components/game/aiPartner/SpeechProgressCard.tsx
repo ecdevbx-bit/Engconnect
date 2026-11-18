@@ -77,23 +77,23 @@ export function SpeechProgressCard({
       <Card className="px-3 py-1">
         <div className="flex items-center gap-3 text-center">
           <div className="flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Time
             </p>
             <p className="font-display text-base font-bold tabular-nums text-heading">
               {formatMmSs(totalSeconds)}
             </p>
           </div>
-          <div className="h-8 w-px shrink-0 bg-white/[0.07]" />
+          <div className="h-8 w-px shrink-0 bg-surface-2" />
           <div className="flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Earned
             </p>
             <p className="font-display text-base font-bold text-heading">+{sessionXp} XP</p>
           </div>
-          <div className="h-8 w-px shrink-0 bg-white/[0.07]" />
+          <div className="h-8 w-px shrink-0 bg-surface-2" />
           <div className="min-w-0 flex-[1.5]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Next reward
             </p>
             <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
@@ -102,7 +102,7 @@ export function SpeechProgressCard({
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <p className="mt-1 truncate text-[10px] text-muted-foreground">
+            <p className="mt-1 truncate text-[13px] text-muted-foreground">
               {secsToNext > 0
                 ? `${secsToNext}s → +${nextMilestoneXp} XP`
                 : `+${nextMilestoneXp} XP unlocked!`}
@@ -116,12 +116,12 @@ export function SpeechProgressCard({
   return (
     <Card className="p-4">
       {header && (
-        <div className="mb-3 border-b border-white/[0.06] pb-3">{header}</div>
+        <div className="mb-3 border-b border-border pb-3">{header}</div>
       )}
       <h3 className="px-2 text-sm font-semibold text-heading">Speak to earn</h3>
 
       <div className="mt-3 grid grid-cols-2 gap-2 px-2">
-        <div className="rounded-lg border border-white/[0.04] bg-surface-2/40 px-3 py-2">
+        <div className="rounded-lg border border-border bg-surface-2/40 px-3 py-2">
           <div className="flex items-center gap-1.5 text-xs text-primary">
             <Mic className="h-3.5 w-3.5" />
             <span className="uppercase tracking-[0.14em] text-muted-foreground">
@@ -137,7 +137,7 @@ export function SpeechProgressCard({
           initial={{ opacity: 0.6, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.28, ease: "easeOut" }}
-          className="rounded-lg border border-white/[0.04] bg-surface-2/40 px-3 py-2"
+          className="rounded-lg border border-border bg-surface-2/40 px-3 py-2"
         >
           <div className="flex items-center gap-1.5 text-xs text-emerald-300">
             <Zap className="h-3.5 w-3.5" />

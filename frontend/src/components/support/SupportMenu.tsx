@@ -19,7 +19,7 @@ export default function SupportMenu() {
           type="button"
           aria-label="Something wrong? Contact support"
           title="Something wrong? Tell us"
-          className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/[0.08] bg-surface-2/60 px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+          className="inline-flex h-10 items-center gap-1.5 rounded-full bg-surface-2 px-3 text-[14px] font-bold text-body transition-colors hover:bg-surface-3 hover:text-heading"
         >
           <LifeBuoy className="h-4 w-4" />
           <span className="hidden lg:inline">Help</span>

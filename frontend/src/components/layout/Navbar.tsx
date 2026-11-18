@@ -42,37 +42,37 @@ export default function Navbar() {
   const currentStage = plantStageForIndex(currentIndex < 0 ? 0 : currentIndex, levels.length);
 
   return (
-    <header className="glass sticky top-0 z-30 h-14 border-b border-white/[0.06] md:h-[76px]">
-      <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-4 px-4 md:gap-6 md:px-6 lg:px-8">
-
-        {/* Primary in-app nav — pill tabs, authenticated users only */}
-        {isAuthenticated && <NavTabs />}
+    <header className="sticky top-0 z-30 h-14 border-b border-border bg-surface-1/95 backdrop-blur-sm md:h-[72px]">
+      <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-3 px-4 md:gap-6 md:px-6 lg:px-8">
 
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="English Connection — home">
           <Image
             src="/logo.svg"
-            alt="English Connection"
+            alt=""
             width={44}
             height={44}
-            className="h-9 w-auto sm:h-6"
+            className="h-9 w-auto"
           />
+          <span className="hidden font-display text-[17px] font-extrabold tracking-tight text-heading xl:block">
+            English Connection
+          </span>
           {/* PRO badge — next to the logo mark, for Pro members only. */}
           {isPro && (
             <span
-              className="rounded-full px-2 py-0.5 text-[10px] font-black leading-none tracking-tight text-white drop-shadow-sm"
+              className="rounded-full px-2 py-1 text-[12px] font-black leading-none tracking-wide text-white"
               style={{ background: "var(--pro-pill)" }}
             >
               PRO
             </span>
           )}
-          <span className="hidden text-sm font-bold text-heading sm:block">
-            English Connection
-          </span>
         </Link>
 
+        {/* Primary in-app nav — desktop tabs, authenticated users only */}
+        {isAuthenticated && <NavTabs />}
+
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           {isAuthenticated && (
             <div className="flex items-center gap-2">
               {/* XP chip — opens the leaderboard popover */}
@@ -82,9 +82,9 @@ export default function Navbar() {
                   onClick={() => setLeaderboardOpen((o) => !o)}
                   aria-label="Open global leaderboard"
                   aria-expanded={leaderboardOpen}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2/60 px-3 py-1.5 text-xs font-semibold text-cyan transition-colors hover:bg-surface-2"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-full bg-surface-2 px-3 text-[14px] font-extrabold text-heading transition-colors hover:bg-surface-3"
                 >
-                  <Zap className="hidden h-3.5 w-3.5 md:block" />
+                  <Zap className="h-4 w-4 text-primary" />
                   {totalXP.toLocaleString()} XP
                 </button>
                 <LeaderboardPopover
@@ -100,7 +100,7 @@ export default function Navbar() {
                   onClick={() => setLevelsOpen((o) => !o)}
                   aria-label="Open levels overview"
                   aria-expanded={levelsOpen}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-surface-2/60 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-surface-2"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-full bg-surface-2 px-3 text-[14px] font-extrabold text-heading transition-colors hover:bg-surface-3"
                 >
                   <PlantArt stage={currentStage} className="h-5 w-5 shrink-0" />
                   <span className="md:hidden">L{currentLevel}</span>

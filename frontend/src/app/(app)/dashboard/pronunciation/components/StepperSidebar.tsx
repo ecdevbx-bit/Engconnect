@@ -65,8 +65,8 @@ export function StepperSidebar({
                   className={cn(
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors",
                     reached
-                      ? "bg-primary text-[#0b0e14]"
-                      : "bg-white/[0.06] text-muted-foreground",
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-surface-2 text-muted-foreground",
                     active && "ring-4 ring-primary/20",
                   )}
                 >
@@ -86,7 +86,7 @@ export function StepperSidebar({
               </span>
               <span
                 className={cn(
-                  "text-center text-[11px] font-medium leading-tight transition-colors",
+                  "text-center text-[13px] font-medium leading-tight transition-colors",
                   active
                     ? "text-primary"
                     : reached
@@ -114,15 +114,15 @@ export function StepperSidebar({
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors",
                   active && "bg-primary/10",
-                  !active && "hover:bg-white/[0.04]",
+                  !active && "hover:bg-surface-2",
                 )}
               >
                 <span
                   className={cn(
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                    active && "bg-primary text-[#0b0e14]",
+                    active && "bg-primary text-primary-foreground",
                     done && !active && "bg-primary/30 text-primary",
-                    !active && !done && "bg-white/[0.06] text-muted-foreground",
+                    !active && !done && "bg-surface-2 text-muted-foreground",
                   )}
                 >
                   {i + 1}

@@ -92,12 +92,12 @@ export function WordBankTrainer({ accessToken }: { accessToken: string }) {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type a word…"
           aria-label="Add a word"
-          className="flex-1 rounded-xl border border-white/[0.12] bg-surface-2/60 px-4 py-2.5 text-sm text-heading outline-none focus:border-primary"
+          className="flex-1 rounded-xl border border-border bg-surface-2/60 px-4 py-2.5 text-sm text-heading outline-none focus:border-primary"
         />
         <button
           type="submit"
           disabled={busy || !input.trim()}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-[#0b0e14] transition hover:bg-primary-1 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary-1 disabled:opacity-50"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add
         </button>
@@ -112,7 +112,7 @@ export function WordBankTrainer({ accessToken }: { accessToken: string }) {
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
           </p>
         ) : words.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/[0.12] bg-surface-2/30 p-8 text-center">
+          <div className="rounded-2xl border border-dashed border-border bg-surface-2/30 p-8 text-center">
             <BookMarked className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">
               No words yet. Add one above, or drag words in from the Pronunciation trainer.
@@ -123,7 +123,7 @@ export function WordBankTrainer({ accessToken }: { accessToken: string }) {
             {words.map((w) => (
               <li
                 key={w.word}
-                className="flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-surface-2/40 p-3 pl-4"
+                className="flex items-center gap-2 rounded-2xl border border-border bg-surface-2/40 p-3 pl-4"
               >
                 <span className="flex-1 truncate font-semibold text-heading">{w.word}</span>
                 {w.source === "pronunciation" && (
@@ -135,7 +135,7 @@ export function WordBankTrainer({ accessToken }: { accessToken: string }) {
                   type="button"
                   onClick={() => speak(w.word, { rate: 0.9 })}
                   aria-label={`Listen to ${w.word}`}
-                  className="shrink-0 rounded-lg p-2 text-muted-foreground transition hover:bg-white/5 hover:text-heading"
+                  className="shrink-0 rounded-lg p-2 text-muted-foreground transition hover:bg-surface-2 hover:text-heading"
                 >
                   <Volume2 className="h-4 w-4" />
                 </button>
@@ -144,8 +144,8 @@ export function WordBankTrainer({ accessToken }: { accessToken: string }) {
                   onClick={() => setPractice((p) => (p === w.word ? null : w.word))}
                   className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
                     practice === w.word
-                      ? "bg-primary text-[#0b0e14]"
-                      : "border border-white/[0.12] text-heading hover:bg-white/5"
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border text-heading hover:bg-surface-2"
                   }`}
                 >
                   Practice

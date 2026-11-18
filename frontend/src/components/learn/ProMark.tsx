@@ -7,7 +7,7 @@ export function ProMark({ locked, className }: { locked?: boolean; className?: s
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black leading-none tracking-tight text-white",
+        "inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[13px] font-black leading-none tracking-tight text-white",
         className,
       )}
       style={{ background: "var(--pro-pill)" }}

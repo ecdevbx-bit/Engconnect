@@ -158,7 +158,7 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
           )}
 
           {sentTo ? (
-            <div className="rounded-xl border border-white/10 bg-surface-2/40 p-5 text-sm">
+            <div className="rounded-xl border border-border bg-surface-2/40 p-5 text-sm">
               <p className="font-bold text-heading">Check your inbox 📬</p>
               <p className="mt-2 text-muted-foreground">
                 We sent a confirmation link to <span className="font-semibold text-heading">{sentTo}</span>. Open it on
@@ -180,7 +180,7 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
                 {googleLoading ? "Redirecting…" : "Continue with Google"}
               </Button>
               {googleOn === false && (
-                <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                <p className="mt-2 text-center text-[13px] text-muted-foreground">
                   Google sign-in is being set up — please use email for now.
                 </p>
               )}
@@ -221,7 +221,7 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   {mode === "signup" && (
-                    <p className="text-[11px] text-muted-foreground">At least 8 characters, with a letter and a number.</p>
+                    <p className="text-[13px] text-muted-foreground">At least 8 characters, with a letter and a number.</p>
                   )}
                 </div>
 
@@ -236,7 +236,7 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
                 </Button>
 
                 {mode === "signup" && (
-                  <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+                  <p className="text-center text-[13px] leading-relaxed text-muted-foreground">
                     By creating an account you agree to our{" "}
                     <Link href="/terms" className="font-semibold text-primary hover:underline">
                       Terms of Service

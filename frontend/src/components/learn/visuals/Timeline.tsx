@@ -68,7 +68,7 @@ export function Timeline({ v }: { v: TimelineVisual }) {
       {/* "now" marker spans every row of the middle column */}
       <div className="pointer-events-none relative col-start-2 row-span-4 row-start-1 self-stretch">
         <span
-          className="absolute top-0 -translate-x-1/2 rounded-full bg-heading px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-background"
+          className="absolute top-0 -translate-x-1/2 rounded-full bg-heading px-2 py-0.5 text-[13px] font-bold uppercase tracking-wider text-background"
           style={{ left: `${now}%` }}
         >
           now
@@ -85,7 +85,7 @@ export function Timeline({ v }: { v: TimelineVisual }) {
       <LabelRow marks={top} side="top" />
 
       {/* row 3: the axis */}
-      <span className="col-start-1 row-start-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Past</span>
+      <span className="col-start-1 row-start-3 text-[13px] font-bold uppercase tracking-wider text-muted-foreground">Past</span>
       <div className="relative col-start-2 row-start-3 h-8">
         <span className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-muted-foreground/40" />
         {v.marks.map((m, i) => {
@@ -125,7 +125,7 @@ export function Timeline({ v }: { v: TimelineVisual }) {
           ));
         })}
       </div>
-      <span className="col-start-3 row-start-3 flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+      <span className="col-start-3 row-start-3 flex items-center gap-0.5 text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
         Future
         <svg viewBox="0 0 8 10" className="h-2.5 w-2" aria-hidden>
           <path d="M0 0 L8 5 L0 10 Z" fill="currentColor" />

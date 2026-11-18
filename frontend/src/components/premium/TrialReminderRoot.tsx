@@ -59,7 +59,7 @@ export default function TrialReminderRoot() {
 
   return (
     <div className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-sm sm:inset-x-auto sm:bottom-6 sm:right-6">
-      <div className="relative rounded-2xl border border-white/[0.1] bg-[#0b0e14] p-4 pr-9 text-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)]">
+      <div className="relative rounded-2xl border border-border bg-[#0b0e14] p-4 pr-9 text-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)]">
         <button
           onClick={close}
           aria-label="Dismiss"

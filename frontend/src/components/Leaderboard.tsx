@@ -378,7 +378,7 @@ function StandingToggle({
   onChange: (m: V3LeaderboardMetric) => void;
 }) {
   return (
-    <div className="inline-flex rounded-xl border border-white/[0.08] bg-surface-2/40 p-1">
+    <div className="inline-flex rounded-xl border border-border bg-surface-2/40 p-1">
       <TabButton active={mode === "xp"} onClick={() => onChange("xp")}>
         <Trophy size={14} className="mr-1.5" />
         XP
@@ -399,7 +399,7 @@ function ModeToggle({
   onChange: (m: V3LeaderboardMetric) => void;
 }) {
   return (
-    <div className="inline-flex rounded-xl border border-white/[0.08] bg-surface-2/40 p-1">
+    <div className="inline-flex rounded-xl border border-border bg-surface-2/40 p-1">
       <TabButton active={mode === "xp"} onClick={() => onChange("xp")}>
         <Trophy size={14} className="mr-1.5" />
         XP
@@ -466,7 +466,7 @@ function ProfileBanner({
           so every level sapling on the page resolves its fills. */}
       <PlantArtDefs />
       {/* Soft gradient banner — desktop only; mobile shows the bare avatar + name. */}
-      <div className="hidden h-32 bg-gradient-to-br from-[#005da7]/25 via-[#2976c7]/12 to-transparent sm:block dark:from-[#f59e0b]/30 dark:via-[#f97316]/15 dark:to-[#0b0e14]" />
+      <div className="hidden h-32 bg-gradient-to-br from-[#c9480c]/25 via-[#f0731f]/12 to-transparent sm:block dark:from-[#f59e0b]/30 dark:via-[#f97316]/15 dark:to-[#0b0e14]" />
 
       <div className="flex items-end gap-5 px-6 sm:-mt-12 sm:pb-6">
         {/* Avatar */}
@@ -643,7 +643,7 @@ function PodiumColumn({ entry, position }: { entry: V3LeaderboardEntry; position
       </div>
       <div className={`relative flex w-full flex-col items-center overflow-hidden rounded-t-xl bg-gradient-to-b pt-2 ${cfg.pillar} ${cfg.gradient}`}>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
-        <span className="z-10 rounded-full bg-black/25 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums">
+        <span className="z-10 rounded-full bg-black/25 px-2 py-0.5 text-[13px] font-bold text-white tabular-nums">
           {entry.value.toLocaleString()} XP
         </span>
         <span className="z-10 mt-auto mb-1.5 text-2xl font-black text-white/40">#{position}</span>

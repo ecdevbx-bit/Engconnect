@@ -188,7 +188,7 @@ export default function ActivityHeatmap({ rows }: Props) {
             {monthMarkers.map((m) => (
               <span
                 key={`${m.label}-${m.weekIdx}`}
-                className="absolute text-[10px] font-medium text-muted-foreground"
+                className="absolute text-[13px] font-medium text-muted-foreground"
                 style={{ left: m.weekIdx * (CELL + GAP) }}
               >
                 {m.label}
@@ -221,7 +221,7 @@ export default function ActivityHeatmap({ rows }: Props) {
           </div>
 
           {/* Legend */}
-          <div className="mt-2 flex items-center justify-end gap-2 text-[10px] text-muted-foreground md:mt-3">
+          <div className="mt-2 flex items-center justify-end gap-2 text-[13px] text-muted-foreground md:mt-3">
             <span>Less</span>
             <div className="flex gap-1">
               {[0, 1, 2, 3, 4].map((l) => (

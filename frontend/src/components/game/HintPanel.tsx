@@ -127,7 +127,7 @@ function HintReveal({
               "rounded-md px-2.5 py-1 text-sm",
               w.revealed
                 ? "bg-surface-3 font-semibold text-heading"
-                : "bg-white/5 tracking-widest text-muted-foreground",
+                : "bg-surface-2 tracking-widest text-muted-foreground",
             ].join(" ")}
           >
             {w.revealed ? w.word : "•".repeat(Math.max(w.word.length, 2))}

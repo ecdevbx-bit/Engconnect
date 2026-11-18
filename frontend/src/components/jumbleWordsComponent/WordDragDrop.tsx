@@ -314,8 +314,8 @@ function DroppableZone({
                 isOver
                     ? "border-primary/60 bg-primary/5 scale-[1.01]"
                     : isEmpty
-                        ? "border-white/[0.10] bg-surface-1/50"
-                        : cn("border-white/[0.06]", extraZoneClass || "c-box")
+                        ? "border-border bg-surface-1/50"
+                        : cn("border-border", extraZoneClass || "c-box")
             )}
         >
             {isEmpty ? (
@@ -680,8 +680,8 @@ function WordDragDropInner({
                                 className={cn(
                                     "flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide transition-all duration-150",
                                     !isCorrect && !nothingMoved
-                                        ? "c-box cursor-pointer border-white/[0.06] text-heading hover:border-primary/40 active:scale-[0.98]"
-                                        : "cursor-not-allowed border-white/[0.06] bg-surface-2 text-muted-foreground"
+                                        ? "c-box cursor-pointer border-border text-heading hover:border-primary/40 active:scale-[0.98]"
+                                        : "cursor-not-allowed border-border bg-surface-2 text-muted-foreground"
                                 )}
                             >
                                 <span className="text-primary">Re-Jumble</span>

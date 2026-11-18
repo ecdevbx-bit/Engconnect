@@ -75,7 +75,7 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="mt-1 h-10 w-full rounded-lg border border-white/10 bg-surface-1 px-3 text-sm font-semibold text-heading"
+          className="mt-1 h-10 w-full rounded-lg border border-border bg-surface-1 px-3 text-sm font-semibold text-heading"
         >
           <option value="">Choose an option…</option>
           {SUPPORT_CATEGORIES.map((c) => (
@@ -93,7 +93,7 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
           rows={compact ? 4 : 5}
           maxLength={4000}
           placeholder="What happened? What did you expect? Which screen were you on?"
-          className="mt-1 w-full resize-y rounded-lg border border-white/10 bg-surface-1 px-3 py-2 text-sm text-heading outline-none focus:border-primary"
+          className="mt-1 w-full resize-y rounded-lg border border-border bg-surface-1 px-3 py-2 text-sm text-heading outline-none focus:border-primary"
         />
       </label>
       {!token && (
@@ -104,7 +104,7 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 h-10 w-full rounded-lg border border-white/10 bg-surface-1 px-3 text-sm text-heading"
+            className="mt-1 h-10 w-full rounded-lg border border-border bg-surface-1 px-3 text-sm text-heading"
           />
         </label>
       )}
@@ -116,7 +116,7 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
       <button
         type="submit"
         disabled={busy}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-[#0b0e14] transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send to support
       </button>

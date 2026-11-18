@@ -32,7 +32,7 @@ export function SessionCompleteCard({
         </p>
       </div>
 
-      <div className="w-full rounded-xl bg-surface-2 border border-white/[0.06] px-6 py-4">
+      <div className="w-full rounded-xl bg-surface-2 border border-border px-6 py-4">
         <XPDisplay xp={xp} level={level} />
       </div>
 

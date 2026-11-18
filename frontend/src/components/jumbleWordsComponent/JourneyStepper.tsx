@@ -57,13 +57,13 @@ export default function JourneyStepper({
             <div key={stage.label} className="flex flex-1 items-center last:flex-none">
               <div
                 className={cn(
-                  "flex h-6 shrink-0 items-center gap-1 rounded-full px-2.5 text-[10px] font-bold transition-all duration-300",
+                  "flex h-6 shrink-0 items-center gap-1 rounded-full px-2.5 text-[13px] font-bold transition-all duration-300",
                   done && stage.done,
                   active && stage.active,
                   !done && !active && stage.todo,
                 )}
               >
-                {done && <FaCheck className="text-[8px]" />}
+                {done && <FaCheck className="text-[13px]" />}
                 {stage.label}
               </div>
               {i < STAGE_STYLES.length - 1 && (
@@ -90,7 +90,7 @@ export default function JourneyStepper({
           <div key={i} className="flex flex-1 items-center last:flex-none">
             <div
               className={cn(
-                "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-bold transition-all duration-300",
+                "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[13px] font-bold transition-all duration-300",
                 done &&
                   "bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[#0b0e14]",
                 active &&
@@ -98,7 +98,7 @@ export default function JourneyStepper({
                 !done && !active && "bg-surface-3 text-muted-foreground"
               )}
             >
-              {done ? <FaCheck className="text-[9px]" /> : i + 1}
+              {done ? <FaCheck className="text-[13px]" /> : i + 1}
             </div>
             {i < total - 1 && (
               <div

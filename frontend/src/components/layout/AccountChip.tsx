@@ -72,7 +72,7 @@ export default function AccountChip({ size = "md" }: { size?: "sm" | "md" }) {
         aria-label="Account menu"
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-surface-2/60 py-1 pl-1 pr-1 transition-colors hover:bg-surface-2 md:pr-3"
+        className="flex items-center gap-2 rounded-full border border-border bg-surface-2/60 py-1 pl-1 pr-1 transition-colors hover:bg-surface-2 md:pr-3"
       >
         <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full">
           {user.photoURL ? (

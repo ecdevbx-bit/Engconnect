@@ -108,7 +108,7 @@ function ShowcaseCard({
       onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerCancel={() => setPressed(false)}
-      className="group relative block h-[210px] overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_10px_28px_-8px_rgba(20,28,46,0.3)] transition-transform hover:scale-[1.01] dark:shadow-none md:h-[190px]"
+      className="group relative block h-[210px] overflow-hidden rounded-2xl border border-border shadow-[0_10px_28px_-8px_rgba(20,28,46,0.3)] transition-transform hover:scale-[1.01] dark:shadow-none md:h-[190px]"
     >
       {/* Illustration — animates on hover (mouse) or continuously (touch) */}
       <div className="absolute inset-0">
@@ -453,7 +453,7 @@ export function WordBankScene({ hovered }: { hovered: boolean }) {
         {words.map((w, i) => (
           <span
             key={w}
-            className="rounded-lg border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[11px] font-bold text-white shadow-sm transition-transform duration-500"
+            className="rounded-lg border border-white/15 bg-surface-2 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm transition-transform duration-500"
             style={{
               transform: hovered ? `translateX(${i * -7}px)` : "translateX(0)",
               transitionDelay: `${i * 60}ms`,

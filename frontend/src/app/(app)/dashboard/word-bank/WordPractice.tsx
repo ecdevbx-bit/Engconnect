@@ -62,7 +62,7 @@ export function WordPractice({ word, onClose }: { word: string; onClose: () => v
           type="button"
           onClick={onClose}
           aria-label="Close practice"
-          className="rounded-lg p-2 text-muted-foreground transition hover:bg-white/5 hover:text-heading"
+          className="rounded-lg p-2 text-muted-foreground transition hover:bg-surface-2 hover:text-heading"
         >
           <X className="h-5 w-5" />
         </button>
@@ -72,7 +72,7 @@ export function WordPractice({ word, onClose }: { word: string; onClose: () => v
         <button
           type="button"
           onClick={() => speak(word, { rate: 0.9 })}
-          className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] px-4 py-2 text-sm font-bold text-heading transition hover:bg-white/5"
+          className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-bold text-heading transition hover:bg-surface-2"
         >
           <Volume2 className="h-4 w-4" /> Listen
         </button>
@@ -90,7 +90,7 @@ export function WordPractice({ word, onClose }: { word: string; onClose: () => v
             <button
               type="button"
               onClick={onRecord}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-bold text-[#0b0e14] transition hover:bg-primary-1"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition hover:bg-primary-1"
             >
               <Mic className="h-4 w-4" /> Say it ({takes.length}/{TARGET_REPS})
             </button>

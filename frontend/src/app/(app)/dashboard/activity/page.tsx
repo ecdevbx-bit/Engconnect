@@ -165,7 +165,7 @@ function ActivityBucket({
 
   return (
     <div>
-      <h2 className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+      <h2 className="mb-2 flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
         {title}
         <span className="text-muted-foreground/50">·</span>
         <span className="text-muted-foreground/70 normal-case tracking-normal">

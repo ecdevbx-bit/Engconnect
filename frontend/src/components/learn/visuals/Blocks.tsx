@@ -39,7 +39,7 @@ export function Blocks({ v }: { v: BlocksVisual }) {
                 {/* keep label height on rows that name something, so chips stay aligned */}
                 {named[ri].some(Boolean) && (
                   <span
-                    className={`text-[10px] font-bold uppercase tracking-wider text-muted-foreground ${named[ri][ci] ? "" : "invisible"}`}
+                    className={`text-[13px] font-bold uppercase tracking-wider text-muted-foreground ${named[ri][ci] ? "" : "invisible"}`}
                   >
                     {chipLabel(c)}
                   </span>
@@ -55,7 +55,7 @@ export function Blocks({ v }: { v: BlocksVisual }) {
       {v.rows.length > 1 && used.length > 1 && (
         <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-border pt-3" aria-hidden>
           {used.map((r) => (
-            <span key={r} className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+            <span key={r} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground">
               <span className="h-2.5 w-2.5 rounded-sm border" style={tint(ROLE[r].color, 45, 80)} />
               {ROLE[r].label}
             </span>

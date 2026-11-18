@@ -24,7 +24,7 @@ export function WordPool({ tiles, disabled = false }: WordPoolProps) {
               "c-box rounded-xl min-h-[56px] flex flex-wrap gap-2 p-3 transition-all duration-200",
               snapshot.isDraggingOver
                 ? "border-primary/40 ring-1 ring-primary/20"
-                : "border-white/[0.06]",
+                : "border-border",
             ].join(" ")}
           >
             {tiles.map((tile, idx) => (

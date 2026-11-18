@@ -7,18 +7,18 @@ interface LevelBadgeProps {
 }
 
 const LEVEL_COLORS: Record<number, string> = {
-  1: "bg-surface-2 text-primary border border-white/[0.06]",
-  2: "bg-surface-2 text-cyan border border-white/[0.06]",
-  3: "bg-surface-2 text-primary border border-white/[0.06]",
-  4: "bg-surface-2 text-cyan border border-white/[0.06]",
-  5: "bg-surface-2 text-primary border border-white/[0.06]",
-  6: "bg-surface-2 text-cyan border border-white/[0.06]",
+  1: "bg-surface-2 text-primary border border-border",
+  2: "bg-surface-2 text-cyan border border-border",
+  3: "bg-surface-2 text-primary border border-border",
+  4: "bg-surface-2 text-cyan border border-border",
+  5: "bg-surface-2 text-primary border border-border",
+  6: "bg-surface-2 text-cyan border border-border",
 };
 
 export function LevelBadge({ level }: LevelBadgeProps) {
   const label = LEVEL_LABELS[level] ?? "Starter";
   const isMax = level >= MAX_LEVEL;
-  const colorClass = LEVEL_COLORS[level] ?? "bg-surface-2 text-primary border border-white/[0.06]";
+  const colorClass = LEVEL_COLORS[level] ?? "bg-surface-2 text-primary border border-border";
 
   return (
     <span className={[

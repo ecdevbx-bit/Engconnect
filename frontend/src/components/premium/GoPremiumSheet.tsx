@@ -112,13 +112,13 @@ export default function GoPremiumSheet({
           {FEATURES.map((f) => (
             <div
               key={f.name}
-              className="flex items-center justify-between rounded-2xl bg-black/[0.03] px-4 py-2.5 dark:bg-white/[0.04]"
+              className="flex items-center justify-between rounded-2xl bg-black/[0.03] px-4 py-2.5 dark:bg-surface-2"
             >
               <div className="min-w-0">
                 <p className="text-sm font-bold text-heading">{f.name}</p>
-                <p className="text-[11px] text-muted-foreground">Free · {f.free}</p>
+                <p className="text-[13px] text-muted-foreground">Free · {f.free}</p>
               </div>
-              <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-3 py-1 text-[12px] font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-3 py-1 text-[13px] font-extrabold text-emerald-600 dark:text-emerald-400">
                 {f.pro}
               </span>
             </div>
@@ -139,7 +139,7 @@ export default function GoPremiumSheet({
         >
           See Pro plans <ArrowUpRight className="h-5 w-5" strokeWidth={2.5} />
         </button>
-        <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        <p className="mt-3 text-center text-[13px] text-muted-foreground">
           Cancel anytime · free plays reset tomorrow
         </p>
       </div>

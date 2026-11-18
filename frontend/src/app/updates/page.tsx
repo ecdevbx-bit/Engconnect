@@ -61,9 +61,9 @@ export default function UpdatesPage() {
       intro="A running log of what's new in English Connection. We ship improvements constantly — here are the highlights."
     >
       {RELEASES.map((r) => (
-        <section key={r.title} className="border-l-2 border-white/10 pl-5">
+        <section key={r.title} className="border-l-2 border-border pl-5">
           <div className="flex flex-wrap items-center gap-3">
-            <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${TAG_STYLE[r.tag] ?? "border-white/15 text-muted-foreground"}`}>
+            <span className={`rounded-full border px-2.5 py-0.5 text-[13px] font-bold uppercase tracking-wider ${TAG_STYLE[r.tag] ?? "border-white/15 text-muted-foreground"}`}>
               {r.tag}
             </span>
             <span className="text-sm text-muted-foreground">{r.date}</span>

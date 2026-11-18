@@ -124,7 +124,7 @@ function ChatRow({
       </span>
       <span className="flex shrink-0 flex-col items-end gap-1">
         {stamp && (
-          <time dateTime={item.startedAt} className="text-[11px] tabular-nums text-muted-foreground">
+          <time dateTime={item.startedAt} className="text-[13px] tabular-nums text-muted-foreground">
             {stamp}
           </time>
         )}

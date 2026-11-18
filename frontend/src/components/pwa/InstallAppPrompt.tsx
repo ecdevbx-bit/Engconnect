@@ -118,7 +118,7 @@ export default function InstallAppPrompt() {
         transition: "transform 260ms cubic-bezier(0.32,0.72,0,1), opacity 220ms ease",
       }}
     >
-      <div className="relative overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.35)] dark:border-white/[0.1] dark:bg-[#14171c] dark:shadow-[0_24px_60px_-18px_rgba(0,0,0,0.75)]">
+      <div className="relative overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.35)] dark:border-border dark:bg-[#14171c] dark:shadow-[0_24px_60px_-18px_rgba(0,0,0,0.75)]">
         <button
           type="button"
           onClick={close}
@@ -140,7 +140,7 @@ export default function InstallAppPrompt() {
             <p className="text-[15px] font-extrabold leading-tight text-heading">
               Install English Connection
             </p>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
+            <p className="mt-0.5 text-[13px] text-muted-foreground">
               {isIOSFlow
                 ? "Add it to your Home Screen — two taps, no App Store."
                 : "Get the app — free, instant, no App Store."}
@@ -150,13 +150,13 @@ export default function InstallAppPrompt() {
 
         {isIOSFlow ? (
           <ol className="mt-3.5 space-y-2">
-            <li className="flex items-center gap-2.5 rounded-xl bg-black/[0.03] px-3 py-2 text-[12.5px] text-body dark:bg-white/[0.04]">
+            <li className="flex items-center gap-2.5 rounded-xl bg-black/[0.03] px-3 py-2 text-[13px] text-body dark:bg-surface-2">
               <Share className="h-4 w-4 shrink-0 text-heading" />
               <span>
                 Tap <span className="font-bold text-heading">Share</span> in Safari&apos;s toolbar
               </span>
             </li>
-            <li className="flex items-center gap-2.5 rounded-xl bg-black/[0.03] px-3 py-2 text-[12.5px] text-body dark:bg-white/[0.04]">
+            <li className="flex items-center gap-2.5 rounded-xl bg-black/[0.03] px-3 py-2 text-[13px] text-body dark:bg-surface-2">
               <SquarePlus className="h-4 w-4 shrink-0 text-heading" />
               <span>
                 Choose <span className="font-bold text-heading">Add to Home Screen</span>
@@ -166,7 +166,7 @@ export default function InstallAppPrompt() {
         ) : (
           <ul className="mt-3.5 grid gap-1.5">
             {BENEFITS.map(({ Icon, text }) => (
-              <li key={text} className="flex items-center gap-2 text-[12.5px] text-body">
+              <li key={text} className="flex items-center gap-2 text-[13px] text-body">
                 <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                 {text}
               </li>

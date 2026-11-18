@@ -113,7 +113,7 @@ export function ProFeatureCard({
         <div className="pointer-events-none absolute inset-0" style={{ background: f.tint }} />
 
         {/* PRO badge, top-right */}
-        <span className="absolute right-4 top-4 z-10 rounded-full bg-white px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-gray-900 shadow-sm">
+        <span className="absolute right-4 top-4 z-10 rounded-full bg-white px-2.5 py-1 text-[13px] font-extrabold tracking-wide text-gray-900 shadow-sm">
           PRO
         </span>
 
@@ -130,7 +130,7 @@ export function ProFeatureCard({
 
       {/* Pro description sits in the white space below the panel */}
       <div className="flex items-center justify-between gap-3 px-3.5 py-3.5">
-        <div className="rounded-full bg-gray-50 px-4 py-2.5 ring-1 ring-black/[0.05] dark:bg-white/[0.06] dark:ring-white/[0.08]">
+        <div className="rounded-full bg-gray-50 px-4 py-2.5 ring-1 ring-black/[0.05] dark:bg-surface-2 dark:ring-white/[0.08]">
           <span className="block whitespace-nowrap text-[13px] font-extrabold text-gray-900 dark:text-white">
             Pro · {f.pro}
           </span>
@@ -172,7 +172,7 @@ export default function ProFeatureCards() {
     <section className="mt-10">
       {/* One common card wrapping the four feature cards, the other perks, and
           the final Go-Pro call to action. */}
-      <div className="rounded-[2rem] border border-black/[0.06] bg-black/[0.015] p-4 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.5)] dark:border-white/[0.06] dark:bg-white/[0.02] sm:p-6">
+      <div className="rounded-[2rem] border border-black/[0.06] bg-black/[0.015] p-4 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.5)] dark:border-border dark:bg-white/[0.02] sm:p-6">
         {selling && offer && <ProBuyButton offer={offer} top />}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {PRO_FEATURES.map((f, i) => (
@@ -189,7 +189,7 @@ export default function ProFeatureCards() {
           ))}
         </div>
 
-        <div className="mt-6 border-t border-black/[0.06] pt-5 dark:border-white/[0.06]">
+        <div className="mt-6 border-t border-black/[0.06] pt-5 dark:border-border">
           <p className="text-sm font-bold text-heading">Every Pro plan also includes</p>
           <ul className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {PRO_PERKS.map((perk) => (
@@ -203,7 +203,7 @@ export default function ProFeatureCards() {
         {isPro ? (
           <button
             disabled
-            className="mt-6 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-black/[0.06] py-3.5 text-base font-bold text-muted-foreground dark:bg-white/[0.06]"
+            className="mt-6 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-black/[0.06] py-3.5 text-base font-bold text-muted-foreground dark:bg-surface-2"
           >
             <Check className="h-5 w-5" strokeWidth={2.5} /> You&apos;re Pro
           </button>

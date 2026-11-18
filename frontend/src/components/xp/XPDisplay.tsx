@@ -18,7 +18,7 @@ export function XPDisplay({ xp, level, compact = false }: XPDisplayProps) {
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <LevelBadge level={level} />
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-2 text-cyan border border-white/[0.06]">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-2 text-cyan border border-border">
           <span>⚡</span>
           <span>{xp.toLocaleString()} XP</span>
         </span>
