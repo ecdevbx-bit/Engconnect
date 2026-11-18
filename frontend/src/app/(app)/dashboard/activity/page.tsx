@@ -244,7 +244,7 @@ function labelForCategory(category: string): string {
 function diffColorFor(difficulty: string): string {
   switch (difficulty.toLowerCase()) {
     case "easy":
-      return "text-green-400";
+      return "text-good";
     case "medium":
       return "text-yellow-400";
     case "hard":

@@ -69,7 +69,7 @@ export default function AIPartnerUpdatingModal({
           ))}
         </ul>
 
-        <div className="relative flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3">
+        <div className="relative flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-good-soft px-4 py-3">
           <Sparkles className="h-4 w-4 shrink-0 text-emerald-500" strokeWidth={2.5} />
           <p className="text-sm font-bold text-heading">
             Back in its new form this Friday

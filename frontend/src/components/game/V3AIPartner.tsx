@@ -7,7 +7,7 @@
 import { useSession } from "@/lib/session";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HelpCircle, History, X } from "lucide-react";
+import { HelpCircle, History, Mic, X } from "lucide-react";
 import Link from "next/link";
 import { useNextStep } from "nextstepjs";
 import { cn } from "@/lib/utils";
@@ -230,13 +230,13 @@ export default function V3AIPartner() {
       ? "listening"
       : "idle";
   const agentLabel = isAiSpeaking
-    ? "Speaking…"
+    ? "K.AI is speaking"
     : isAiTyping
-      ? "Thinking…"
+      ? "K.AI is thinking…"
       : mic.muted
-        ? "Muted"
+        ? "You're muted"
         : isMicActive
-          ? "Listening…"
+          ? "Listening… just talk"
           : isConnected && mic.error
             ? "Mic off"
             : "Connecting…";
@@ -455,7 +455,7 @@ export default function V3AIPartner() {
     return (
       // Same sizing as the chat below: fills the screen between the navbars on
       // phones, so the wizard's Next bar is always visible.
-      <div className="-mb-28 flex h-[calc(100dvh_-_9.75rem_-_env(safe-area-inset-bottom))] justify-center md:mb-0 md:h-auto md:max-h-[calc(100dvh-10rem)] md:items-center md:py-6">
+      <div className="-mb-32 flex h-[calc(100dvh_-_9.75rem_-_env(safe-area-inset-bottom))] justify-center md:mb-0 md:h-auto md:max-h-[calc(100dvh-10rem)] md:items-center md:py-6">
         <OnboardingWizard
           onComplete={() => setOnboardingSkipped(true)}
           onSkip={() => setOnboardingSkipped(true)}
@@ -468,26 +468,31 @@ export default function V3AIPartner() {
 
   if (!started) {
     return (
-      <div className="flex min-h-[calc(100dvh-10rem)] items-center justify-center py-3">
-        <div className="c-box w-full max-w-2xl rounded-2xl px-6 py-6 text-center sm:px-12 sm:py-7">
+      <div className="mx-auto flex w-full max-w-2xl flex-col py-1 md:py-4">
+        <div className="ec-card w-full px-5 py-6 sm:px-8 sm:py-8">
           {/* Mascot + title, and History (Pro; others see the Pro card there). */}
-          <div className="mb-4 flex items-center gap-3 text-left">
-            <div className="anim-bubble-bob shrink-0">
-              <PixelMascot emotion="greeting" size={144} className="!h-14 !w-14 sm:!h-20 sm:!w-20" />
+          <div className="mb-6 flex items-center gap-4 text-left">
+            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-kai-soft sm:h-20 sm:w-20">
+              <PixelMascot emotion="greeting" size={144} className="!h-12 !w-12 sm:!h-16 sm:!w-16" />
             </div>
-            <h1 className="min-w-0 flex-1 text-2xl font-bold text-gradient sm:text-3xl">Talk to K.AI</h1>
-            <Link
-              href="/dashboard/ai-partner/history"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
-            >
-              <History className="h-4 w-4" />
-              History
-            </Link>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-[26px] font-extrabold leading-tight text-heading sm:text-3xl">Talk to K.AI</h1>
+              <p className="mt-0.5 text-[15px] leading-snug text-muted-foreground">
+                Just talk. K.AI listens, answers and gently fixes your English.
+              </p>
+            </div>
           </div>
+          <Link
+            href="/dashboard/ai-partner/history"
+            className="mb-6 flex min-h-12 items-center gap-3 rounded-2xl bg-surface-2 px-4 text-[15px] font-bold text-heading transition-colors hover:bg-surface-3"
+          >
+            <History className="h-5 w-5 text-muted-foreground" />
+            Past chats and what K.AI remembers
+          </Link>
 
           {continueFrom && memoryPro && (
-            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.08] px-4 py-3 text-left">
-              <p className="text-[13px] text-heading">
+            <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-left">
+              <p className="text-[15px] text-heading">
                 <span className="font-semibold">Continuing an earlier conversation.</span>{" "}
                 <span className="text-muted-foreground">K.AI picks up where you left off.</span>
               </p>
@@ -510,8 +515,8 @@ export default function V3AIPartner() {
           {usage && usage.capSeconds > 0 && usage.remainingSeconds <= 0 ? (
             // Window spent — block the start and point free users to Pro.
             <div className="mt-6 flex flex-col items-center gap-2">
-              <p className="text-[13px] font-bold text-heading">
-                You&apos;ve used your AI Partner time for {usage.pro ? "today" : "this week"}.
+              <p className="text-[16px] font-bold text-heading">
+                You&apos;ve used your K.AI time for {usage.pro ? "today" : "this week"}.
               </p>
               {usage.pro ? (
                 <p className="text-[13px] text-muted-foreground">
@@ -521,22 +526,23 @@ export default function V3AIPartner() {
                 <button
                   type="button"
                   onClick={() => router.push("/v3/premium")}
-                  className="mt-1 inline-flex items-center gap-2 rounded-full bg-[#3f9d2c] px-8 py-3 text-[14px] font-bold text-white shadow-lg transition hover:brightness-105 active:scale-[0.98]"
+                  className="mt-1 inline-flex h-14 items-center gap-2 rounded-2xl bg-primary px-8 text-[17px] font-extrabold text-primary-foreground transition hover:bg-primary/90 active:scale-[0.98]"
                 >
                   Go Pro for 20 min / day
                 </button>
               )}
             </div>
           ) : (
-            <div className="sticky bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-10 -mx-6 mt-4 rounded-b-2xl bg-gradient-to-t from-surface-1 via-surface-1/95 to-transparent px-6 pb-1 pt-4 md:static md:mx-0 md:bg-none md:p-0">
+            <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 -mx-5 mt-6 bg-gradient-to-t from-surface-1 via-surface-1 to-transparent px-5 pb-1 pt-4 sm:-mx-8 sm:px-8 md:static md:mx-0 md:bg-none md:p-0">
               <button
                 type="button"
                 onClick={handleStart}
-                className="mt-2 inline-flex w-full justify-center md:w-auto items-center gap-2 rounded-full bg-gradient-to-br from-primary-1 to-primary-2 px-10 py-3.5 text-[15px] font-bold text-primary-foreground shadow-[0_14px_38px_-8px_rgba(15,23,42,0.6)] transition hover:opacity-90 active:scale-[0.98]"
+                className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary font-display text-[17px] font-extrabold text-primary-foreground shadow-[0_6px_18px_rgba(232,93,12,0.25)] transition hover:bg-primary/90 active:scale-[0.98]"
               >
-                ▶ Start session
+                <Mic className="h-5 w-5" />
+                Start talking
               </button>
-              <p className="mt-2 text-[13px] text-muted-foreground">
+              <p className="mt-2 text-center text-[14px] font-semibold text-muted-foreground">
                 {usage && usage.capSeconds > 0
                   ? `${formatMinutesLeft(usage.remainingSeconds)} left ${usage.pro ? "today" : "this week"}`
                   : `${Math.round((usage?.rewards?.sessionSeconds ?? DEFAULT_TOTAL_SECONDS) / 60)}-minute session`}
@@ -548,11 +554,11 @@ export default function V3AIPartner() {
     );
   }
 
-  // Mobile: fixed to the viewport (cancel AppShell's pb-28 with -mb-28; size for
+  // Mobile: fixed to the viewport (cancel AppShell's pb-32 with -mb-32; size for
   // navbar + bottom-nav + safe-area, leaving a thin gap) so the PAGE never scrolls
   // — only the chat does. Desktop keeps its own fixed height.
   return (
-    <div className="-mb-28 flex h-[calc(100dvh_-_9.75rem_-_env(safe-area-inset-bottom))] flex-col overflow-hidden md:mb-0 md:h-[calc(100dvh-10rem)] md:min-h-[520px]">
+    <div className="-mb-32 flex h-[calc(100dvh_-_9.75rem_-_env(safe-area-inset-bottom))] flex-col overflow-hidden md:mb-0 md:h-[calc(100dvh-10rem)] md:min-h-[520px]">
       <SolveCelebration
         visible={celebrating}
         xpEarned={speechProgress.lastXpEarned}
@@ -567,12 +573,12 @@ export default function V3AIPartner() {
 
       {/* Compact header — title and the how-to-play replay trigger.
           Mirrors Jumble Words. */}
-      <div id="aip-tour-title" className="mb-2 flex shrink-0 items-center gap-2">
-        <h1 className="text-lg font-bold text-heading">AI Partner</h1>
+      <div id="aip-tour-title" className="mb-3 flex shrink-0 items-center gap-2">
+        <h1 className="text-[22px] font-extrabold text-heading">Talk to K.AI</h1>
 
         {/* Current setup + a way back to the setup card (settings are baked
             into this conversation, so changing them starts a new one). */}
-        <span className="hidden min-w-0 truncate text-[13px] text-muted-foreground md:inline">
+        <span className="hidden min-w-0 truncate text-[14px] text-muted-foreground md:inline">
           · {setupSummary(setup)}
         </span>
         <button
@@ -583,19 +589,19 @@ export default function V3AIPartner() {
             setStarted(false);
           }}
           title="Change level, mode or voice (starts a new conversation)"
-          className="ml-auto rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+          className="ml-auto inline-flex h-10 items-center rounded-full bg-surface-2 px-4 text-[14px] font-bold text-body transition-colors hover:bg-surface-3 hover:text-heading"
         >
-          Change setup
+          New chat
         </button>
 
         <button
           id="aip-tour-help-btn"
           onClick={handleStartTour}
-          aria-label="Show how to play"
-          title="How to play"
-          className="grid h-8 w-8 place-items-center rounded-full border border-border bg-surface-2 text-muted-foreground transition-colors hover:border-primary/40 hover:text-heading"
+          aria-label="Show how it works"
+          title="How it works"
+          className="grid h-10 w-10 place-items-center rounded-full bg-surface-2 text-body transition-colors hover:bg-surface-3 hover:text-heading"
         >
-          <HelpCircle className="h-4 w-4" />
+          <HelpCircle className="h-5 w-5" />
         </button>
       </div>
 
@@ -606,18 +612,18 @@ export default function V3AIPartner() {
             the explicit, prominent notice + restart. Dismiss ("Got it") leaves the
             UI frozen with a restart/quota prompt in the mic bar below. */}
         {sessionOver && !endedAck && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#0b0e14]/80 p-4 backdrop-blur-sm">
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
             {capReached ? (
               // Window allowance spent (daily for Pro, weekly for free): no new
               // session is possible — free users get the upgrade nudge.
-              <div className="c-box w-full max-w-sm rounded-2xl border border-primary/40 p-6 text-center">
+              <div className="ec-card w-full max-w-sm p-6 text-center">
                 <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-primary/15 text-primary">
                   <FaHourglassHalf className="text-[24px]" />
                 </div>
-                <h2 className="text-lg font-bold text-heading">
+                <h2 className="text-xl font-extrabold text-heading">
                   That&apos;s your K.AI time for {usage?.pro === false ? "this week" : "today"}
                 </h2>
-                <p className="mt-2 text-[13px] leading-5 text-muted-foreground">
+                <p className="mt-2 text-[15px] leading-6 text-body">
                   You&apos;ve used all your AI Partner time{" "}
                   {usage?.pro === false ? "this week" : "today"}. K.AI has stopped —
                   no more replies or recording.
@@ -627,7 +633,7 @@ export default function V3AIPartner() {
                     <button
                       type="button"
                       onClick={() => router.push("/v3/premium")}
-                      className="rounded-full bg-[#3f9d2c] px-5 py-2.5 text-[14px] font-bold text-white transition hover:brightness-105 active:scale-[0.98]"
+                      className="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-5 text-[16px] font-extrabold text-primary-foreground transition hover:bg-primary/90 active:scale-[0.98]"
                     >
                       Go Pro for 20 min / day
                     </button>
@@ -635,7 +641,7 @@ export default function V3AIPartner() {
                   <button
                     type="button"
                     onClick={() => setEndedAck(true)}
-                    className="rounded-full px-5 py-2 text-[13px] font-semibold text-muted-foreground transition hover:text-heading"
+                    className="inline-flex h-12 items-center justify-center rounded-2xl px-5 text-[16px] font-bold text-body transition hover:bg-surface-2 hover:text-heading"
                   >
                     Got it
                   </button>
@@ -647,12 +653,12 @@ export default function V3AIPartner() {
             ) : (
               // Per-session 10-minute timeout, but the window still has time —
               // the user can start a fresh session.
-              <div className="c-box w-full max-w-sm rounded-2xl border border-destructive/40 p-6 text-center">
+              <div className="ec-card w-full max-w-sm p-6 text-center">
                 <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-destructive/15 text-destructive">
                   <FaHourglassHalf className="text-[24px]" />
                 </div>
-                <h2 className="text-lg font-bold text-destructive">Session ended</h2>
-                <p className="mt-2 text-[13px] leading-5 text-muted-foreground">
+                <h2 className="text-xl font-extrabold text-heading">Session ended</h2>
+                <p className="mt-2 text-[15px] leading-6 text-body">
                   Your {formatTime(totalSeconds)} session is over. K.AI has stopped —
                   no more replies or recording.
                 </p>
@@ -660,14 +666,14 @@ export default function V3AIPartner() {
                   <button
                     type="button"
                     onClick={handleRetry}
-                    className="rounded-full bg-gradient-to-br from-primary-1 to-primary-2 px-5 py-2.5 text-[14px] font-bold text-primary-foreground transition hover:opacity-90 active:scale-[0.98]"
+                    className="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-5 text-[16px] font-extrabold text-primary-foreground transition hover:bg-primary/90 active:scale-[0.98]"
                   >
                     Start a new session
                   </button>
                   <button
                     type="button"
                     onClick={() => setEndedAck(true)}
-                    className="rounded-full px-5 py-2 text-[13px] font-semibold text-muted-foreground transition hover:text-heading"
+                    className="inline-flex h-12 items-center justify-center rounded-2xl px-5 text-[16px] font-bold text-body transition hover:bg-surface-2 hover:text-heading"
                   >
                     Got it
                   </button>
@@ -688,57 +694,50 @@ export default function V3AIPartner() {
 
               {/* Slim status bar: status + timer + thin progress. The mascot and
                   Pixel/Orb toggle now live in the "Speak to earn" card. */}
-              <div id="aip-tour-agent" className="c-box shrink-0 rounded-xl px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex min-w-0 items-center gap-1.5 text-[13px] font-semibold text-heading">
+              <div id="aip-tour-agent" className="ec-card shrink-0 rounded-2xl px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "inline-flex min-w-0 items-center gap-2 rounded-full px-3 py-1.5 text-[15px] font-bold",
+                      agentState === "listening"
+                        ? "bg-kai-soft text-kai"
+                        : agentState === "speaking"
+                          ? "bg-speak-soft text-speak"
+                          : "bg-surface-2 text-muted-foreground",
+                    )}
+                  >
                     <span
-                      className="h-2 w-2 shrink-0 rounded-full"
-                      style={{
-                        background: stateColor(agentState),
-                        boxShadow: `0 0 8px ${stateColor(agentState)}`,
-                      }}
+                      className={cn(
+                        "h-2.5 w-2.5 shrink-0 rounded-full bg-current",
+                        agentState !== "idle" && "motion-safe:animate-pulse",
+                      )}
                     />
                     <span className="truncate">{agentLabel}</span>
                   </span>
 
-                  <div className="ml-auto flex shrink-0 items-center gap-2">
-                    {/* Headline timer: when capped, the window total counts UP
-                        ("used / cap today"); otherwise the per-session countdown. */}
-                    <span className="inline-flex items-baseline gap-1">
-                      <FaHourglassHalf
-                        className={cn(
-                          "self-center text-[13px]",
-                          sessionOver ? "text-muted-foreground" : "text-primary"
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-[16px] font-extrabold leading-none tracking-[-0.04em]",
-                          sessionOver ? "text-muted-foreground" : "text-heading"
-                        )}
-                      >
-                        {formatTime(timerUsed)}
-                      </span>
-                      <span className="text-[13px] font-semibold text-muted-foreground">
-                        / {formatTime(timerTotal)}
-                        {hasDailyCap ? (usage?.pro === false ? " this week" : " today") : ""}
-                      </span>
+                  <div className="ml-auto flex shrink-0 flex-col items-end leading-tight">
+                    {/* Time left, in words: the window allowance when capped
+                        (per day for Pro, per week for free), else this session. */}
+                    <span
+                      className={cn(
+                        "font-display text-[17px] font-extrabold tabular-nums",
+                        sessionOver ? "text-muted-foreground" : "text-heading",
+                      )}
+                    >
+                      {formatTime(Math.max(0, timerTotal - timerUsed))} left
                     </span>
-
-                    {/* Talk-time + XP this session (the full card is in the xl side rail). */}
-                    <span className="text-[13px] font-semibold text-muted-foreground xl:hidden">
-                      🎤 {formatTime(speechProgress.totalSeconds)} · +{sessionXp} XP
+                    <span className="text-[13px] font-semibold text-muted-foreground">
+                      {hasDailyCap ? (usage?.pro === false ? "this week" : "today") : "this session"}
+                      <span className="xl:hidden"> · +{sessionXp} XP</span>
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-3">
+                <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-2">
                   <div
                     className={cn(
-                      "h-1.5 rounded-full transition-all duration-1000",
-                      sessionOver
-                        ? "bg-surface-3"
-                        : "bg-gradient-to-r from-primary-1 to-primary-2"
+                      "h-2 rounded-full transition-all duration-1000",
+                      sessionOver ? "bg-surface-3" : "bg-primary"
                     )}
                     style={{ width: `${timerProgressPercent}%` }}
                   />
@@ -767,7 +766,7 @@ export default function V3AIPartner() {
                         <button
                           type="button"
                           onClick={handleRetry}
-                          className="mt-5 rounded-full bg-gradient-to-br from-primary-1 to-primary-2 px-5 py-2.5 text-[13px] font-bold text-primary-foreground shadow-[0_6px_18px_rgba(15,23,42,0.22)] transition hover:opacity-90 active:scale-[0.98]"
+                          className="mt-5 inline-flex h-12 items-center rounded-2xl bg-primary px-6 text-[16px] font-extrabold text-primary-foreground transition hover:bg-primary/90 active:scale-[0.98]"
                         >
                           Try again
                         </button>
@@ -807,7 +806,7 @@ export default function V3AIPartner() {
                 </div>
               )}
 
-              <div id="aip-tour-mic" className="c-box shrink-0 rounded-2xl p-3">
+              <div id="aip-tour-mic" className="ec-card shrink-0 rounded-[22px] p-3 sm:p-4">
                 {sessionOver ? (
                   capReached ? (
                     /* Window spent — no restart. Free users get the upgrade path. */
@@ -825,7 +824,7 @@ export default function V3AIPartner() {
                         <button
                           type="button"
                           onClick={() => router.push("/v3/premium")}
-                          className="shrink-0 rounded-full bg-[#3f9d2c] px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_6px_18px_rgba(15,23,42,0.22)] transition hover:brightness-105 active:scale-[0.98]"
+                          className="inline-flex h-12 shrink-0 items-center rounded-2xl bg-primary px-5 text-[16px] font-extrabold text-primary-foreground transition hover:bg-primary/90 active:scale-[0.98]"
                         >
                           Go Pro
                         </button>
@@ -843,7 +842,7 @@ export default function V3AIPartner() {
                       <button
                         type="button"
                         onClick={handleRetry}
-                        className="shrink-0 rounded-full bg-gradient-to-br from-primary-1 to-primary-2 px-5 py-2.5 text-[13px] font-bold text-primary-foreground shadow-[0_6px_18px_rgba(15,23,42,0.22)] transition hover:opacity-90 active:scale-[0.98]"
+                        className="inline-flex h-12 shrink-0 items-center rounded-2xl bg-primary px-5 text-[16px] font-extrabold text-primary-foreground transition hover:bg-primary/90 active:scale-[0.98]"
                       >
                         Start a new session
                       </button>
@@ -851,82 +850,88 @@ export default function V3AIPartner() {
                   )
                 ) : (
                   <>
-                    <div className="flex items-center gap-3">
-                      {/* Live caption (read-only, never an input): the learner's
-                          words while they speak, K.AI's words as they're heard;
-                          otherwise the call status. */}
-                      <div
-                        aria-live="polite"
-                        className="flex min-h-[48px] flex-1 items-center overflow-hidden rounded-2xl border border-border bg-surface-2/60 px-4 py-2"
-                      >
-                        {isConnected && caption ? (
-                          <p className="line-clamp-2 select-none text-[14px] leading-5 text-heading">
-                            <span
-                              className={cn(
-                                "mr-1.5 text-[13px] font-bold uppercase tracking-wide",
-                                caption.who === "kai" ? "text-primary" : "text-muted-foreground"
-                              )}
-                            >
-                              {caption.who === "kai" ? "K.AI" : "You"}
-                            </span>
-                            {caption.text}
-                          </p>
-                        ) : (
-                          <p className="line-clamp-2 select-none text-[14px] leading-5 text-muted-foreground">
-                            {!isConnected
-                              ? "Connecting to K.AI…"
-                              : mic.muted
-                                ? "You're muted — tap the mic to talk"
-                                : mic.error
-                                  ? "Mic off"
-                                  : mic.starting
-                                  ? "Getting the mic ready…"
-                                  : isAiTyping
-                                    ? "K.AI is thinking…"
-                                    : "Listening… just talk"}
-                          </p>
-                        )}
-                      </div>
+                    {/* Live caption (read-only, never an input): the learner's
+                        words while they speak, K.AI's words as they're heard;
+                        otherwise the call status. */}
+                    <div
+                      aria-live="polite"
+                      className="flex min-h-[56px] items-center overflow-hidden rounded-2xl bg-surface-2 px-4 py-2.5"
+                    >
+                      {isConnected && caption ? (
+                        <p className="line-clamp-2 select-none text-[16px] leading-6 text-heading">
+                          <span
+                            className={cn(
+                              "mr-2 text-[13px] font-extrabold uppercase tracking-wide",
+                              caption.who === "kai" ? "text-speak" : "text-kai"
+                            )}
+                          >
+                            {caption.who === "kai" ? "K.AI" : "You"}
+                          </span>
+                          {caption.text}
+                        </p>
+                      ) : (
+                        <p className="line-clamp-2 select-none text-[16px] leading-6 text-muted-foreground">
+                          {!isConnected
+                            ? "Connecting to K.AI…"
+                            : mic.muted
+                              ? "You're muted. Tap Unmute to talk."
+                              : mic.error
+                                ? "Mic off"
+                                : mic.starting
+                                ? "Getting the mic ready…"
+                                : isAiTyping
+                                  ? "K.AI is thinking…"
+                                  : "Listening… just talk"}
+                        </p>
+                      )}
+                    </div>
 
+                    <div className="mt-3 flex items-start justify-center gap-10 sm:gap-14">
                       {/* Mute — the main control in a hands-free call. */}
-                      <div className="relative grid shrink-0 place-items-center">
-                        <MicLevelRing active={isMicActive} getAnalyser={mic.getAnalyser} />
-                        <button
-                          type="button"
-                          onClick={toggleMute}
-                          disabled={sessionOver || !started || !isConnected}
-                          aria-pressed={mic.muted}
-                          aria-label={mic.muted ? "Unmute microphone" : "Mute microphone"}
-                          title={mic.muted ? "Unmute" : "Mute"}
-                          className={cn(
-                            "relative grid h-12 w-12 select-none place-items-center rounded-full transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:w-14",
-                            isMicActive
-                              ? "scale-105 bg-gradient-to-br from-primary-1 to-primary-2 text-primary-foreground shadow-[0_10px_30px_-6px_rgba(15,23,42,0.6)]"
-                              : "border border-border bg-surface-3 text-primary hover:bg-surface-2"
-                          )}
-                        >
-                          {mic.muted ? (
-                            <FaMicrophoneSlash className="text-[22px]" />
-                          ) : (
-                            <FaMicrophone className="text-[22px]" />
-                          )}
-                        </button>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="relative grid place-items-center">
+                          <MicLevelRing active={isMicActive} getAnalyser={mic.getAnalyser} />
+                          <button
+                            type="button"
+                            onClick={toggleMute}
+                            disabled={sessionOver || !started || !isConnected}
+                            aria-pressed={mic.muted}
+                            aria-label={mic.muted ? "Unmute microphone" : "Mute microphone"}
+                            title={mic.muted ? "Unmute" : "Mute"}
+                            className={cn(
+                              "relative grid h-16 w-16 select-none place-items-center rounded-full transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40",
+                              mic.muted
+                                ? "bg-heading text-background"
+                                : "bg-surface-3 text-heading hover:bg-surface-2"
+                            )}
+                          >
+                            {mic.muted ? (
+                              <FaMicrophoneSlash className="text-[24px]" />
+                            ) : (
+                              <FaMicrophone className="text-[24px]" />
+                            )}
+                          </button>
+                        </div>
+                        <span className="text-[14px] font-bold text-body">{mic.muted ? "Unmute" : "Mute"}</span>
                       </div>
 
                       {/* End call. */}
-                      <button
-                        type="button"
-                        onClick={handleEndCall}
-                        aria-label="End call"
-                        title="End call"
-                        className="grid h-12 w-12 shrink-0 select-none place-items-center rounded-full bg-red-500 text-white shadow-[0_8px_22px_-6px_rgba(239,68,68,0.6)] transition hover:bg-red-600 active:scale-95 sm:h-14 sm:w-14"
-                      >
-                        <X className="h-6 w-6" strokeWidth={2.75} />
-                      </button>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={handleEndCall}
+                          aria-label="End call"
+                          title="End call"
+                          className="grid h-16 w-16 select-none place-items-center rounded-full bg-red-600 text-white shadow-[0_8px_22px_-6px_rgba(220,38,38,0.6)] transition hover:bg-red-700 active:scale-95"
+                        >
+                          <X className="h-7 w-7" strokeWidth={2.75} />
+                        </button>
+                        <span className="text-[14px] font-bold text-body">End call</span>
+                      </div>
                     </div>
 
                     {/* Desktop hint: Space mutes / unmutes. */}
-                    <p className="mt-1.5 hidden text-center text-[13px] text-muted-foreground sm:block">
+                    <p className="mt-2 hidden text-center text-[13px] text-muted-foreground sm:block">
                       <kbd className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[13px] text-heading">
                         Space
                       </kbd>{" "}

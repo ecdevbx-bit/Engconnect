@@ -92,6 +92,7 @@ export default function DashboardPage() {
 
   const [rows, setRows] = useState<V3Activity[]>([]);
   const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
+  const [proActive, setProActive] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -104,7 +105,9 @@ export default function DashboardPage() {
       .then(([a, profile]) => {
         if (cancelled) return;
         setRows(a);
-        setPremiumUntil(profile?.premiumUntil ?? null);
+        const until = profile?.premiumUntil ?? null;
+        setPremiumUntil(until);
+        setProActive(!!until && new Date(until).getTime() > Date.now());
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -112,9 +115,7 @@ export default function DashboardPage() {
     return () => { cancelled = true; };
   }, [accessToken]);
 
-  const isPro =
-    session.data?.user?.isPro === true ||
-    (!!premiumUntil && new Date(premiumUntil).getTime() > Date.now());
+  const isPro = session.data?.user?.isPro === true || proActive;
 
   const streak = useMemo(() => computeStreak(rows), [rows]);
   const doneToday = useMemo(() => {

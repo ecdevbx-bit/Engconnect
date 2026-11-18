@@ -167,7 +167,7 @@ export default function InstallAppPrompt() {
           <ul className="mt-3.5 grid gap-1.5">
             {BENEFITS.map(({ Icon, text }) => (
               <li key={text} className="flex items-center gap-2 text-[13px] text-body">
-                <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-good" />
                 {text}
               </li>
             ))}

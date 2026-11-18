@@ -46,7 +46,7 @@ function Examples({ items }: { items: Example[] }) {
             </p>
           )}
           <p className={`flex items-start gap-2.5 text-[15px] font-medium leading-snug text-heading ${e.wrong ? "mt-1.5" : ""}`}>
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" strokeWidth={3} aria-hidden />
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-good" strokeWidth={3} aria-hidden />
             <span>
               <span className="sr-only">{e.wrong ? "Say: " : "Example: "}</span>
               <Inline text={e.right} />

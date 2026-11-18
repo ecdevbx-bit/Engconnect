@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Headphones, Play, Square } from "lucide-react";
+import { Mic, Square, Volume2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { speak } from "@/lib/tts";
@@ -42,27 +42,25 @@ export function ListenStep({
 
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="text-sm font-medium text-primary">Listen Carefully</p>
-      <p className="mt-1 hidden text-sm text-muted-foreground md:block">Hear the sentence before speaking.</p>
+      <p className="text-[15px] font-bold text-speak">Step 1 · Listen</p>
 
-      <div className="mt-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary">
-        <Headphones className="h-6 w-6" />
-      </div>
-
-      <h3 className="mt-6 max-w-2xl font-display text-2xl font-semibold leading-snug text-heading md:text-3xl">
+      <h3 className="mt-4 max-w-2xl font-display text-[26px] font-bold leading-snug text-heading text-balance md:text-[34px]">
         {sentence}
-        <button
-          type="button"
-          onClick={speaking ? stop : play}
-          aria-label={speaking ? "Stop" : "Play"}
-          className="ml-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 align-middle text-primary transition-colors hover:bg-primary/25"
-        >
-          {speaking ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </button>
       </h3>
 
-      <Button onClick={onReady} size="lg" className="mt-8">
-        I&apos;m ready →
+      <button
+        type="button"
+        onClick={speaking ? stop : play}
+        aria-label={speaking ? "Stop the sentence" : "Hear the sentence"}
+        className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-speak-soft px-5 font-display text-[16px] font-extrabold text-speak transition-colors hover:brightness-95 active:scale-[0.98]"
+      >
+        {speaking ? <Square className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        {speaking ? "Stop" : "Hear it first"}
+      </button>
+
+      <Button onClick={onReady} size="lg" className="mt-8 w-full max-w-sm">
+        <Mic className="!size-5" />
+        I&apos;m ready to speak
       </Button>
     </div>
   );

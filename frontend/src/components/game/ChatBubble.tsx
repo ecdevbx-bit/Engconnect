@@ -62,12 +62,10 @@ export function ChatBubble({
   const isUser = message.role === "user";
 
   return (
-    <div className={`flex items-end gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`flex items-end gap-2.5 ${isUser ? "flex-row-reverse" : ""}`}>
       <div
-        className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border ${
-          isUser
-            ? "border-border bg-surface-2"
-            : "border-border bg-surface-2"
+        className={`grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full ${
+          isUser ? "bg-surface-2" : "bg-kai-soft"
         }`}
       >
         {isUser ? (
@@ -88,27 +86,27 @@ export function ChatBubble({
         ) : (
           // K.AI's avatar mirrors the mood of this message — the shared
           // PixelMascot reads the text and reacts (greeting, happy, asking…).
-          <PixelMascot emotion={detectEmotion(message.body)} size={48} />
+          <PixelMascot emotion={detectEmotion(message.body)} size={40} />
         )}
       </div>
 
       <div
         className={[
-          "max-w-[520px] rounded-[18px] px-5 py-4",
+          "max-w-[min(560px,85%)] px-4 py-3",
           isUser
-            ? "bg-surface-2 border border-border md:mr-4"
-            : "c-box",
+            ? "rounded-[20px] rounded-br-md bg-surface-2 md:mr-2"
+            : "ec-card rounded-[20px] rounded-bl-md",
         ].join(" ")}
       >
         <p
           className={cn(
-            "whitespace-pre-line text-[14px] leading-7 text-[#101317] dark:text-heading",
+            "whitespace-pre-line text-[17px] leading-7 text-heading",
             isStreaming && "karaoke-shimmer"
           )}
         >
           {renderInlineMarkdown(message.body)}
         </p>
-        <p className={`mt-3 text-[13px] text-muted-foreground ${isUser ? "text-right" : ""}`}>
+        <p className={`mt-1.5 text-[13px] text-muted-foreground ${isUser ? "text-right" : ""}`}>
           {message.time}
         </p>
       </div>

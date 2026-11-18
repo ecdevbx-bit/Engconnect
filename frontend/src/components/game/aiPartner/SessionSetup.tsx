@@ -67,10 +67,10 @@ function Pill({ active, onClick, children, title }: { active: boolean; onClick: 
       title={title}
       aria-pressed={active}
       className={cn(
-        "h-8 rounded-full px-3.5 text-[13px] font-semibold transition-colors",
+        "min-h-11 rounded-full border px-4 text-[15px] font-bold transition-colors",
         active
-          ? "bg-gradient-to-br from-primary-1 to-primary-2 text-primary-foreground"
-          : "bg-surface-3/60 text-muted-foreground hover:text-heading",
+          ? "border-primary bg-brand-soft text-primary"
+          : "border-border bg-surface-1 text-body hover:bg-surface-2 hover:text-heading",
       )}
     >
       {children}
@@ -88,22 +88,22 @@ export default function SessionSetup({
   const set = (patch: Partial<SessionSetupValue>) => onChange({ ...value, ...patch });
 
   return (
-    <div className="mt-4 space-y-4 rounded-xl border border-border bg-surface-2/40 px-4 py-4 text-left">
+    <div className="space-y-5 text-left">
       <div className="space-y-2">
         <Label>Level</Label>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {AI_PARTNER_LEVELS.map((l) => (
             <Pill key={l.id} active={value.level === l.id} onClick={() => set({ level: l.id })} title={l.hint}>
               {l.label}
             </Pill>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">{AI_PARTNER_LEVELS.find((l) => l.id === value.level)?.hint}</p>
+        <p className="text-[14px] text-muted-foreground">{AI_PARTNER_LEVELS.find((l) => l.id === value.level)?.hint}</p>
       </div>
 
       <div className="space-y-2">
         <Label>Practice mode</Label>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {AI_PARTNER_SCENARIOS.map((s) => (
             <Pill key={s.id} active={value.scenario === s.id} onClick={() => set({ scenario: s.id })} title={s.hint}>
               {s.label}
@@ -122,14 +122,14 @@ export default function SessionSetup({
               onClick={() => set({ voice: v.id })}
               aria-pressed={value.voice === v.id}
               className={cn(
-                "min-h-11 rounded-lg border px-3 py-2 text-left transition-colors",
+                "min-h-14 rounded-2xl border px-4 py-2.5 text-left transition-colors",
                 value.voice === v.id
-                  ? "border-primary/60 bg-primary/15 text-heading"
-                  : "border-border bg-surface-3/40 text-muted-foreground hover:text-heading",
+                  ? "border-primary bg-brand-soft text-heading"
+                  : "border-border bg-surface-1 text-body hover:bg-surface-2 hover:text-heading",
               )}
             >
-              <span className="block text-[13px] font-bold">{v.tone === "female" ? "Female voice" : "Male voice"}</span>
-              <span className="block text-[13px] opacity-80">
+              <span className="block text-[15px] font-bold">{v.tone === "female" ? "Female voice" : "Male voice"}</span>
+              <span className="block text-[13px] text-muted-foreground">
                 {v.id} · {v.feel}
               </span>
             </button>

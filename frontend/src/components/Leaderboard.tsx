@@ -292,7 +292,7 @@ function StandingCard({
         <div className="space-y-3 py-1">
           <div className="rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/[0.03] p-4 text-center ring-1 ring-emerald-500/20">
             {data.estimate.band && (
-              <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              <p className="text-2xl font-extrabold text-emerald-600 dark:text-good">
                 {data.estimate.band}
               </p>
             )}

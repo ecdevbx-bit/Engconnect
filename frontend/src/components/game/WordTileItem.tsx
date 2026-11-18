@@ -13,12 +13,12 @@ interface WordTileItemProps {
 const TILE_CLASSES = [
   "border-blue-500/30 text-blue-300",
   "border-pink-500/30 text-pink-300",
-  "border-amber-500/30 text-amber-300",
+  "border-amber-500/30 text-warn",
   "border-violet-500/30 text-violet-300",
   "border-cyan-500/30 text-cyan-300",
   "border-orange-500/30 text-orange-300",
   "border-sky-500/30 text-sky-300",
-  "border-rose-500/30 text-rose-300",
+  "border-rose-500/30 text-bad",
 ] as const;
 
 function tileColorClass(word: string): string {

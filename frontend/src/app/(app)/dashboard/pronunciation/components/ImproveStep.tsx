@@ -63,10 +63,10 @@ export function ImproveStep({
                 onClick={() => speakWord(w)}
                 aria-label={`Hear ${w} pronounced`}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium text-rose-300 transition-colors hover:bg-rose-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50",
+                  "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium text-bad transition-colors hover:bg-rose-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50",
                   speakingWord === w
                     ? "border-rose-400/70 bg-rose-500/25"
-                    : "border-rose-500/30 bg-rose-500/10",
+                    : "border-rose-500/30 bg-bad-soft",
                 )}
               >
                 <Volume2 className={cn("h-3.5 w-3.5", speakingWord === w && "animate-pulse")} />

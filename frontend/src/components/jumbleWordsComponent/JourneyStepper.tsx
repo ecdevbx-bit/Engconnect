@@ -10,7 +10,7 @@ const STAGE_STYLES = [
   {
     label: "Easy",
     done: "bg-emerald-500 text-[#0b0e14]",
-    active: "bg-emerald-500/20 text-emerald-700 ring-2 ring-emerald-600/60 anim-flame dark:bg-emerald-500/15 dark:text-emerald-400 dark:ring-emerald-500/50",
+    active: "bg-emerald-500/20 text-emerald-700 ring-2 ring-emerald-600/60 anim-flame dark:bg-emerald-500/15 dark:text-good dark:ring-emerald-500/50",
     todo: "bg-surface-3 text-emerald-700/80 dark:text-emerald-400/60",
   },
   {
@@ -22,7 +22,7 @@ const STAGE_STYLES = [
   {
     label: "Hard",
     done: "bg-red-500 text-[#0b0e14]",
-    active: "bg-red-500/20 text-red-700 ring-2 ring-red-600/60 anim-flame dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/50",
+    active: "bg-red-500/20 text-red-700 ring-2 ring-red-600/60 anim-flame dark:bg-red-500/15 dark:text-bad dark:ring-red-500/50",
     todo: "bg-surface-3 text-red-700/80 dark:text-red-400/60",
   },
 ] as const;

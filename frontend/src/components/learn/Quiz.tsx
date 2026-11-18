@@ -70,7 +70,7 @@ export default function Quiz({ questions }: { questions: Question[] }) {
                       </span>
                       {isAnswered && isCorrect && (
                         <>
-                          <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" strokeWidth={3} aria-hidden />
+                          <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-good" strokeWidth={3} aria-hidden />
                           <span className="sr-only">(correct answer)</span>
                         </>
                       )}
@@ -87,7 +87,7 @@ export default function Quiz({ questions }: { questions: Question[] }) {
               <div aria-live="polite">
                 {isAnswered && (
                   <p className={cn("mt-2.5 text-sm leading-relaxed", right ? "text-heading" : "text-body")}>
-                    <span className={cn("font-bold", right ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
+                    <span className={cn("font-bold", right ? "text-emerald-600 dark:text-good" : "text-destructive")}>
                       {right ? "Correct. " : "Not quite. "}
                     </span>
                     <Inline text={q.why} strongClass="font-bold text-heading" />

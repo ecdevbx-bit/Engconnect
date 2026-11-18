@@ -49,7 +49,7 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
 
   if (ticket !== null) {
     return (
-      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+      <div className="rounded-xl border border-emerald-500/30 bg-good-soft p-4">
         <p className="flex items-center gap-2 text-sm font-bold text-heading">
           <Check className="h-4 w-4 text-emerald-500" /> Sent! Ticket #{ticket}
         </p>
@@ -109,7 +109,7 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
         </label>
       )}
       {error && (
-        <p role="alert" className="text-xs font-medium text-[#ff6c95]">
+        <p role="alert" className="text-xs font-medium text-bad">
           {error}
         </p>
       )}

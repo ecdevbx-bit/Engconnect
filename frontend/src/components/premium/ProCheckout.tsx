@@ -70,7 +70,7 @@ export function ProBuyButton({ offer, top = false }: { offer: ProOffer; top?: bo
         <span className="text-4xl font-extrabold text-heading">₹{offer.priceRupees}</span>
         <span className="text-sm text-muted-foreground">/ {offer.durationDays} days</span>
         {discounted && (
-          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-good">
             {offer.discountPercent}% off{offer.discountEndsOn ? ` till ${endsLabel(offer.discountEndsOn)}` : ""}
           </span>
         )}

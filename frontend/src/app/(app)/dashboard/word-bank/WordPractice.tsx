@@ -97,7 +97,7 @@ export function WordPractice({ word, onClose }: { word: string; onClose: () => v
           ))}
 
         {done && (
-          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2 text-sm font-bold text-emerald-600 dark:text-good">
             <Check className="h-4 w-4" /> Practiced {TARGET_REPS}×
           </span>
         )}

@@ -84,7 +84,7 @@ function DifficultyTabs({
                             value === d
                                 ? "bg-primary text-primary-foreground"
                                 : done
-                                    ? "bg-red-500/10 text-red-600 ring-1 ring-inset ring-red-500/25 dark:text-red-400"
+                                    ? "bg-red-500/10 text-red-600 ring-1 ring-inset ring-red-500/25 dark:text-bad"
                                     : "text-muted-foreground hover:text-heading disabled:opacity-50",
                         )}
                     >

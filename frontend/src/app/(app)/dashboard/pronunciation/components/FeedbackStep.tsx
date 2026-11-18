@@ -75,12 +75,12 @@ function mascotFor(pct: number): MascotEmotion {
 function statusClass(status: PronunciationWord["status"]) {
   switch (status) {
     case "CORRECT":
-      return "border-emerald-500/40 bg-emerald-500/10 text-emerald-300";
+      return "border-transparent bg-good-soft text-good";
     case "INCORRECT":
-      return "border-rose-500/40 bg-rose-500/10 text-rose-300";
+      return "border-bad/40 bg-bad-soft text-bad";
     case "UNCLEAR":
     default:
-      return "border-amber-500/40 bg-amber-500/10 text-amber-300";
+      return "border-warn/40 bg-warn-soft text-warn";
   }
 }
 
@@ -99,12 +99,12 @@ function statusLabel(status: PronunciationWord["status"]) {
 function statusHeading(status: PronunciationWord["status"]) {
   switch (status) {
     case "CORRECT":
-      return { label: "Correct pronunciation", className: "text-emerald-300" };
+      return { label: "Correct pronunciation", className: "text-good" };
     case "INCORRECT":
-      return { label: "Mispronunciation", className: "text-rose-300" };
+      return { label: "Mispronunciation", className: "text-bad" };
     case "UNCLEAR":
     default:
-      return { label: "Unclear audio", className: "text-amber-300" };
+      return { label: "Unclear audio", className: "text-warn" };
   }
 }
 
@@ -140,11 +140,11 @@ function WordChip({
           onMouseEnter={hoverOpen}
           onMouseLeave={hoverClose}
           className={cn(
-            "rounded-md border px-2.5 py-1 text-xs font-medium outline-none transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary/40",
+            "min-h-12 rounded-xl border px-3 py-1.5 text-[13px] font-semibold outline-none transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary/40",
             statusClass(word.status),
           )}
         >
-          <span className="block text-sm font-semibold text-heading">{word.expected}</span>
+          <span className={cn("block font-display text-[18px] font-bold text-heading", word.status === "INCORRECT" && "underline decoration-bad decoration-wavy underline-offset-4")}>{word.expected}</span>
           <span className="block">{statusLabel(word.status)}</span>
           {/* "Tap to expand" affordance — a bouncing chevron hints at the
               details popover. Hidden in the landing demo (chips aren't
@@ -152,7 +152,7 @@ function WordChip({
           {!demo && (
             <ChevronDown
               aria-hidden="true"
-              className="mx-auto mt-0.5 block h-3.5 w-3.5 animate-bounce text-primary"
+              className="mx-auto mt-0.5 block h-3.5 w-3.5 opacity-70"
             />
           )}
         </button>
@@ -211,13 +211,13 @@ function AccuracyRing({ pct, stroke }: { pct: number; stroke: string }) {
   return (
     <div className="relative h-28 w-28">
       <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-        <circle cx="50" cy="50" r={radius} stroke="rgba(255,255,255,0.08)" strokeWidth="8" fill="none" />
+        <circle cx="50" cy="50" r={radius} stroke="var(--surface-2)" strokeWidth="9" fill="none" />
         <circle
           cx="50"
           cy="50"
           r={radius}
           stroke={stroke}
-          strokeWidth="8"
+          strokeWidth="9"
           fill="none"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -255,10 +255,7 @@ export function FeedbackStep({
 
   return (
     <div>
-      <p className="text-center text-sm font-medium text-primary">AI Feedback</p>
-      <p className="text-center text-sm text-muted-foreground">
-        Here&apos;s how you pronounced the sentence.
-      </p>
+      <p className="text-center text-[15px] font-bold text-speak">Step 3 · Your result</p>
 
       <div className="mt-6 flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-center md:gap-8">
         {/* Mobile: mascot + accuracy ring share one row. md+ unwraps (contents)
@@ -268,18 +265,18 @@ export function FeedbackStep({
           <AccuracyRing pct={result.accuracyPercent} stroke={meta.ringColor} />
         </div>
         <div className="text-center md:text-left">
-          <p className="font-display text-2xl font-bold text-heading">{meta.label}</p>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+          <p className="font-display text-[26px] font-extrabold text-heading">{meta.label}</p>
+          <p className="mt-1 max-w-sm text-[15px] text-muted-foreground">
             Your pronunciation is {result.accuracyPercent}% accurate.
           </p>
           {result.xpEarned > 0 && (
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1.5 text-[15px] font-bold text-primary">
               <Zap className="h-3.5 w-3.5" />
               +{result.xpEarned} XP
             </div>
           )}
           {result.leveledUp && (
-            <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-sm font-semibold text-emerald-300">
+            <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-good-soft px-3 py-1.5 text-[15px] font-bold text-good">
               <Sparkles className="h-3.5 w-3.5" />
               Level up! Now level {result.currentLevel}
             </div>
@@ -288,13 +285,13 @@ export function FeedbackStep({
       </div>
 
       {result.newlyEarnedBadges && result.newlyEarnedBadges.length > 0 && (
-        <div className="mt-6 rounded-xl border border-amber-400/30 bg-amber-500/10 p-4">
-          <p className="text-sm font-semibold text-amber-200">New badge{result.newlyEarnedBadges.length > 1 ? "s" : ""} earned!</p>
-          <ul className="mt-2 space-y-1 text-sm text-amber-100/90">
+        <div className="mt-6 rounded-2xl bg-warn-soft p-4">
+          <p className="text-[15px] font-bold text-heading">New badge{result.newlyEarnedBadges.length > 1 ? "s" : ""} earned!</p>
+          <ul className="mt-2 space-y-1 text-[15px] text-body">
             {result.newlyEarnedBadges.map((id) => (
               <li key={id}>
                 <span className="font-semibold">{badgeTitle(id)}</span>
-                <span className="ml-2 text-amber-200/70">{badgeSubtitle(id)}</span>
+                <span className="ml-2 text-muted-foreground">{badgeSubtitle(id)}</span>
               </li>
             ))}
           </ul>
@@ -302,31 +299,31 @@ export function FeedbackStep({
       )}
 
       <div className="mt-8">
-        <p className="text-center text-sm font-medium text-heading">Word breakdown</p>
+        <p className="text-center text-[16px] font-bold text-heading">Each word · tap for details</p>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
           {(result.words ?? []).map((w, i) => (
             <WordChip key={`${w.expected}-${i}`} word={w} index={i} demo={demo} />
           ))}
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" /> Correct
+            <span className="h-2.5 w-2.5 rounded-full bg-good" /> Correct
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-rose-400" /> Mispronunciation
+            <span className="h-2.5 w-2.5 rounded-full bg-bad" /> Needs work
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-amber-400" /> Unclear
+            <span className="h-2.5 w-2.5 rounded-full bg-warn" /> Unclear
           </span>
         </div>
       </div>
 
       {!demo && missed.length > 0 && (
         <div className="mt-8">
-          <p className="text-center text-sm font-medium text-heading">How to say the words you missed</p>
+          <p className="text-center text-[16px] font-bold text-heading">How to say the words you missed</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {missed.map((w, i) => (
-              <div key={`${w.expected}-${i}`} className="rounded-xl border border-rose-400/30 bg-rose-500/5 p-4">
+              <div key={`${w.expected}-${i}`} className="rounded-2xl bg-surface-2 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-lg font-bold text-heading">{w.expected.replace(/[^\p{L}'-]/gu, "")}</p>
@@ -336,11 +333,11 @@ export function FeedbackStep({
                   <HearButton word={w.expected} />
                 </div>
                 {w.heard && (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    You said: <span className="font-semibold text-rose-300">&ldquo;{w.heard}&rdquo;</span>
+                  <p className="mt-2 text-[15px] text-muted-foreground">
+                    You said: <span className="font-semibold text-bad">&ldquo;{w.heard}&rdquo;</span>
                   </p>
                 )}
-                {w.reason && <p className="mt-1 text-sm leading-relaxed text-body">{w.reason}</p>}
+                {w.reason && <p className="mt-1 text-[15px] leading-relaxed text-body">{w.reason}</p>}
               </div>
             ))}
           </div>
@@ -348,13 +345,13 @@ export function FeedbackStep({
       )}
 
       {!demo && (
-        <div className="mt-8 flex items-start gap-3 rounded-xl border border-border bg-surface-2/40 p-4">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
-            <Bot className="h-4 w-4" />
+        <div className="mt-8 flex items-start gap-3 rounded-2xl bg-speak-soft p-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-1 text-speak">
+            <Bot className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">AI Feedback</p>
-            <p className="mt-1 text-sm text-muted-foreground">{result.message}</p>
+            <p className="text-[13px] font-bold uppercase tracking-wide text-speak">Coach&apos;s tip</p>
+            <p className="mt-1 text-[15px] text-heading">{result.message}</p>
           </div>
         </div>
       )}
@@ -367,7 +364,7 @@ export function FeedbackStep({
         )}
       >
         <Button onClick={onContinue} size="lg" variant="ghost">
-          See tips
+          More tips
         </Button>
         {canRetry && (
           <Button
@@ -390,7 +387,7 @@ export function FeedbackStep({
         </Button>
       </div>
       {canRetry && typeof result.triesLeft === "number" && (
-        <p className="mt-2 text-center text-xs text-muted-foreground sm:text-right">
+        <p className="mt-2 text-center text-[14px] text-muted-foreground sm:text-right">
           {result.triesLeft} more {result.triesLeft === 1 ? "try" : "tries"} on this sentence today · a better score adds XP
         </p>
       )}

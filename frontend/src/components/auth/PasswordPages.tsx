@@ -43,7 +43,7 @@ export function ForgotPasswordForm() {
           <Label htmlFor="email">Email</Label>
           <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
-        {msg && <p role="status" className={msg.ok ? "text-xs text-[#22c55e]" : "text-xs text-[#ff6c95]"}>{msg.text}</p>}
+        {msg && <p role="status" className={msg.ok ? "text-xs text-[#22c55e]" : "text-xs text-bad"}>{msg.text}</p>}
         <Button type="submit" className="w-full" disabled={busy || !email}>
           {busy ? "Sending…" : "Send reset link"}
         </Button>
@@ -97,7 +97,7 @@ export function ResetPasswordForm() {
           <Label htmlFor="pw2">Repeat password</Label>
           <Input id="pw2" type="password" autoComplete="new-password" required value={pw2} onChange={(e) => setPw2(e.target.value)} />
         </div>
-        {error && <p role="alert" className="text-xs text-[#ff6c95]">{error}</p>}
+        {error && <p role="alert" className="text-xs text-bad">{error}</p>}
         <Button type="submit" className="w-full" disabled={busy || !pw || !pw2}>
           {busy ? "Saving…" : "Save password"}
         </Button>

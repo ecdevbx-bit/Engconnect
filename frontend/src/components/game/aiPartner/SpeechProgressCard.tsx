@@ -139,7 +139,7 @@ export function SpeechProgressCard({
           transition={{ duration: 0.28, ease: "easeOut" }}
           className="rounded-lg border border-border bg-surface-2/40 px-3 py-2"
         >
-          <div className="flex items-center gap-1.5 text-xs text-emerald-300">
+          <div className="flex items-center gap-1.5 text-xs text-good">
             <Zap className="h-3.5 w-3.5" />
             <span className="uppercase tracking-[0.14em] text-muted-foreground">
               Earned

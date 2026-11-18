@@ -62,26 +62,26 @@ export function SpeakStep({
   const countdownSec = Math.max(0, Math.ceil(remainingMs / 1000));
   const countdownColor =
     countdownSec <= 1
-      ? "text-rose-400"
+      ? "text-bad"
       : countdownSec === 2
         ? "text-amber-400"
         : countdownSec === 3
-          ? "text-emerald-400"
+          ? "text-good"
           : "text-heading";
 
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="text-sm font-medium text-primary">Your Turn</p>
-      <p className="mt-1 text-sm text-muted-foreground">Pronounce the sentence clearly.</p>
+      <p className="text-[15px] font-bold text-speak">Step 2 · Your turn</p>
+      <p className="mt-1 text-[15px] text-muted-foreground">Say the sentence clearly.</p>
 
-      <h3 className="mt-6 max-w-2xl font-display text-2xl font-semibold leading-snug text-heading md:text-3xl">
+      <h3 className="mt-4 max-w-2xl font-display text-[26px] font-bold leading-snug text-heading text-balance md:text-[34px]">
         {sentence}
       </h3>
 
       <div className="mt-8 flex flex-col items-center gap-3">
         {phase === "countdown" && (
           <>
-            <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            <span className="text-[15px] font-semibold text-muted-foreground">
               Recording starts in
             </span>
             <p
@@ -91,13 +91,20 @@ export function SpeakStep({
               {formatSeconds(remainingMs)}
             </p>
             {!demo && (
-              <Button onClick={onMicClick} size="lg" className="mt-2">
-                <Mic className="h-4 w-4" />
-                Start now
-              </Button>
+              <button
+                type="button"
+                onClick={onMicClick}
+                aria-label="Start recording now"
+                className="mt-2 grid h-24 w-24 place-items-center rounded-full bg-speak text-white shadow-[0_0_0_10px_var(--speak-soft)] transition-transform active:scale-95"
+              >
+                <Mic className="h-10 w-10" />
+              </button>
             )}
             {!demo && (
-              <p className="mt-2 hidden text-xs text-muted-foreground md:block">
+              <p className="font-display text-[17px] font-extrabold text-heading">Tap to start now</p>
+            )}
+            {!demo && (
+              <p className="hidden text-[14px] text-muted-foreground md:block">
                 Or wait — we&apos;ll start automatically in {formatSeconds(countdownMs)}s.
               </p>
             )}
@@ -106,12 +113,12 @@ export function SpeakStep({
 
         {phase === "recording" && (
           <>
-            <span className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-destructive">
+            <span className="flex items-center gap-2 text-[15px] font-bold text-destructive">
               <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
               Recording
             </span>
             {!demo && (
-              <p className="text-sm text-muted-foreground">Read it aloud — we&apos;ll stop when you finish.</p>
+              <p className="text-[15px] text-muted-foreground">Read it aloud. It stops by itself when you finish.</p>
             )}
             <RecordingWaveform stream={stream} demo={demo} />
             {/* Pill: a left→right progress fill toward the auto-stop, the
@@ -139,7 +146,7 @@ export function SpeakStep({
         {(phase === "review" || phase === "submitting") &&
           (errorMessage ? (
             <>
-              <p role="alert" className="max-w-sm text-sm text-destructive">
+              <p role="alert" className="max-w-sm rounded-xl bg-bad-soft px-4 py-3 text-[15px] font-semibold text-bad">
                 {errorMessage}
               </p>
               <Button onClick={onRetry} size="lg" className="mt-2">
@@ -149,8 +156,8 @@ export function SpeakStep({
             </>
           ) : (
             <>
-              <span className="text-xs uppercase tracking-[0.18em] text-primary">Checking your pronunciation</span>
-              <p className="mt-2 text-sm text-muted-foreground">Hold tight…</p>
+              <span className="text-[17px] font-bold text-heading">Checking how you sounded…</span>
+              <p className="mt-1 text-[15px] text-muted-foreground">This takes a few seconds.</p>
             </>
           ))}
 

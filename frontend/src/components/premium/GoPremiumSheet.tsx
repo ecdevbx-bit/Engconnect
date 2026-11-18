@@ -102,7 +102,7 @@ export default function GoPremiumSheet({
           <h2 className="text-2xl font-extrabold tracking-tight text-heading">Go Pro</h2>
           <p className="mt-1 text-sm text-body">{headline}.</p>
           {remaining.length > 0 && (
-            <p className="mt-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <p className="mt-1.5 text-xs font-semibold text-emerald-600 dark:text-good">
               Still free today: {remaining.map(cap).join(", ")}
             </p>
           )}
@@ -118,7 +118,7 @@ export default function GoPremiumSheet({
                 <p className="text-sm font-bold text-heading">{f.name}</p>
                 <p className="text-[13px] text-muted-foreground">Free · {f.free}</p>
               </div>
-              <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-3 py-1 text-[13px] font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-3 py-1 text-[13px] font-extrabold text-emerald-600 dark:text-good">
                 {f.pro}
               </span>
             </div>

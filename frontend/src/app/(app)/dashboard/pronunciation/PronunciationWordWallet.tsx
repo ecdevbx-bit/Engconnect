@@ -44,7 +44,7 @@ function DraggableWord({ word, saved }: { word: string; saved: boolean }) {
       disabled={saved}
       className={`touch-none rounded-lg border px-2.5 py-1 text-sm font-semibold transition ${
         saved
-          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          ? "border-emerald-500/40 bg-good-soft text-emerald-600 dark:text-good"
           : "cursor-grab border-white/[0.14] bg-surface-2/60 text-heading active:cursor-grabbing"
       } ${isDragging ? "opacity-60 shadow-lg" : ""}`}
     >

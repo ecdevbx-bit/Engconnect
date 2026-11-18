@@ -193,7 +193,7 @@ export default function AccountDropdown({
                   onClick={onClose}
                   className="flex items-center gap-3 px-5 py-2.5 transition-colors hover:bg-surface-2/60"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warn-soft text-amber-400">
                     <Icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">

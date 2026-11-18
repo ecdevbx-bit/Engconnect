@@ -134,25 +134,29 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-5xl c-box rounded-xl overflow-hidden flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background px-4 py-6 md:flex md:items-center md:justify-center md:p-8">
+      <div className="mx-auto w-full max-w-md overflow-hidden md:flex md:max-w-5xl md:rounded-[28px] md:border md:border-border md:bg-surface-1 md:shadow-card">
 
-        {/* Left Panel */}
-        <div className="md:w-[55%] bg-gradient-to-br from-[#b79fff]/10 to-[#ab8eff]/5 flex flex-col justify-center items-center relative overflow-hidden rounded-b-xl md:rounded-b-none">
-          <Image src="/loginImg.svg" alt="Login Illustration" loading="eager" width={320} height={320} className="w-140 h-auto" />
+        {/* Illustration — desktop only; on phones the form comes first (D-071). */}
+        <div className="relative hidden items-center justify-center bg-brand-soft p-10 md:flex md:w-[52%]">
+          <Image src="/loginImg.svg" alt="" loading="eager" width={320} height={320} className="h-auto w-full max-w-[460px]" />
         </div>
 
-        {/* Right Panel */}
-        <div className="md:w-[45%] bg-surface-1/60 px-8 py-8 sm:px-10 flex flex-col justify-center relative">
-          <h2 className="text-3xl font-extrabold text-heading mb-1">
-            {mode === "signin" ? "Welcome back! 👋" : "Create your account ✨"}
-          </h2>
-          <p className="text-muted-foreground text-sm mb-6">
-            {mode === "signin" ? "Sign in to pick up right where you left off." : "Start practising English in under a minute."}
+        {/* Form */}
+        <div className="flex flex-col justify-center md:w-[48%] md:px-10 md:py-10">
+          <Link href="/" className="mb-8 flex items-center gap-2.5" aria-label="English Connection — home">
+            <Image src="/logo.svg" alt="" width={40} height={40} className="h-10 w-auto" />
+            <span className="font-display text-[17px] font-extrabold text-heading">English Connection</span>
+          </Link>
+          <h1 className="text-[28px] font-extrabold leading-tight text-heading">
+            {mode === "signin" ? "Welcome back" : "Create your account"}
+          </h1>
+          <p className="mt-1 mb-7 text-base text-muted-foreground">
+            {mode === "signin" ? "Sign in to carry on where you left off." : "Free to start. Takes under a minute."}
           </p>
 
           {notice && (
-            <div role="status" className="mb-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-heading">
+            <div role="status" className="mb-4 rounded-lg border border-amber-400/30 bg-warn-soft px-3 py-2 text-xs text-heading">
               {notice}
             </div>
           )}
@@ -185,28 +189,28 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
                 </p>
               )}
 
-              <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="h-px flex-1 bg-white/10" />
+              <div className="my-6 flex items-center gap-3 text-sm text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
                 or use email
-                <span className="h-px flex-1 bg-white/10" />
+                <span className="h-px flex-1 bg-border" />
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 {mode === "signup" && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="name">Your name</Label>
                     <Input id="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
                   </div>
                 )}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     {mode === "signin" && (
-                      <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                      <Link href="/forgot-password" className="inline-flex min-h-[44px] items-center text-[15px] font-bold text-primary hover:underline">
                         Forgot password?
                       </Link>
                     )}
@@ -226,7 +230,7 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
                 </div>
 
                 {error && (
-                  <p role="alert" className="text-xs text-[#ff6c95]">
+                  <p role="alert" className="rounded-xl bg-bad-soft px-3 py-2 text-[15px] font-semibold text-bad">
                     {error}
                   </p>
                 )}
@@ -250,11 +254,11 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
                 )}
               </form>
 
-              <p className="mt-4 text-center text-xs text-muted-foreground">
+              <p className="mt-6 text-center text-[15px] text-muted-foreground">
                 {mode === "signin" ? "New to English Connection? " : "Already have an account? "}
                 <button
                   type="button"
-                  className="font-semibold text-primary hover:underline"
+                  className="min-h-[44px] font-bold text-primary hover:underline"
                   onClick={() => { setError(null); setMode(mode === "signin" ? "signup" : "signin"); }}
                 >
                   {mode === "signin" ? "Create an account" : "Sign in"}
@@ -263,9 +267,9 @@ export default function LoginForm({ mode: initialMode = "signin" }: { mode?: Mod
             </>
           )}
 
-          <div className="mt-6 flex items-center gap-3 c-box rounded-xl px-4 py-3">
+          <div className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-3">
             <ShieldIcon />
-            <p className="text-xs text-muted-foreground italic leading-snug">
+            <p className="text-[14px] text-muted-foreground leading-snug">
               Your data is safe with us. We never share your information.
             </p>
           </div>

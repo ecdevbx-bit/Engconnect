@@ -80,7 +80,7 @@ export function LiveBadge({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[13px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400",
+        "inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[13px] font-bold uppercase tracking-wider text-emerald-700 dark:text-good",
         className,
       )}
     >

@@ -29,9 +29,9 @@ export function CorrectionList({ items }: { items: Correction[] }) {
             )}
           </p>
           <p className="mt-1 flex items-start gap-2 text-sm leading-6">
-            <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+            <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-600 dark:text-good" aria-hidden />
             <span className="sr-only">Better: </span>
-            <span className="min-w-0 break-words font-semibold text-emerald-700 dark:text-emerald-400">{m.correct}</span>
+            <span className="min-w-0 break-words font-semibold text-emerald-700 dark:text-good">{m.correct}</span>
           </p>
           {m.why && <p className="mt-1.5 pl-6 text-xs leading-5 text-muted-foreground">{m.why}</p>}
         </li>

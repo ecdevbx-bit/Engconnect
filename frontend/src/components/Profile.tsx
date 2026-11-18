@@ -208,7 +208,7 @@ export default function Profile() {
                   <Zap className="h-4 w-4" /> {totalXP.toLocaleString()} XP
                 </span>
                 {isPro ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-sm font-semibold text-emerald-600 dark:text-good">
                     <Crown className="h-4 w-4" /> Pro until {proUntilLabel}
                   </span>
                 ) : (

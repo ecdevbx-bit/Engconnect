@@ -326,7 +326,6 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
     setStep("listen");
   }, [recorder]);
 
-  const sessionLabel = useMemo(() => `Sentence ${phraseIndex} of ${SESSION_SIZE}`, [phraseIndex]);
   // GameStatsCard reads Level/XP/combo straight from Redux, which onSubmit
   // keeps fresh (syncFromBackend + setCombo) — no local override needed here.
 
@@ -340,29 +339,41 @@ export function PronunciationCoach({ accessToken }: { accessToken: string }) {
 
       {/* Compact header — title, session progress, and the how-to-play
           replay trigger. Mirrors Jumble Words. */}
-      <div id="pron-tour-title" className="flex flex-wrap items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Mic className="h-5 w-5" />
-        </span>
-        <h1 className="text-2xl font-bold text-heading">Pronunciation Coach</h1>
-        <span className="hidden text-sm text-muted-foreground md:inline">· {sessionLabel}</span>
-
-        <button
-          id="pron-tour-help-btn"
-          onClick={handleStartTour}
-          aria-label="Show how to play"
-          title="How to play"
-          className="ml-auto flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:border-primary/40 hover:text-heading focus-visible:ring-2 focus-visible:ring-primary"
+      <div id="pron-tour-title" className="flex flex-col gap-2.5">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-speak-soft text-speak">
+            <Mic className="h-5 w-5" />
+          </span>
+          <h1 className="text-[22px] font-extrabold text-heading md:text-[28px]">Pronunciation</h1>
+          <span className="ml-auto text-[15px] font-bold tabular-nums text-muted-foreground">
+            {phraseIndex} of {SESSION_SIZE}
+          </span>
+          <button
+            id="pron-tour-help-btn"
+            onClick={handleStartTour}
+            aria-label="Show how it works"
+            title="How it works"
+            className="grid h-10 w-10 place-items-center rounded-full bg-surface-2 text-body outline-none transition-colors hover:bg-surface-3 hover:text-heading focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </button>
+        </div>
+        <div
+          className="h-2 overflow-hidden rounded-full bg-surface-2"
+          role="progressbar"
+          aria-label="Sentences in this round"
+          aria-valuemin={1}
+          aria-valuemax={SESSION_SIZE}
+          aria-valuenow={phraseIndex}
         >
-          <HelpCircle className="h-4 w-4" />
-          <span className="hidden sm:inline">How to play</span>
-        </button>
+          <div className="h-full rounded-full bg-speak transition-[width] duration-500" style={{ width: `${(phraseIndex / SESSION_SIZE) * 100}%` }} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 items-start gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* ── Left Panel — the practice stage ── */}
         <div className="flex flex-col gap-4 md:gap-6">
-          <Card id="pron-tour-stage" className="gap-0 p-4 md:p-8">
+          <Card id="pron-tour-stage" className="gap-0 rounded-[22px] p-5 md:p-8">
             <div className="flex flex-wrap items-center justify-end gap-3 md:mb-6">
               <DifficultyTabs id="pron-tour-difficulty" value={difficulty} onChange={onDifficultyChange} disabled={inDemo || (step !== "listen" && step !== "feedback" && step !== "improve")} />
             </div>
