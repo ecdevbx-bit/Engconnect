@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { badgeSubtitle, badgeTitle } from "@/lib/badges";
 import { cn } from "@/lib/utils";
+import { StepDots } from "./StepDots";
 import {
   PronunciationAttemptResult,
   PronunciationWord,
@@ -255,7 +256,7 @@ export function FeedbackStep({
 
   return (
     <div>
-      <p className="text-center text-[15px] font-bold text-speak">Step 3 · Your result</p>
+      {!demo && <StepDots current="result" />}
 
       <div className="mt-6 flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-center md:gap-8">
         {/* Mobile: mascot + accuracy ring share one row. md+ unwraps (contents)
@@ -266,9 +267,6 @@ export function FeedbackStep({
         </div>
         <div className="text-center md:text-left">
           <p className="font-display text-[26px] font-extrabold text-heading">{meta.label}</p>
-          <p className="mt-1 max-w-sm text-[15px] text-muted-foreground">
-            Your pronunciation is {result.accuracyPercent}% accurate.
-          </p>
           {result.xpEarned > 0 && (
             <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1.5 text-[15px] font-bold text-primary">
               <Zap className="h-3.5 w-3.5" />
@@ -299,7 +297,7 @@ export function FeedbackStep({
       )}
 
       <div className="mt-8">
-        <p className="text-center text-[16px] font-bold text-heading">Each word · tap for details</p>
+        <p className="sr-only">Each word — tap one for details</p>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
           {(result.words ?? []).map((w, i) => (
             <WordChip key={`${w.expected}-${i}`} word={w} index={i} demo={demo} />
@@ -320,7 +318,7 @@ export function FeedbackStep({
 
       {!demo && missed.length > 0 && (
         <div className="mt-8">
-          <p className="text-center text-[16px] font-bold text-heading">How to say the words you missed</p>
+          <p className="text-center text-[16px] font-bold text-heading">Say it like this</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {missed.map((w, i) => (
               <div key={`${w.expected}-${i}`} className="rounded-2xl bg-surface-2 p-4">

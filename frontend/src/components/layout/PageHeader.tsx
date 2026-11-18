@@ -26,23 +26,27 @@ export default function PageHeader({
   eyebrowClassName?: string;
   iconClassName?: string;
 }) {
+  // Calm Saffron (D-071): icon tile + title on one row, the eyebrow kept as a
+  // quiet label (it doubles as a breadcrumb), body-size description.
   return (
-    <header className={cn("mb-8 md:mb-10", className)}>
+    <header className={cn("mb-6 md:mb-8", className)}>
       <div className="flex items-start justify-between gap-4">
-        <div className="space-y-3">
-          {icon && (
-            <span className={cn("flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary", iconClassName)}>
-              {icon}
-            </span>
-          )}
-          <p className={cn("text-[13px] font-semibold uppercase tracking-[0.22em] text-primary", eyebrowClassName)}>
+        <div className="min-w-0 space-y-2">
+          <p className={cn("text-[14px] font-bold text-primary", eyebrowClassName)}>
             {eyebrow}
           </p>
-          <h1 className="font-display font-bold leading-[1.05] text-heading text-[clamp(2rem,4.5vw,3.25rem)]">
-            {title}
-          </h1>
+          <div className="flex items-center gap-3">
+            {icon && (
+              <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-primary", iconClassName)}>
+                {icon}
+              </span>
+            )}
+            <h1 className="font-display text-[28px] font-extrabold leading-tight text-heading md:text-[36px]">
+              {title}
+            </h1>
+          </div>
           {description && (
-            <p className={cn("max-w-2xl text-sm leading-relaxed text-muted-foreground", descriptionClassName)}>
+            <p className={cn("max-w-2xl text-base leading-relaxed text-muted-foreground", descriptionClassName)}>
               {description}
             </p>
           )}

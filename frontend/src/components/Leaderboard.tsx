@@ -199,10 +199,6 @@ export default function LeaderboardPage() {
         subtitle={subtitle}
       />
 
-      {/* ── Badges — same self-contained card the profile page uses, but
-            rendered already-expanded here on every size (desktopExpanded). ── */}
-      <MyBadges desktopExpanded />
-
       {/* ── Mobile / tablet (<lg): single column, tab-driven board ───── */}
       <div className="space-y-5 lg:hidden">
         <ModeToggle mode={mode} onChange={setMode} />
@@ -237,6 +233,10 @@ export default function LeaderboardPage() {
           <WeeklyCard weeklyLoaded={weeklyLoaded} weeklyTop={weeklyTop} />
         </div>
       </div>
+
+      {/* ── Badges — below the board now (D-071): the ranking is what this
+            page is for. Same self-contained card the profile page uses. ── */}
+      <MyBadges desktopExpanded />
     </div>
   );
 }
@@ -262,7 +262,7 @@ function StandingCard({
 }) {
   const meta = MODE_META[cardMode];
   return (
-    <div className="c-box rounded-2xl p-6">
+    <div className="ec-card p-4 sm:p-6">
       <SectionHeader icon={meta.icon} title="Your standing" />
       {loading && <p className="text-sm text-muted-foreground py-8 text-center">Loading…</p>}
       {error && <p className="text-sm text-red-600 py-8 text-center">{error}</p>}
@@ -306,7 +306,7 @@ function StandingCard({
           </div>
           <Link
             href="/v3/premium"
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#3f9d2c] py-2.5 text-sm font-bold text-white transition hover:brightness-105"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
           >
             Go Pro to see your exact rank <ArrowUpRight className="h-4 w-4" strokeWidth={2.5} />
           </Link>
@@ -333,7 +333,7 @@ function WeeklyCard({
   weeklyTop: V3LeaderboardEntry[];
 }) {
   return (
-    <div className="c-box rounded-2xl p-6">
+    <div className="ec-card p-4 sm:p-6">
       <SectionHeader icon={<Trophy size={14} />} title="Weekly top performers" />
       {!weeklyLoaded && (
         <p className="text-sm text-muted-foreground py-6 text-center">Loading…</p>
@@ -378,7 +378,7 @@ function StandingToggle({
   onChange: (m: V3LeaderboardMetric) => void;
 }) {
   return (
-    <div className="inline-flex rounded-xl border border-border bg-surface-2/40 p-1">
+    <div className="flex w-full max-w-md rounded-2xl bg-surface-2 p-1">
       <TabButton active={mode === "xp"} onClick={() => onChange("xp")}>
         <Trophy size={14} className="mr-1.5" />
         XP
@@ -399,7 +399,7 @@ function ModeToggle({
   onChange: (m: V3LeaderboardMetric) => void;
 }) {
   return (
-    <div className="inline-flex rounded-xl border border-border bg-surface-2/40 p-1">
+    <div className="flex w-full max-w-md rounded-2xl bg-surface-2 p-1">
       <TabButton active={mode === "xp"} onClick={() => onChange("xp")}>
         <Trophy size={14} className="mr-1.5" />
         XP
@@ -429,9 +429,10 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${active
-        ? "bg-primary/20 text-primary"
-        : "text-muted-foreground hover:text-body"
+      aria-pressed={active}
+      className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 text-[15px] font-bold transition-colors ${active
+        ? "bg-surface-1 text-primary shadow-card"
+        : "text-muted-foreground hover:text-heading"
         }`}
     >
       {children}
@@ -507,9 +508,9 @@ function ProfileBanner({
 function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
   return (
     <div className="mb-4 flex items-center gap-2">
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</span>
-      <h2 className="text-sm font-bold uppercase tracking-widest text-heading">{title}</h2>
-      {subtitle && <span className="ml-auto text-xs text-muted-foreground">{subtitle}</span>}
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-primary">{icon}</span>
+      <h2 className="text-[19px] font-extrabold text-heading">{title}</h2>
+      {subtitle && <span className="ml-auto text-[14px] text-muted-foreground">{subtitle}</span>}
     </div>
   );
 }
@@ -540,16 +541,16 @@ function LeaderboardRow({
     : "?";
   // Top three get medal coloring. Keeps the page lively without a separate component.
   const medal =
-    rank === 1 ? "text-[#ffd700]" : rank === 2 ? "text-[#c0c0c0]" : rank === 3 ? "text-[#cd7f32]" : "text-muted-foreground";
+    rank === 1 ? "text-[#c99400] dark:text-[#ffd700]" : rank === 2 ? "text-[#7d8590] dark:text-[#c0c0c0]" : rank === 3 ? "text-[#a8642a] dark:text-[#cd7f32]" : "text-muted-foreground";
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl px-4 py-2.5 transition-colors ${highlighted
-        ? "bg-primary/15 ring-1 ring-primary/40"
-        : "hover:bg-surface-2/40"
+      className={`flex min-h-14 items-center gap-3 rounded-2xl px-3 py-2 transition-colors sm:px-4 ${highlighted
+        ? "bg-brand-soft ring-1 ring-primary/40"
+        : "hover:bg-surface-2"
         }`}
     >
-      <span className={`w-8 text-sm font-bold tabular-nums ${medal}`}>#{rank}</span>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
+      <span className={`w-9 text-[15px] font-extrabold tabular-nums ${medal}`}>#{rank}</span>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full">
         {(() => {
           const url = avatarUrl(avatar, 72);
           if (!url) return null;
@@ -566,10 +567,10 @@ function LeaderboardRow({
       <div className="flex-1 flex justify-start gap-4 align-center min-w-0">
         <p
           className={`truncate ${highlighted
-            ? "text-base font-bold text-heading"
+            ? "text-[17px] font-bold text-heading"
             : compact
-              ? "text-sm text-body"
-              : "text-sm font-medium text-body"
+              ? "text-[15px] text-heading"
+              : "text-[16px] font-semibold text-heading"
             }`}
         >
           {name || "Anonymous"}
@@ -586,7 +587,7 @@ function LeaderboardRow({
       </div>
 
       <span
-        className={`tabular-nums ${highlighted ? "text-sm font-bold text-primary" : "text-xs font-semibold text-muted-foreground"
+        className={`shrink-0 tabular-nums ${highlighted ? "text-[15px] font-extrabold text-primary" : "text-[14px] font-bold text-body"
           }`}
       >
         {value.toLocaleString()} {unit}

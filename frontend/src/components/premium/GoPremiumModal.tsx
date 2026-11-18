@@ -68,7 +68,7 @@ export default function GoPremiumModal({
         <Link
           href="/v3/premium"
           onClick={onClose}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3f9d2c] py-3 text-base font-bold text-white shadow-lg transition hover:brightness-105"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-base font-bold text-primary-foreground shadow-lg transition hover:bg-primary/90"
         >
           See Pro plans <ArrowUpRight className="h-5 w-5" strokeWidth={2.5} />
         </Link>

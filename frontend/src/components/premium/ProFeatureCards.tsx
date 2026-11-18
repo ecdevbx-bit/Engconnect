@@ -122,7 +122,7 @@ export function ProFeatureCard({
           <h3 className="text-2xl font-extrabold leading-tight text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
             {f.name}
           </h3>
-          <p className="mt-1.5 text-sm font-medium text-white/85 drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">
+          <p className="mt-1.5 text-[15px] font-semibold text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">
             Free · {f.free}
           </p>
         </div>
@@ -190,11 +190,11 @@ export default function ProFeatureCards() {
         </div>
 
         <div className="mt-6 border-t border-black/[0.06] pt-5 dark:border-border">
-          <p className="text-sm font-bold text-heading">Every Pro plan also includes</p>
+          <p className="text-[17px] font-bold text-heading">Every Pro plan also includes</p>
           <ul className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {PRO_PERKS.map((perk) => (
-              <li key={perk} className="flex items-center gap-2 text-sm text-body">
-                <Check className="h-4 w-4 shrink-0 text-emerald-500" /> {perk}
+              <li key={perk} className="flex items-center gap-2 text-[16px] text-body">
+                <Check className="h-5 w-5 shrink-0 text-good" /> {perk}
               </li>
             ))}
           </ul>
@@ -212,7 +212,7 @@ export default function ProFeatureCards() {
         ) : (
           <button
             onClick={() => setTrialOpen(true)}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3f9d2c] py-3.5 text-base font-bold text-white shadow-lg transition hover:brightness-105"
+            className="mt-6 flex w-full items-center justify-center gap-2 h-14 rounded-2xl bg-primary text-[17px] font-extrabold text-primary-foreground transition hover:bg-primary/90"
           >
             Go Pro — it&apos;s free right now <ArrowUpRight className="h-5 w-5" strokeWidth={2.5} />
           </button>

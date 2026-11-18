@@ -79,7 +79,7 @@ export function ProBuyButton({ offer, top = false }: { offer: ProOffer; top?: bo
         type="button"
         onClick={pay}
         disabled={busy}
-        className="mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#3f9d2c] text-base font-bold text-white shadow-lg transition hover:brightness-105 active:scale-[0.99] disabled:opacity-70"
+        className="mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-base font-bold text-primary-foreground shadow-lg transition hover:bg-primary/90 active:scale-[0.99] disabled:opacity-70"
       >
         {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
         {busy ? "Opening payment…" : `Pay ₹${offer.priceRupees} with UPI`}

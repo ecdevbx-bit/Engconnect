@@ -135,7 +135,7 @@ export default function GoPremiumSheet({
 
         <button
           onClick={onOpenPro}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3f9d2c] py-3.5 text-base font-bold text-white shadow-lg transition active:scale-[0.98]"
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-base font-bold text-primary-foreground shadow-lg transition active:scale-[0.98]"
         >
           See Pro plans <ArrowUpRight className="h-5 w-5" strokeWidth={2.5} />
         </button>

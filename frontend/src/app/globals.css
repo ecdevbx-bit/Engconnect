@@ -102,13 +102,12 @@
   --heat-3: #e0661b;
   --heat-4: #ff8a33;
 
-  /* Training-card tints — kept for components not yet redrawn; flat soft
-     fills now instead of heavy gradients. */
-  --tint-jumble: linear-gradient(135deg, rgba(251, 191, 36, 0.20), rgba(251, 191, 36, 0.06));
-  --tint-pron: linear-gradient(135deg, rgba(167, 139, 250, 0.22), rgba(167, 139, 250, 0.06));
-  --tint-ai: linear-gradient(135deg, rgba(45, 212, 191, 0.20), rgba(45, 212, 191, 0.06));
-  --tint-lead: linear-gradient(135deg, rgba(96, 165, 250, 0.20), rgba(96, 165, 250, 0.06));
-  --tint-wordbank: linear-gradient(135deg, rgba(251, 113, 133, 0.20), rgba(251, 113, 133, 0.06));
+  /* Picture-card tints (Pro page, word bank) — white text sits on them. */
+  --tint-jumble: linear-gradient(to right, rgba(146, 64, 14, 0.80) 0%, rgba(217, 119, 6, 0.5) 40%, rgba(217, 119, 6, 0.1) 100%);
+  --tint-pron: linear-gradient(to right, rgba(76, 58, 122, 0.80) 0%, rgba(167, 139, 250, 0.48) 40%, rgba(167, 139, 250, 0.1) 100%);
+  --tint-ai: linear-gradient(to right, rgba(6, 78, 70, 0.80) 0%, rgba(20, 184, 166, 0.46) 40%, rgba(20, 184, 166, 0.1) 100%);
+  --tint-lead: linear-gradient(to right, rgba(124, 45, 18, 0.80) 0%, rgba(234, 88, 12, 0.46) 40%, rgba(234, 88, 12, 0.1) 100%);
+  --tint-wordbank: linear-gradient(to right, rgba(112, 26, 63, 0.78) 0%, rgba(244, 114, 182, 0.46) 40%, rgba(244, 114, 182, 0.1) 100%);
 
   /* PRO / status card + pills — the one saffron gradient. */
   --pro-card: linear-gradient(150deg, #ffb066 0%, #ff7a1a 55%, #e85d0c 100%);
@@ -171,11 +170,12 @@
   --heat-3: #e8701f;
   --heat-4: #c9480c;
 
-  --tint-jumble: linear-gradient(135deg, #fdf0d8, #fbe6bf);
-  --tint-pron: linear-gradient(135deg, #efeafd, #e2d9fb);
-  --tint-ai: linear-gradient(135deg, #ddf4f0, #c9ede7);
-  --tint-lead: linear-gradient(135deg, #e3ebfc, #d3e0fa);
-  --tint-wordbank: linear-gradient(135deg, #fde7ec, #fbd5de);
+  /* Tints sit UNDER white text on picture cards, so they stay strong. */
+  --tint-jumble: linear-gradient(to right, rgba(180, 83, 9, 0.95) 0%, rgba(217, 119, 6, 0.8) 45%, rgba(245, 158, 11, 0.5) 100%);
+  --tint-pron: linear-gradient(to right, rgba(91, 61, 196, 0.95) 0%, rgba(109, 79, 216, 0.8) 45%, rgba(139, 108, 240, 0.5) 100%);
+  --tint-ai: linear-gradient(to right, rgba(15, 118, 110, 0.95) 0%, rgba(13, 148, 136, 0.8) 45%, rgba(20, 184, 166, 0.5) 100%);
+  --tint-lead: linear-gradient(to right, rgba(168, 58, 8, 0.95) 0%, rgba(201, 72, 12, 0.8) 45%, rgba(240, 115, 31, 0.5) 100%);
+  --tint-wordbank: linear-gradient(to right, rgba(157, 23, 77, 0.95) 0%, rgba(219, 39, 119, 0.8) 45%, rgba(236, 72, 153, 0.5) 100%);
 
   --pro-card: linear-gradient(150deg, #f58a3a 0%, #e0601a 55%, #c9480c 100%);
   --pro-pill: linear-gradient(120deg, #f0731f 0%, #d9550f 60%, #c9480c 100%);

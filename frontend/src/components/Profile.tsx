@@ -143,7 +143,7 @@ export default function Profile() {
       />
 
       {loading && !profile ? (
-        <div className="c-box rounded-2xl p-12 text-center text-sm text-muted-foreground">
+        <div className="ec-card p-12 text-center text-sm text-muted-foreground">
           Loading your profile…
         </div>
       ) : (
@@ -151,7 +151,7 @@ export default function Profile() {
           {/* ── Identity + progress ── */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
             {/* Identity card */}
-            <div className="c-box rounded-2xl px-6 py-3 sm:px-8 sm:py-6">
+            <div className="ec-card px-6 py-3 sm:px-8 sm:py-6">
               <div className="flex flex-row items-center gap-4 text-left sm:gap-6">
                 {/* Avatar + an edit affordance pinned to its corner, so it's
                     obvious the profile is editable (mirrors the header button). */}
@@ -182,7 +182,7 @@ export default function Profile() {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-2xl font-bold text-heading">{displayName}</h2>
+                  <h2 className="truncate text-[26px] font-extrabold text-heading">{displayName}</h2>
 
                   <div className="mt-1 space-y-2">
                     <InfoLine icon={Mail} value={profile?.email || "—"} />
@@ -194,7 +194,7 @@ export default function Profile() {
             </div>
 
             {/* Progress card */}
-            <div className="c-box rounded-2xl p-6">
+            <div className="ec-card p-6">
               {/* Shared plant-art gradient defs for the level plant below. */}
               <PlantArtDefs />
               <h3 className="text-[13px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
@@ -208,7 +208,7 @@ export default function Profile() {
                   <Zap className="h-4 w-4" /> {totalXP.toLocaleString()} XP
                 </span>
                 {isPro ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-sm font-semibold text-emerald-600 dark:text-good">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-good-soft px-3 py-1.5 text-sm font-semibold text-good">
                     <Crown className="h-4 w-4" /> Pro until {proUntilLabel}
                   </span>
                 ) : (
@@ -240,7 +240,7 @@ export default function Profile() {
               deck (collapsed, opens on click) on the right.
               Mobile: the badge deck (already expanded) sits ABOVE About you. */}
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-            <div className="order-2 c-box rounded-2xl p-6 sm:p-8 lg:order-1 lg:flex-1">
+            <div className="order-2 ec-card p-6 sm:p-8 lg:order-1 lg:flex-1">
               <h3 className="mb-5 text-[13px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 About you
               </h3>
@@ -274,7 +274,7 @@ export default function Profile() {
 
 function InfoLine({ icon: Icon, value }: { icon: LucideIcon; value: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-body">
+    <div className="flex items-center gap-2 text-[15px] text-body">
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
       <span className="truncate">{value}</span>
     </div>
@@ -288,8 +288,8 @@ function InfoTile({ icon: Icon, label, value }: { icon: LucideIcon; label: strin
         <Icon className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="mt-0.5 break-words text-sm font-semibold text-heading">{value}</p>
+        <p className="text-[14px] text-muted-foreground">{label}</p>
+        <p className="mt-0.5 break-words text-[16px] font-semibold text-heading">{value}</p>
       </div>
     </div>
   );

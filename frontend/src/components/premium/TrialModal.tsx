@@ -27,7 +27,7 @@ function fmtDate(iso: string) {
 }
 
 const btnGreen =
-  "mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3f9d2c] py-3 text-base font-bold text-white shadow-lg transition hover:brightness-105 disabled:opacity-60";
+  "mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-base font-bold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60";
 const btnMuted =
   "mt-2 w-full rounded-2xl bg-black/[0.06] py-3 text-base font-bold text-heading transition hover:bg-black/[0.1] dark:bg-surface-2 dark:hover:bg-white/[0.14]";
 

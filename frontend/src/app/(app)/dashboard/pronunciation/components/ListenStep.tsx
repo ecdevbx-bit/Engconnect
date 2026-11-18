@@ -5,6 +5,7 @@ import { Mic, Square, Volume2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { speak } from "@/lib/tts";
+import { StepDots } from "./StepDots";
 
 // Browser-native TTS via window.speechSynthesis (shared helper in lib/tts).
 // No backend cost, no extra audio asset — and it prefers an Indian-English
@@ -42,7 +43,7 @@ export function ListenStep({
 
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="text-[15px] font-bold text-speak">Step 1 · Listen</p>
+      <StepDots current="listen" />
 
       <h3 className="mt-4 max-w-2xl font-display text-[26px] font-bold leading-snug text-heading text-balance md:text-[34px]">
         {sentence}
@@ -55,12 +56,12 @@ export function ListenStep({
         className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-speak-soft px-5 font-display text-[16px] font-extrabold text-speak transition-colors hover:brightness-95 active:scale-[0.98]"
       >
         {speaking ? <Square className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-        {speaking ? "Stop" : "Hear it first"}
+        {speaking ? "Stop" : "Hear it"}
       </button>
 
       <Button onClick={onReady} size="lg" className="mt-8 w-full max-w-sm">
         <Mic className="!size-5" />
-        I&apos;m ready to speak
+        I&apos;m ready
       </Button>
     </div>
   );

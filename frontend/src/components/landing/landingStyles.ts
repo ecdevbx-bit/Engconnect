@@ -41,18 +41,18 @@ export const LANDING_CSS = `
   --lp-hl: rgba(255, 255, 255, 0.95);
   --lp-sheen: linear-gradient(150deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 50%);
   --lp-shadow: inset 0 1px 0 0 var(--lp-hl), 0 18px 40px -22px rgba(20, 28, 46, 0.28);
-  --lp-orb-a: rgba(41, 118, 199, 0.20);
+  --lp-orb-a: rgba(240, 115, 31, 0.16);
   --lp-orb-b: rgba(14, 116, 144, 0.12);
   --lp-orb-c: rgba(255, 185, 85, 0.30);
   --lp-orb-d: rgba(200, 79, 124, 0.09);
   --lp-grid: rgba(20, 28, 46, 0.045);
   --lp-star: #d97706;
   --lp-glow-1: rgba(255, 185, 85, 0.55);
-  --lp-glow-2: rgba(41, 118, 199, 0.16);
-  --lp-glow-3: rgba(41, 118, 199, 0.05);
+  --lp-glow-2: rgba(240, 115, 31, 0.16);
+  --lp-glow-3: rgba(240, 115, 31, 0.05);
 }
 
-.lp-kinetic { font-family: var(--ff-kinetic), var(--font-display), sans-serif; letter-spacing: -0.025em; }
+.lp-kinetic { font-family: var(--font-display), sans-serif; letter-spacing: -0.03em; }
 
 /* ── Ambient background ─────────────────────────────────────────────────── */
 .lp-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; contain: strict; }
@@ -72,8 +72,8 @@ export const LANDING_CSS = `
 @keyframes lp-drift-b { to { transform: translate3d(-7vmax, 8vmax, 0) scale(0.94); } }
 
 /* ── Glass surfaces ─────────────────────────────────────────────────────── */
-.lp-glass { background: var(--lp-sheen), var(--lp-fill); border: 1px solid var(--lp-stroke); box-shadow: var(--lp-shadow); }
-.lp-glass-strong { background: var(--lp-sheen), var(--lp-fill-strong); border: 1px solid var(--lp-stroke); box-shadow: var(--lp-shadow); }
+/* D-071: solid cards like the app (no glass), same names so markup is unchanged. */
+.lp-glass, .lp-glass-strong { background: var(--surface-1); border: 1px solid var(--border); box-shadow: var(--card-shadow); }
 .lp-blur { -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); }
 /* Demo cards (they keep .c-box for the other showcase pages; on the landing
    they become frosted panels — opaque enough for the dense UI inside). */

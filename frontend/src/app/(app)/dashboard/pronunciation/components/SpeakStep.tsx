@@ -4,6 +4,7 @@ import { Mic, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { StepDots } from "./StepDots";
 
 import type { RecorderPhase } from "../hooks/useRecorderStateMachine";
 import { RecordingWaveform } from "./RecordingWaveform";
@@ -71,8 +72,7 @@ export function SpeakStep({
 
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="text-[15px] font-bold text-speak">Step 2 · Your turn</p>
-      <p className="mt-1 text-[15px] text-muted-foreground">Say the sentence clearly.</p>
+      {!demo && <StepDots current="speak" />}
 
       <h3 className="mt-4 max-w-2xl font-display text-[26px] font-bold leading-snug text-heading text-balance md:text-[34px]">
         {sentence}
@@ -101,12 +101,10 @@ export function SpeakStep({
               </button>
             )}
             {!demo && (
-              <p className="font-display text-[17px] font-extrabold text-heading">Tap to start now</p>
+              <p className="font-display text-[17px] font-extrabold text-heading">Tap and speak</p>
             )}
             {!demo && (
-              <p className="hidden text-[14px] text-muted-foreground md:block">
-                Or wait — we&apos;ll start automatically in {formatSeconds(countdownMs)}s.
-              </p>
+              <span className="sr-only">Recording starts by itself in {formatSeconds(countdownMs)} seconds.</span>
             )}
           </>
         )}
@@ -117,9 +115,6 @@ export function SpeakStep({
               <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
               Recording
             </span>
-            {!demo && (
-              <p className="text-[15px] text-muted-foreground">Read it aloud. It stops by itself when you finish.</p>
-            )}
             <RecordingWaveform stream={stream} demo={demo} />
             {/* Pill: a left→right progress fill toward the auto-stop, the
                 elapsed clock on the left, and the red stop button on the right. */}
@@ -156,8 +151,7 @@ export function SpeakStep({
             </>
           ) : (
             <>
-              <span className="text-[17px] font-bold text-heading">Checking how you sounded…</span>
-              <p className="mt-1 text-[15px] text-muted-foreground">This takes a few seconds.</p>
+              <span className="inline-flex items-center gap-2 text-[17px] font-bold text-heading"><span className="h-5 w-5 animate-spin rounded-full border-[3px] border-speak border-t-transparent motion-reduce:animate-none" aria-hidden />Checking…</span>
             </>
           ))}
 

@@ -557,7 +557,7 @@ export default function MainLayout() {
                     </div>
                     <button
                         onClick={() => router.push("/v3/premium")}
-                        className="px-8 py-3 rounded-full bg-[#3f9d2c] text-white font-semibold hover:brightness-105 transition-all"
+                        className="px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all"
                     >
                         Go Pro for unlimited
                     </button>
@@ -708,9 +708,8 @@ export default function MainLayout() {
                     </div>
 
                     {/* Prompt */}
-                    <h2 className="px-4 pt-5 text-[18px] font-bold text-heading sm:text-xl md:px-6">
-                        Tap the words in the right order to make a sentence.
-                    </h2>
+                    <h2 className="sr-only">Tap the words in the right order to make a sentence.</h2>
+                    <div className="pt-2" />
 
                     <WordDragDrop
                         key={resetKey}

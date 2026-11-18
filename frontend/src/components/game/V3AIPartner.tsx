@@ -7,7 +7,8 @@
 import { useSession } from "@/lib/session";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HelpCircle, History, Mic, X } from "lucide-react";
+import { HelpCircle, History, Mic, X, Zap } from "lucide-react";
+import { StatRing, minutesLabel } from "@/components/ui/stat-ring";
 import Link from "next/link";
 import { useNextStep } from "nextstepjs";
 import { cn } from "@/lib/utils";
@@ -230,13 +231,13 @@ export default function V3AIPartner() {
       ? "listening"
       : "idle";
   const agentLabel = isAiSpeaking
-    ? "K.AI is speaking"
+    ? "K.AI speaking"
     : isAiTyping
-      ? "K.AI is thinking…"
+      ? "Thinking…"
       : mic.muted
-        ? "You're muted"
+        ? "Muted"
         : isMicActive
-          ? "Listening… just talk"
+          ? "Listening"
           : isConnected && mic.error
             ? "Mic off"
             : "Connecting…";
@@ -475,20 +476,16 @@ export default function V3AIPartner() {
             <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-kai-soft sm:h-20 sm:w-20">
               <PixelMascot emotion="greeting" size={144} className="!h-12 !w-12 sm:!h-16 sm:!w-16" />
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-[26px] font-extrabold leading-tight text-heading sm:text-3xl">Talk to K.AI</h1>
-              <p className="mt-0.5 text-[15px] leading-snug text-muted-foreground">
-                Just talk. K.AI listens, answers and gently fixes your English.
-              </p>
-            </div>
+            <h1 className="min-w-0 flex-1 text-[26px] font-extrabold leading-tight text-heading sm:text-3xl">Talk to K.AI</h1>
+            <Link
+              href="/dashboard/ai-partner/history"
+              aria-label="Past chats"
+              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-surface-2 px-3.5 text-[15px] font-bold text-heading transition-colors hover:bg-surface-3"
+            >
+              <History className="h-5 w-5" />
+              <span className="hidden sm:inline">History</span>
+            </Link>
           </div>
-          <Link
-            href="/dashboard/ai-partner/history"
-            className="mb-6 flex min-h-12 items-center gap-3 rounded-2xl bg-surface-2 px-4 text-[15px] font-bold text-heading transition-colors hover:bg-surface-3"
-          >
-            <History className="h-5 w-5 text-muted-foreground" />
-            Past chats and what K.AI remembers
-          </Link>
 
           {continueFrom && memoryPro && (
             <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-left">
@@ -534,19 +531,33 @@ export default function V3AIPartner() {
             </div>
           ) : (
             <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 -mx-5 mt-6 bg-gradient-to-t from-surface-1 via-surface-1 to-transparent px-5 pb-1 pt-4 sm:-mx-8 sm:px-8 md:static md:mx-0 md:bg-none md:p-0">
-              <button
-                type="button"
-                onClick={handleStart}
-                className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary font-display text-[17px] font-extrabold text-primary-foreground shadow-[0_6px_18px_rgba(232,93,12,0.25)] transition hover:bg-primary/90 active:scale-[0.98]"
-              >
-                <Mic className="h-5 w-5" />
-                Start talking
-              </button>
-              <p className="mt-2 text-center text-[14px] font-semibold text-muted-foreground">
-                {usage && usage.capSeconds > 0
-                  ? `${formatMinutesLeft(usage.remainingSeconds)} left ${usage.pro ? "today" : "this week"}`
-                  : `${Math.round((usage?.rewards?.sessionSeconds ?? DEFAULT_TOTAL_SECONDS) / 60)}-minute session`}
-              </p>
+              <div className="flex items-center gap-3">
+                {(() => {
+                  // Minutes left as a ring (D-071): "12 min" in a circle.
+                  const capped = !!usage && usage.capSeconds > 0;
+                  const secs = capped ? usage!.remainingSeconds : (usage?.rewards?.sessionSeconds ?? DEFAULT_TOTAL_SECONDS);
+                  const m = minutesLabel(secs);
+                  return (
+                    <StatRing
+                      value={capped ? usage!.remainingSeconds / usage!.capSeconds : 1}
+                      label={m.label}
+                      unit={m.unit}
+                      size={60}
+                      stroke={6}
+                      color="var(--kai)"
+                      ariaLabel={`${formatMinutesLeft(secs)} left${capped ? (usage!.pro ? " today" : " this week") : ""}`}
+                    />
+                  );
+                })()}
+                <button
+                  type="button"
+                  onClick={handleStart}
+                  className="inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary font-display text-[18px] font-extrabold text-primary-foreground shadow-[0_6px_18px_rgba(232,93,12,0.25)] transition hover:bg-primary/90 active:scale-[0.98]"
+                >
+                  <Mic className="h-6 w-6" />
+                  Start
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -694,8 +705,8 @@ export default function V3AIPartner() {
 
               {/* Slim status bar: status + timer + thin progress. The mascot and
                   Pixel/Orb toggle now live in the "Speak to earn" card. */}
-              <div id="aip-tour-agent" className="ec-card shrink-0 rounded-2xl px-4 py-3">
-                <div className="flex items-center gap-3">
+              <div id="aip-tour-agent" className="ec-card shrink-0 rounded-2xl px-3 py-2.5 sm:px-4">
+                <div className="flex items-center gap-2.5">
                   <span
                     className={cn(
                       "inline-flex min-w-0 items-center gap-2 rounded-full px-3 py-1.5 text-[15px] font-bold",
@@ -715,32 +726,27 @@ export default function V3AIPartner() {
                     <span className="truncate">{agentLabel}</span>
                   </span>
 
-                  <div className="ml-auto flex shrink-0 flex-col items-end leading-tight">
-                    {/* Time left, in words: the window allowance when capped
-                        (per day for Pro, per week for free), else this session. */}
-                    <span
-                      className={cn(
-                        "font-display text-[17px] font-extrabold tabular-nums",
-                        sessionOver ? "text-muted-foreground" : "text-heading",
-                      )}
-                    >
-                      {formatTime(Math.max(0, timerTotal - timerUsed))} left
-                    </span>
-                    <span className="text-[13px] font-semibold text-muted-foreground">
-                      {hasDailyCap ? (usage?.pro === false ? "this week" : "today") : "this session"}
-                      <span className="xl:hidden"> · +{sessionXp} XP</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-2">
-                  <div
-                    className={cn(
-                      "h-2 rounded-full transition-all duration-1000",
-                      sessionOver ? "bg-surface-3" : "bg-primary"
-                    )}
-                    style={{ width: `${timerProgressPercent}%` }}
-                  />
+                  <span className="ml-auto inline-flex h-9 shrink-0 items-center gap-1 rounded-full bg-brand-soft px-3 font-display text-[15px] font-extrabold text-primary xl:hidden">
+                    <Zap className="h-4 w-4" />+{sessionXp}
+                  </span>
+                  {/* Time left as a ring: the window allowance when capped
+                      (per day for Pro, per week for free), else this session. */}
+                  {(() => {
+                    const left = Math.max(0, timerTotal - timerUsed);
+                    const m = minutesLabel(left);
+                    return (
+                      <StatRing
+                        className="xl:ml-auto"
+                        value={sessionOver ? 0 : 1 - timerProgressPercent / 100}
+                        label={m.label}
+                        unit={m.unit}
+                        size={52}
+                        stroke={5}
+                        color="var(--kai)"
+                        ariaLabel={`${formatTime(left)} left`}
+                      />
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -874,14 +880,14 @@ export default function V3AIPartner() {
                           {!isConnected
                             ? "Connecting to K.AI…"
                             : mic.muted
-                              ? "You're muted. Tap Unmute to talk."
+                              ? "Muted"
                               : mic.error
                                 ? "Mic off"
                                 : mic.starting
                                 ? "Getting the mic ready…"
                                 : isAiTyping
                                   ? "K.AI is thinking…"
-                                  : "Listening… just talk"}
+                                  : "Just talk…"}
                         </p>
                       )}
                     </div>
