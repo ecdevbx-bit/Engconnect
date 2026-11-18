@@ -870,4 +870,4 @@
   icon + number, Pronunciation steps as three icons; helper sentences removed, kept as screen-reader text.
 - Home now also calls `/chat/usage` (one cheap call) for the K.AI minutes ring; heatmap/weekly chart
   moved to `/dashboard/activity`. Ranks shows the board before badges.
-- Not reworked yet: Profile, Learn, onboarding, Help panel, K.AI history (tokens/sizes only).
+- Onboarding, Help panel, K.AI history and Profile got the same sizes/brand pass; Learn lessons tokens only.

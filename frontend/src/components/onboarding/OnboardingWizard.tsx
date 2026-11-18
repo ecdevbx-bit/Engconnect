@@ -192,8 +192,8 @@ export default function OnboardingWizard({
             <span
               key={i}
               className={cn(
-                "h-1.5 flex-1 rounded-full transition-colors",
-                i < step ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316]" : "bg-surface-3",
+                "h-2 flex-1 rounded-full transition-colors",
+                i < step ? "bg-primary" : "bg-surface-3",
               )}
             />
           ))}
@@ -202,7 +202,7 @@ export default function OnboardingWizard({
           type="button"
           onClick={onSkip}
           disabled={submitting}
-          className="-mr-2 h-10 shrink-0 rounded-full px-3 text-[13px] font-semibold text-muted-foreground transition hover:text-heading"
+          className="-mr-2 h-11 shrink-0 rounded-full px-3 text-[15px] font-bold text-muted-foreground transition hover:text-heading"
         >
           Skip
         </button>
@@ -230,7 +230,7 @@ export default function OnboardingWizard({
                   className="flex-col py-4"
                 >
                   <span className="text-[26px] leading-none">{opt.native}</span>
-                  <span className="text-[14px] font-semibold">{opt.label}</span>
+                  <span className="text-[15px] font-bold">{opt.label}</span>
                 </Tile>
               ))}
             </div>
@@ -250,8 +250,8 @@ export default function OnboardingWizard({
                     setNudge(false);
                   }}
                 >
-                  <span className="text-[18px]">{opt.emoji}</span>
-                  <span className="text-[14px] font-semibold">{opt.label}</span>
+                  <span className="text-[28px] leading-none">{opt.emoji}</span>
+                  <span className="text-[15px] font-bold">{opt.label}</span>
                 </Tile>
               ))}
             </div>
@@ -284,8 +284,8 @@ export default function OnboardingWizard({
                     setNudge(false);
                   }}
                 >
-                  <span className="text-[18px]">{opt.emoji}</span>
-                  <span className="text-[14px] font-semibold">{opt.label}</span>
+                  <span className="text-[28px] leading-none">{opt.emoji}</span>
+                  <span className="text-[15px] font-bold">{opt.label}</span>
                 </Tile>
               ))}
             </div>
@@ -312,7 +312,7 @@ export default function OnboardingWizard({
       {/* Pinned footer */}
       <div className="shrink-0 border-t border-border px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-6">
         {(hint || error) && (
-          <p role="alert" className="mb-2 text-center text-[13px] font-semibold text-destructive">
+          <p role="alert" className="mb-2 text-center text-[15px] font-bold text-bad">
             {error || hint}
           </p>
         )}
@@ -321,11 +321,11 @@ export default function OnboardingWizard({
           onClick={next}
           disabled={submitting}
           className={cn(
-            "h-12 w-full rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[15px] font-bold text-[#0b0e14] shadow-[0_6px_18px_rgba(249,115,22,0.25)] transition active:scale-[0.98] disabled:opacity-60 sm:ml-auto sm:block sm:w-48",
+            "h-14 w-full rounded-2xl bg-primary font-display text-[18px] font-extrabold text-primary-foreground shadow-[0_6px_18px_rgba(232,93,12,0.25)] transition active:scale-[0.98] disabled:opacity-60 sm:ml-auto sm:block sm:w-56",
             missing(step, draft) && "opacity-60",
           )}
         >
-          {step < TOTAL_STEPS ? "Next" : submitting ? "Saving…" : "Start learning"}
+          {step < TOTAL_STEPS ? "Next" : submitting ? "Saving…" : "Start"}
         </button>
       </div>
     </div>
@@ -333,13 +333,13 @@ export default function OnboardingWizard({
 }
 
 const INPUT =
-  "mt-2 h-12 w-full rounded-xl border border-border bg-surface-2 px-4 text-[16px] text-heading outline-none transition placeholder:text-muted-foreground/70 focus:border-primary/40 focus:ring-1 focus:ring-primary/20";
+  "mt-2 h-12 w-full rounded-xl border border-border bg-surface-1 px-4 text-[17px] text-heading outline-none transition placeholder:text-muted-foreground/70 focus:border-primary/40 focus:ring-1 focus:ring-primary/20";
 
 function Title({ eyebrow, children }: { eyebrow?: string; children: React.ReactNode }) {
   return (
     <div>
-      {eyebrow && <p className="text-[13px] font-semibold text-primary">{eyebrow}</p>}
-      <h2 className="mt-1 text-[22px] font-bold leading-tight text-heading sm:text-[26px]">{children}</h2>
+      {eyebrow && <p className="text-[15px] font-bold text-primary">{eyebrow}</p>}
+      <h2 className="mt-1 text-[26px] font-extrabold leading-tight text-heading sm:text-[30px]">{children}</h2>
     </div>
   );
 }
@@ -373,10 +373,10 @@ function Tile({
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        "flex min-h-[52px] items-center gap-2 rounded-xl border px-3 text-left text-heading transition active:scale-[0.98]",
+        "flex min-h-[60px] items-center gap-2.5 rounded-2xl border-2 px-3.5 text-left text-heading transition active:scale-[0.98]",
         selected
-          ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
-          : "border-border bg-surface-2/50 hover:border-primary/40",
+          ? "border-primary bg-brand-soft"
+          : "border-border bg-surface-1 hover:border-primary/40",
         className,
       )}
     >
@@ -405,7 +405,7 @@ function StepHobbies({ hobbies, onChange }: { hobbies: string[]; onChange: (v: s
   return (
     <>
       <Title>What do you enjoy?</Title>
-      <p className="mt-1 text-[13px] text-muted-foreground">K.AI picks topics from these. Optional.</p>
+      <p className="mt-1 text-[14px] text-muted-foreground">Optional</p>
       <div className="mt-5 flex flex-wrap gap-2">
         {[...HOBBY_SUGGESTIONS, ...extra].map((h) => {
           const selected = hobbies.includes(h);

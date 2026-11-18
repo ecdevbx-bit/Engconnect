@@ -28,8 +28,7 @@ export default function SupportMenu() {
       <PopoverContent align="end" className="w-[min(92vw,380px)] p-4">
         <div className="mb-3 flex items-start justify-between gap-2">
           <div>
-            <p className="text-base font-bold text-heading">Something wrong?</p>
-            <p className="text-xs text-muted-foreground">Tell us and we&apos;ll fix it — the team is notified by email.</p>
+            <p className="text-[19px] font-extrabold text-heading">Need help?</p>
           </div>
           <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="rounded-full p-1 text-muted-foreground hover:text-heading">
             <X className="h-4 w-4" />

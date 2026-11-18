@@ -57,5 +57,10 @@ desktop adds Learn (when visible) and Pro. Labels always shown.
   stat chips (4.9 ★, 1 lakh+ learners, 20 min ring). Mascot section and store badges removed.
   `revalidate = 86400` + flag-save refresh kept (D-070).
 
+- **Onboarding** (sheet): big emoji tiles (2 px border, saffron when picked), 56 px Next/Start.
+- **Help panel**: "Need help?", 48 px fields, one line after sending. **K.AI History**: shared button
+  styles 48 px, saffron primary. **Profile**: larger labels/values.
+
 ## Still to look at
-Profile, Learn pages, onboarding sheet, Help panel and K.AI history only picked up tokens and sizes.
+Learn lessons only picked up tokens (behind the admin switch). No signed-in screen has been checked in a
+browser yet — owner to check on the Vercel preview.

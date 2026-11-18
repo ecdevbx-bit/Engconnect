@@ -84,7 +84,7 @@ export default function HistoryScreen() {
           <span aria-hidden className="text-muted-foreground/60">
             /
           </span>
-          <h1 className="ml-2 truncate text-2xl font-bold text-heading">History</h1>
+          <h1 className="ml-2 truncate text-[26px] font-extrabold text-heading">History</h1>
         </div>
 
         <div

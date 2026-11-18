@@ -49,17 +49,17 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
 
   if (ticket !== null) {
     return (
-      <div className="rounded-xl border border-emerald-500/30 bg-good-soft p-4">
-        <p className="flex items-center gap-2 text-sm font-bold text-heading">
-          <Check className="h-4 w-4 text-emerald-500" /> Sent! Ticket #{ticket}
+      <div className="rounded-2xl bg-good-soft p-4">
+        <p className="flex items-center gap-2 text-[17px] font-bold text-heading">
+          <Check className="h-5 w-5 text-good" /> Sent! Ticket #{ticket}
         </p>
-        <p className="mt-1 text-xs text-body">Thanks for telling us — the team gets an email right away and will reply to you.</p>
+        <p className="mt-1 text-[15px] text-body">We&apos;ll reply by email.</p>
         <div className="mt-3 flex gap-3">
-          <button type="button" onClick={() => setTicket(null)} className="text-xs font-semibold text-primary hover:underline">
+          <button type="button" onClick={() => setTicket(null)} className="min-h-11 text-[15px] font-bold text-primary hover:underline">
             Report something else
           </button>
           {onDone && (
-            <button type="button" onClick={onDone} className="text-xs font-semibold text-muted-foreground hover:underline">
+            <button type="button" onClick={onDone} className="min-h-11 text-[15px] font-bold text-muted-foreground hover:underline">
               Close
             </button>
           )}
@@ -69,13 +69,13 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3" noValidate>
-      <label className="block text-xs font-semibold text-muted-foreground">
+    <form onSubmit={submit} className="space-y-4" noValidate>
+      <label className="block text-[15px] font-bold text-heading">
         What went wrong?
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="mt-1 h-10 w-full rounded-lg border border-border bg-surface-1 px-3 text-sm font-semibold text-heading"
+          className="mt-1.5 h-12 w-full rounded-xl border border-input bg-surface-1 px-3 text-[16px] font-semibold text-heading"
         >
           <option value="">Choose an option…</option>
           {SUPPORT_CATEGORIES.map((c) => (
@@ -85,7 +85,7 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
           ))}
         </select>
       </label>
-      <label className="block text-xs font-semibold text-muted-foreground">
+      <label className="block text-[15px] font-bold text-heading">
         Tell us more
         <textarea
           value={message}
@@ -93,30 +93,30 @@ export default function SupportForm({ compact = false, onDone }: { compact?: boo
           rows={compact ? 4 : 5}
           maxLength={4000}
           placeholder="What happened? What did you expect? Which screen were you on?"
-          className="mt-1 w-full resize-y rounded-lg border border-border bg-surface-1 px-3 py-2 text-sm text-heading outline-none focus:border-primary"
+          className="mt-1.5 w-full resize-y rounded-xl border border-input bg-surface-1 px-3 py-2.5 text-[16px] text-heading outline-none focus:border-primary"
         />
       </label>
       {!token && (
-        <label className="block text-xs font-semibold text-muted-foreground">
+        <label className="block text-[15px] font-bold text-heading">
           Your email (so we can reply)
           <input
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 h-10 w-full rounded-lg border border-border bg-surface-1 px-3 text-sm text-heading"
+            className="mt-1.5 h-12 w-full rounded-xl border border-input bg-surface-1 px-3 text-[16px] text-heading"
           />
         </label>
       )}
       {error && (
-        <p role="alert" className="text-xs font-medium text-bad">
+        <p role="alert" className="text-[15px] font-semibold text-bad">
           {error}
         </p>
       )}
       <button
         type="submit"
         disabled={busy}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-[16px] font-extrabold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send to support
       </button>

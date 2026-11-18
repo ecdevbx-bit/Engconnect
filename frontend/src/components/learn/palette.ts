@@ -19,7 +19,7 @@ export const ROLE: Record<Role, { label: string; color: string }> = {
   other: { label: "Extra", color: "#a8a29e" },
 };
 
-// Tones may use theme tokens (primary flips orange ↔ blue with the theme).
+// Tones may use theme tokens (primary is saffron in both themes, D-071).
 export const TONE: Record<Tone, string> = {
   primary: "var(--primary)",
   green: "#10b981",
