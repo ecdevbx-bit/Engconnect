@@ -21,7 +21,7 @@ Secrets live **only** in: `credentials.txt` (repo root, git-ignored, local), `fr
 | Resend API key → Supabase SMTP + `RESEND_API_KEY` (support emails) | auth emails + support notifications | Resend dashboard | ✅ configured — ❌ **verified sending domain still needed** to email learners (D-025) |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | recordings storage | Cloudflare → R2 → Manage API tokens (Object Read & Write, one bucket) | ❌ needed |
 | Vercel token (vcp_…) | create project + env vars — tooling only | Vercel account | ✅ have — project `engconnect` created, env vars set |
-| `INTERNAL_API_KEY`, `ADMIN_EMAILS` | admin actions; admin allow-list (ec.devbx@gmail.com) | generated / owner | ✅ set (D-023) |
+| `INTERNAL_API_KEY`, `ADMIN_EMAILS` | admin actions; admin allow-list (ec.devbx@gmail.com, rupkanchan220216@gmail.com — D-072) | generated / owner | ✅ set (D-023) |
 | `SUPPORT_EMAIL_TO`, `SUPPORT_EMAIL_FROM` | where support tickets are emailed / sender | owner | ✅ ec.devbx@gmail.com / onboarding@resend.dev |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | payments | Razorpay dashboard | optional, later |
 | `NEXT_PUBLIC_SENTRY_DSN` | where error reports go (public by design) | Sentry project `engconnect` (org `englishconnection`, EU) | ✅ set locally + Vercel (D-044) |

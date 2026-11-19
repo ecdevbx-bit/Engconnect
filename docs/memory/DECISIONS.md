@@ -852,3 +852,14 @@
   page) calls `revalidatePath("/")` and `revalidatePath("/sitemap.xml")`. A flag changed outside the admin pages
   shows within a day. Locally: `/` is `x-nextjs-cache: HIT`, `s-maxage=86400`, Learn link present. Not tested:
   the refresh on save (would flip the shared production flag).
+
+## D-072 · rupkanchan220216@gmail.com is a second admin — 2026-11-19
+- Owner: "make an id with this rupkanchan220216@gmail.com and give it admin rights". (D-071 is used on the
+  `claude/ui-overhaul-b33f7f` branch, so this entry skips it.)
+- Account created with the Supabase admin API: email confirmed, **no password** — the person signs in with Google
+  with that address (Supabase links the Google identity to the confirmed email). Not related to
+  keshari.rupkanchan@gmail.com (a separate learner account).
+- `ADMIN_EMAILS` = `ec.devbx@gmail.com,rupkanchan220216@gmail.com` on Vercel (production/preview/development) and in
+  `frontend/.env.local`; production redeployed. Verified: a one-time magic-link session for the new account got
+  `isAdmin: true` from production `/api/session` (session revoked after); smoke 32/32. Admins see everything in
+  `/v3/admin` (Gemini keys, settings, payments, support inbox, learner data).

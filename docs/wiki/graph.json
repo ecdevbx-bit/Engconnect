@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T18:01:24.758Z",
+  "generatedAt": "2026-11-19T10:11:10.768Z",
   "about": "English Connection project memory graph. Regenerate: node docs/wiki/build-graph.mjs",
   "nodes": [
     {
@@ -321,7 +321,7 @@
         "graph",
         "memory"
       ],
-      "updated": "2026-11-17",
+      "updated": "2026-11-19",
       "path": "docs/wiki/meta/graph.md"
     },
     {
@@ -885,6 +885,14 @@
       "path": "docs/memory/DECISIONS.md"
     },
     {
+      "id": "D-072",
+      "title": "rupkanchan220216@gmail.com is a second admin",
+      "type": "decision",
+      "date": "2026-11-19",
+      "status": "active",
+      "path": "docs/memory/DECISIONS.md"
+    },
+    {
       "id": "memory/status",
       "title": "Status (working memory)",
       "type": "memory",
@@ -1025,6 +1033,11 @@
     {
       "source": "architecture/auth",
       "target": "D-023",
+      "kind": "cites"
+    },
+    {
+      "source": "architecture/auth",
+      "target": "D-072",
       "kind": "cites"
     },
     {
@@ -1231,6 +1244,11 @@
       "source": "features/admin",
       "target": "features/pronunciation",
       "kind": "links"
+    },
+    {
+      "source": "features/admin",
+      "target": "D-072",
+      "kind": "cites"
     },
     {
       "source": "features/admin",
@@ -2148,6 +2166,11 @@
       "kind": "cites"
     },
     {
+      "source": "log",
+      "target": "D-072",
+      "kind": "cites"
+    },
+    {
       "source": "meta/how-this-wiki-works",
       "target": "log",
       "kind": "links"
@@ -2210,6 +2233,11 @@
     {
       "source": "operations/credentials",
       "target": "D-025",
+      "kind": "cites"
+    },
+    {
+      "source": "operations/credentials",
+      "target": "D-072",
       "kind": "cites"
     },
     {
@@ -2500,6 +2528,11 @@
     {
       "source": "memory/status",
       "target": "D-022",
+      "kind": "cites"
+    },
+    {
+      "source": "memory/status",
+      "target": "D-072",
       "kind": "cites"
     },
     {

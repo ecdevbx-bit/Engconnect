@@ -3,7 +3,7 @@
 > Working-memory snapshot (Karpathy "RAM" layer). **Overwrite** this file whenever the state
 > changes; history lives in `docs/wiki/log.md`, decisions in `DECISIONS.md`, and the whole thing
 > as a graph in `docs/wiki/graph.json` (rebuild: `node docs/wiki/build-graph.mjs`).
-> Last updated: 2026-11-17 (session 7). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
+> Last updated: 2026-11-19 (session 7). Repo now lives at `/Users/ace/Desktop/ENGAI` (macOS).
 
 ## Live 🚀
 - **https://engconnect-beta.vercel.app** — Vercel project `engconnect` (team `engconnect`, root
@@ -15,7 +15,7 @@
   browser tunnel event both arrived; source maps uploaded for the release).
 - GitHub `ecdevbx-bit/Engconnect` (gh logged in as `ecdevbx-bit`). Supabase `uycpxwajvhcigyhvepci`:
   18 migrations applied (…1002000100 chat memory, …1002000200 turns/continue, …1002000300 memory merged), RLS everywhere.
-- Admin: **ec.devbx@gmail.com** → `/v3/admin` (Learn switch on top, Pro applications, Support inbox,
+- Admin: **ec.devbx@gmail.com** and **rupkanchan220216@gmail.com** (D-072, Google sign-in, no password set) → `/v3/admin` (Learn switch on top, Pro applications, Support inbox,
   Wiki & memory, Gemini keys, content, settings).
 - **Sentry**: org `englishconnection` (EU), project `engconnect` — errors from Vercel deployments only
   (wiki: operations/monitoring, D-044). **Verified working in production 2026-09-24** (`scripts/sentry-check.mjs`).

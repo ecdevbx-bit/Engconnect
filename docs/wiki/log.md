@@ -227,3 +227,5 @@ Kinds: `ingest` (learned from a source), `build` (code/infra), `decision` (see D
 ## [2026-11-17] change | Landing cached for a day, refreshed on admin flag save (D-070) — ISR writes were the largest Vercel usage line; bill $0 over the Pro credit
 
 ## [2026-11-17] deploy | 9a22b3c (D-070) READY — production smoke 32/32, cpu-cuts, session-race and pronunciation-retry probes all ✓, landing served from the CDN cache
+
+## [2026-11-19] change | Second admin rupkanchan220216@gmail.com (D-072): account created without a password (Google sign-in), ADMIN_EMAILS updated on Vercel + local, production redeployed, isAdmin verified, smoke 32/32

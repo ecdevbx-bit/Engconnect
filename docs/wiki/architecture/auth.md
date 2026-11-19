@@ -74,4 +74,4 @@ session gets `SESSION_SUPERSEDED` and that device signs out ("signed in elsewher
   `scripts/session-race-probe.mjs` checks both.
 
 ## Admins
-`ADMIN_EMAILS` (currently ec.devbx@gmail.com — D-023) → `isAdmin` on the session and `/v3/admin/*`.
+`ADMIN_EMAILS` (currently ec.devbx@gmail.com and rupkanchan220216@gmail.com — D-023, D-072) → `isAdmin` on the session and `/v3/admin/*`.

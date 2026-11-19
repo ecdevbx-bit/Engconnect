@@ -8,7 +8,7 @@ updated: 2026-09-22
 
 # Admin panel (`/v3/admin`)
 
-**Who**: signed-in users whose email is in `ADMIN_EMAILS` — currently **ec.devbx@gmail.com**
+**Who**: signed-in users whose email is in `ADMIN_EMAILS` — currently **ec.devbx@gmail.com** and **rupkanchan220216@gmail.com** (D-072)
 (D-023; comma-separate to add more; set in `frontend/.env.local` and Vercel). Admins see an
 **Admin** section in the account menu. Admin pages call the API through server actions carrying
 `INTERNAL_API_KEY`, dispatched in-process (D-018).
